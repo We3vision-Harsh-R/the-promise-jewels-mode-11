@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="53" height="53" viewBox="0 0 53 53" fill="none">
+  <!-- Outer Circle -->
+  <circle cx="26.2092" cy="26.2092" r="25.2092" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Shield -->
+  <path d="M26.2092 14.4448L36.2928 17.806V25.3688C36.2928 32.0913 31.251 37.1331 26.2092 39.654C21.1673 37.1331 16.1255 32.0913 16.1255 25.3688V17.806L26.2092 14.4448Z" stroke="#FFBD77" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Checkmark -->
+  <path d="M22.0076 26.2094L25.3688 29.5706L31.2509 22.8481" stroke="#FFBD77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>

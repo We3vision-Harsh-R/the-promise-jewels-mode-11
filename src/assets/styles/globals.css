@@ -1,0 +1,1741 @@
+@layer overrides, bootstrap, theme, base, components, utilities;
+@import "tailwindcss";
+@import "./utilities.css";
+@import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
+@import "./variables.css";
+
+/* Tailwind v4 theme — real brand palette (teal / gold / ivory / wine) from
+   the team's reference build. Same class names as before (bg-ink-900,
+   text-brass-500, bg-emerald, etc.) so no component files needed editing —
+   only the underlying hex values changed. */
+/* ---- The green ----------------------------------------------------------
+
+   Every green in the panel now comes off one ramp, and the ramp holds a
+   single hue: ~163 degrees. That number is the whole point.
+
+   The greens this replaces sat between 168 and 175 degrees — teal. A teal
+   at middling lightness and middling saturation is the colour of municipal
+   signage and national flags, and no amount of gold laid over it reads as
+   luxury. The greens that DO read as regal — Brunswick, Castleton, British
+   racing — all sit between 155 and 165 degrees, and they are dark: they get
+   their richness from depth, not from saturation.
+
+   So the ramp is deep, and it is consistent. Nothing in the panel picks a
+   green that is not a step on it.
+
+     950  #030F0C   abyss — behind everything, the rubber-band ground
+     900  #041611   the floor of the dark page
+     850  #06201A   
+     800  #082A22   raised ground, native dropdown lists
+     750  #0A3529   the top of the dark page, where the light falls
+     700  #0D4234   headings on white
+     600  #10513F   
+     500  #15654E   the one mid-tone that is allowed to be seen
+     400  #1C8265   
+     300  #37A98A   
+     200  #7FC9B2   
+     100  #B6E2D3   
+
+   Gold (brass-*) is untouched. It is what makes the green read as a jewel
+   rather than as paint, and it only works against depth — which is why the
+   dark theme below is darker than what it replaces, not brighter.
+   ------------------------------------------------------------------------ */
+
+@theme {
+  /* The ink scale is a green-black, not a grey — the same hue as the ramp,
+     so text and surface belong to one family instead of two. */
+  --color-ink: #0A2A22;
+  --color-ink-50: #F0F5F3;
+  --color-ink-100: #E1E9E6;
+  --color-ink-400: #5E7570;  /* 5.0:1 on white — the caption tier */
+  --color-ink-600: #1D332C;
+  --color-ink-800: #123F33;
+  --color-ink-900: #0A2A22;
+
+  --color-ivory: #F6F1E7;
+  --color-ivory-100: #F6F1E7;
+  --color-ivory-200: #EFE8D9;
+
+  --color-brass: #C4A85D;
+  --color-brass-100: #F1E4C6;
+  --color-brass-300: #D8C287;
+  --color-brass-500: #C4A85D;
+  --color-brass-600: #AF8E52;
+  --color-brass-700: #6E5730; /* darkened: #8A6F3F measured 4.0:1 on white, just under AA */
+
+  /* Ramp steps 600, 500 and 700. The old --color-emerald-400 was #2F6B6B,
+     a desaturated teal that went grey against cream — it is the single
+     colour that made the panel look cheap, and it is gone. */
+  --color-emerald: #10513F;
+  --color-emerald-400: #15654E;
+  --color-emerald-600: #0D4234;
+
+  --color-rose: #5B2430;
+
+  --radius-card: 20px;
+  --shadow-card: 0 1px 2px rgba(14,43,38,0.05), 0 8px 24px -12px rgba(14,43,38,0.14);
+}
+
+@font-face {
+  font-family: "Ringtte";
+  src: url("/fonts/Ringtte.woff2") format("woff2"),
+       url("/fonts/Ringtte.woff") format("woff"),
+       url("/fonts/Ringtte.otf") format("opentype");
+  font-display: swap;
+}
+
+@theme {
+  --font-heading: "Ringtte", sans-serif;
+  --font-ticker: "Optika", sans-serif;
+  --font-sans: "Optika", sans-serif;
+}
+
+@font-face {
+  font-family: "Optika";
+  src: url("/fonts/Optika-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Optika";
+  src: url("/fonts/Optika-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Optika";
+  src: url("/fonts/Optika-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Optika";
+  src: url("/fonts/Optika-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Optika";
+  src: url("/fonts/Optika-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+/* The three typefaces that were sitting in /public/fonts unused.
+   Amiora, Choase and Giliant shipped with the project but had no @font-face
+   rule, so nothing could apply them — they were dead weight in the repo.
+   Declaring them here is what puts them in the Editor's font picker. */
+@font-face {
+  font-family: "Amiora";
+  src: url("/fonts/Amiora.woff") format("woff"),
+       url("/fonts/Amiora.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Choase";
+  src: url("/fonts/Choase.woff") format("woff"),
+       url("/fonts/Choase.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Giliant";
+  src: url("/fonts/Giliant.woff") format("woff"),
+       url("/fonts/Giliant.otf") format("opentype");
+  font-display: swap;
+}
+
+/* Admin-set type size, with the responsive steps kept.
+ *
+ * The site's headings carry their sizes as Tailwind classes that already hold
+ * three breakpoints — 4rem desktop, 3.2rem tablet, 1.9rem phone. A single
+ * inline font-size from the Editor would flatten all three and leave a heading
+ * that fits a desktop overflowing a phone.
+ *
+ * So a component that has an admin size sets --pj-fs and takes this class
+ * instead of its built-in text-[...] class. The ratios below are the ones the
+ * design already used between its own breakpoints, so an edited heading steps
+ * down the way an unedited one does. A component with no admin size never gets
+ * this class and keeps its original Tailwind sizes untouched. */
+/* Matches any element the Editor has set a size on.
+ *
+ * Selecting on the inline property rather than a class is what keeps this
+ * out of the components: a component only has to spread the style object it
+ * already builds, with no second change to its className. Chasing a class
+ * through forty headings would have been forty chances to add the style and
+ * forget the class, which fails silently — the size simply would not apply.
+ *
+ * The :root prefix is load-bearing. Tailwind sizes these headings with
+ * text-[4rem], a single class; an attribute selector alone carries the same
+ * weight and would be settled by stylesheet order. :root lifts this above it
+ * so an admin size wins wherever it is set, and nothing wins where it is
+ * not. */
+:root [style*="--pj-fs"] { font-size: var(--pj-fs); }
+
+@media (max-width: 1024px) {
+  :root [style*="--pj-fs"] { font-size: calc(var(--pj-fs) * 0.8); }
+}
+
+@media (max-width: 430px) {
+  :root [style*="--pj-fs"] { font-size: calc(var(--pj-fs) * 0.5); }
+}
+
+* { box-sizing: border-box; }
+
+html, #root {
+  height: 100%;
+}
+/* Bootstrap ships utility classes with the same names as Tailwind's
+   (px-5, py-4, etc.) and marks them !important, so they silently win
+   over Tailwind's versions everywhere in the app. This block re-declares
+   just the colliding ones, scoped to .admin-theme, in a layer ordered
+   before `bootstrap` — since !important respects layer order in reverse,
+   this wins back priority without touching Bootstrap itself. */
+@layer overrides {
+  .admin-theme .p-0  { padding: calc(var(--spacing) * 0) !important; }
+  .admin-theme .p-1  { padding: calc(var(--spacing) * 1) !important; }
+  .admin-theme .p-2  { padding: calc(var(--spacing) * 2) !important; }
+  .admin-theme .p-3  { padding: calc(var(--spacing) * 3) !important; }
+  .admin-theme .p-4  { padding: calc(var(--spacing) * 4) !important; }
+  .admin-theme .p-5  { padding: calc(var(--spacing) * 5) !important; }
+
+  .admin-theme .px-0 { padding-inline: calc(var(--spacing) * 0) !important; }
+  .admin-theme .px-1 { padding-inline: calc(var(--spacing) * 1) !important; }
+  .admin-theme .px-2 { padding-inline: calc(var(--spacing) * 2) !important; }
+  .admin-theme .px-3 { padding-inline: calc(var(--spacing) * 3) !important; }
+  .admin-theme .px-4 { padding-inline: calc(var(--spacing) * 4) !important; }
+  .admin-theme .px-5 { padding-inline: calc(var(--spacing) * 5) !important; }
+
+  .admin-theme .py-0 { padding-block: calc(var(--spacing) * 0) !important; }
+  .admin-theme .py-1 { padding-block: calc(var(--spacing) * 1) !important; }
+  .admin-theme .py-2 { padding-block: calc(var(--spacing) * 2) !important; }
+  .admin-theme .py-3 { padding-block: calc(var(--spacing) * 3) !important; }
+  .admin-theme .py-4 { padding-block: calc(var(--spacing) * 4) !important; }
+  .admin-theme .py-5 { padding-block: calc(var(--spacing) * 5) !important; }
+
+  .admin-theme .m-0  { margin: calc(var(--spacing) * 0) !important; }
+  .admin-theme .m-1  { margin: calc(var(--spacing) * 1) !important; }
+  .admin-theme .m-2  { margin: calc(var(--spacing) * 2) !important; }
+  .admin-theme .m-3  { margin: calc(var(--spacing) * 3) !important; }
+  .admin-theme .m-4  { margin: calc(var(--spacing) * 4) !important; }
+  .admin-theme .m-5  { margin: calc(var(--spacing) * 5) !important; }
+
+  .admin-theme .mx-0 { margin-inline: calc(var(--spacing) * 0) !important; }
+  .admin-theme .mx-1 { margin-inline: calc(var(--spacing) * 1) !important; }
+  .admin-theme .mx-2 { margin-inline: calc(var(--spacing) * 2) !important; }
+  .admin-theme .mx-3 { margin-inline: calc(var(--spacing) * 3) !important; }
+  .admin-theme .mx-4 { margin-inline: calc(var(--spacing) * 4) !important; }
+  .admin-theme .mx-5 { margin-inline: calc(var(--spacing) * 5) !important; }
+
+  .admin-theme .my-0 { margin-block: calc(var(--spacing) * 0) !important; }
+  .admin-theme .my-1 { margin-block: calc(var(--spacing) * 1) !important; }
+  .admin-theme .my-2 { margin-block: calc(var(--spacing) * 2) !important; }
+  .admin-theme .my-3 { margin-block: calc(var(--spacing) * 3) !important; }
+  .admin-theme .my-4 { margin-block: calc(var(--spacing) * 4) !important; }
+  .admin-theme .my-5 { margin-block: calc(var(--spacing) * 5) !important; }
+}
+
+/* Everything below is scoped to .admin-theme so it never leaks onto the
+   public site — apply class="admin-theme" on the admin app's root wrapper
+   (already done in AdminLayout.jsx and LoginPage.jsx). */
+
+.admin-theme {
+  /* Was `min-height: 100%`, relative only to #root's own box. If actual
+     page content is ever shorter than the real browser viewport, that
+     could still leave a gap below #root's box. 100vh anchors directly to
+     the viewport instead, so the ivory background always reaches the
+     bottom of the visible window regardless of content height. */
+  min-height: 100vh;
+  /* FIX: was `background: var(--ivory)` — Tailwind v4's @theme block above
+     generates custom properties prefixed with `color-` (--color-ivory,
+     --color-ink-900, etc). `--ivory` was never defined anywhere, so this
+     background never actually painted; it silently fell through to the
+     browser's default white. That's the white gap below the table in the
+     screenshot — everywhere the correct ivory color WAS showing, it was
+     because some element used a Tailwind utility class (bg-ivory) instead
+     of relying on this base rule. */
+  background: var(--color-ivory);
+  color: var(--color-ink-900);
+  /* Client requirement: Optika only, dashboard-wide. Was 'Jost', sans-serif. */
+  font-family: 'Optika', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.admin-theme ::selection {
+  /* Same var-name typo fix as above (was var(--brass-100) / var(--ink-900)). */
+  background: var(--color-brass-100);
+  color: var(--color-ink-900);
+}
+
+/* Scrollbar */
+.admin-theme ::-webkit-scrollbar { width: 8px; height: 8px; }
+.admin-theme ::-webkit-scrollbar-track { background: transparent; }
+.admin-theme ::-webkit-scrollbar-thumb { background: var(--color-ink-100); border-radius: 8px; }
+.admin-theme ::-webkit-scrollbar-thumb:hover { background: var(--color-brass-300); }
+
+/* Signature corner clip — kept as a utility but no longer applied by
+   default anywhere; the real brand system favors soft rounded curves
+   (see the sidebar's 1.75rem radius) over faceted cuts. Left in place in
+   case a specific accent element still wants it. */
+.admin-theme .facet {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+}
+.admin-theme .facet-sm {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+/* Focus visibility (accessibility floor) */
+.admin-theme a:focus-visible,
+.admin-theme button:focus-visible,
+.admin-theme input:focus-visible,
+.admin-theme select:focus-visible,
+.admin-theme textarea:focus-visible,
+.admin-theme [tabindex]:focus-visible {
+  outline: 2px solid var(--color-brass-500);
+  outline-offset: 2px;
+}
+/* Dark pill-style controls opt out of the default gold focus-visible
+   outline — it doesn't read well against their own gradient backgrounds,
+   which already communicate focus/hover via border/shadow changes.
+   - .search-pill: Topbar's search AND TableToolbar's dark search input
+     (TableToolbar.jsx wraps it in this class when dark={true}).
+   - .status-pill: StatusFilterDropdown's toolbar trigger button (not
+     applied to the fullWidth form variant, which still wants the
+     standard gold focus ring like other form fields). */
+.admin-theme .search-pill input:focus-visible,
+.admin-theme .status-pill:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Client requirement: Optika only, dashboard-wide. font-display was
+   'Cormorant Garamond', serif (and was silently falling back to Times New
+   Roman anyway, since Cormorant Garamond was never actually loaded) —
+   every heading using .font-display now renders in Optika too. */
+.admin-theme .font-display { font-family: 'Optika', sans-serif; }
+.admin-theme .font-mono { font-family: 'JetBrains Mono', monospace; }
+.admin-theme .font-ringtte { font-family: 'Ringtte', 'Optika', sans-serif; }
+.admin-theme .font-optika { font-family: 'Optika', sans-serif; }
+
+/* Data tables */
+.admin-theme .pj-table {
+  border-collapse: collapse;
+  /* Matches the toolbar wrapper's p-5 sm:p-6 (20px/24px) in DataTable.jsx,
+     so the table's first/last column lines up with the search box and
+     card header above it instead of sitting flush against the card edge. */
+  margin: 0 20px;
+  width: calc(100% - 40px);
+}
+@media (min-width: 640px) {
+  .admin-theme .pj-table {
+    margin: 0 24px;
+    width: calc(100% - 48px);
+  }
+}
+.admin-theme .pj-table th {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-400);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--color-ink-100);
+  white-space: nowrap;
+}
+.admin-theme .pj-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-ink-100);
+  font-size: 14px;
+  vertical-align: middle;
+}
+@media (min-width: 640px) {
+  .admin-theme .pj-table th,
+  .admin-theme .pj-table td {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+/* First/last cell align exactly with the table's own left/right margin
+   (set above) — so NAME/TYPE/etc. sit flush under "Recent inquiries" /
+   the search box instead of being inset an extra 20-24px on top of it. */
+.admin-theme .pj-table th:first-child,
+.admin-theme .pj-table td:first-child {
+  padding-left: 0;
+}
+.admin-theme .pj-table th:last-child,
+.admin-theme .pj-table td:last-child {
+  padding-right: 0;
+}
+.admin-theme .pj-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.admin-theme .pj-table tbody tr:hover td {
+  background: var(--color-ivory-200);
+}
+
+/* Dark surface — used on Cards that sit on the teal gradient (Recent
+   inquiries, and every list-page DataTable/Settings card). Re-points the
+   ink-* tokens so existing text-ink-900 / text-ink-400 / border-ink-100
+   utilities already written throughout the page-level column definitions
+   "just work" and read as light-on-teal instead of dark-on-white, with no
+   per-page edits needed. Custom CSS vars cascade normally, so anything
+   inside .dark-surface that references var(--color-ink-*) picks this up. */
+/* ...but form controls (and the solid dark primary Button) keep their own
+   light background regardless of the card behind them, so their internal
+   text/placeholder/border needs to stay dark-on-light, not light-on-light.
+   Reset the tokens back to the real palette for those elements only. */
+.admin-theme .dark-surface input,
+.admin-theme .dark-surface select,
+.admin-theme .dark-surface textarea {
+  --color-ink-900: #0E2B26;
+  --color-ink-800: #163B34;
+  --color-ink-600: #20302D;
+  --color-ink-400: #647672;
+  --color-ink-100: #E4E9E7;
+  --color-ink-50: #F2F4F3;
+}
+
+/* Table variant for .dark-surface cards — swaps the hairline borders and
+   hover state for light-on-translucent instead of the default dark ones. */
+/* Same correction as above: the rows sit on white, so the hairlines and
+   header text have to be dark to be visible at all. */
+.admin-theme .pj-table--dark th {
+  color: #4A5F5B;
+  border-bottom: 1px solid var(--color-ink-100);
+}
+.admin-theme .pj-table--dark td {
+  border-bottom: 1px solid var(--color-ink-100);
+}
+.admin-theme .pj-table--dark tbody tr:hover td {
+  background: var(--color-ink-50);
+}
+
+/* ---- Dashboard glassmorphism ----
+   Page-level dark gradient background (applied via the `dashboard-bg`
+   class in AdminLayout.jsx) plus a reusable `.glass` surface class shared
+   by the sidebar, topbar pill, stat cards, Inquiry Trends, Quick actions
+   and Recent inquiries so they all read as one consistent glass system
+   instead of one-off styles. */
+/* Compound selector (no space) — `dashboard-bg` is applied on the SAME
+   element as `admin-theme` (see AdminLayout.jsx), not a descendant of it.
+   A descendant selector here (`.admin-theme .dashboard-bg`) would never
+   match and the div would silently fall back to no background at all —
+   which is exactly what caused every glass panel to read pale/washed-out
+   instead of dark teal (backdrop-filter was blurring the light default
+   page background instead of this gradient).
+   Base color now steps through five stops (was three, and the first two
+   were both near-identical near-black tones) so the teal reads as an
+   actual top-to-bottom gradient instead of a flat dark fill with a couple
+   of faint radial highlights sitting on top of it. */
+.admin-theme.dashboard-bg {
+  background:
+    /* Both themes below restate this rule, so nothing here is ever painted.
+       Kept on the ramp anyway: a dead declaration naming a colour the theme
+       no longer uses is how an old green finds its way back in. */
+    #041611;
+}
+
+.admin-theme .glass {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
+}
+.admin-theme .glass-strong {
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
+}
+/* Subtle lift + brighter border glow on hover — used sparingly (stat
+   cards, quick action pills) per the "don't overdo animation" brief. */
+.admin-theme .glass-hover {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.admin-theme .glass-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(216, 194, 135, 0.35);
+  box-shadow: var(--glass-shadow), 0 0 0 1px rgba(216, 194, 135, 0.08);
+}
+/* ---- Custom cursor -------------------------------------------------------
+   The class is added by CustomCursor.jsx only when it actually mounts (mouse
+   pointer, no reduced-motion preference), so touch devices and keyboard users
+   never lose their native cursor. Scoped to .web-theme so the admin dashboard
+   keeps a normal cursor. */
+.has-custom-cursor .web-theme,
+.has-custom-cursor .web-theme * {
+  cursor: none;
+}
+
+/* Anything the visitor can type into keeps its caret cursor — losing the
+   I-beam in a form field is disorienting. */
+.has-custom-cursor .web-theme input,
+.has-custom-cursor .web-theme textarea,
+.has-custom-cursor .web-theme select {
+  cursor: auto;
+}
+
+/* ==========================================================================
+   ADMIN — WHITE THEME
+   ==========================================================================
+   The admin panel was built as a dark glassmorphism system: a teal gradient
+   page background with translucent panels on top. Converting it by editing
+   the ~3,600 lines of page JSX would mean touching 159 `glass` usages and
+   126 ivory/brass text classes by hand.
+   
+   Everything visual there is driven by CSS tokens and four surface classes,
+   so the whole conversion happens here instead. Component markup is
+   unchanged — which also means the dark theme can be restored by deleting
+   this block, and nothing else has to be reverted.
+   
+   This block sits AFTER the definitions above so it wins on source order at
+   equal specificity; where the original used a compound selector
+   (.admin-theme.dashboard-bg) it is matched exactly, not loosened.
+   ========================================================================== */
+
+/* Page ground: a very light warm grey, not pure white, so white panels
+   sitting on it still read as raised surfaces. */
+.admin-theme.dashboard-bg {
+  background:
+    radial-gradient(ellipse 900px 520px at 12% -10%, rgba(21, 101, 78, 0.09), transparent 60%),
+    radial-gradient(ellipse 700px 460px at 105% 15%, rgba(196, 168, 93, 0.15), transparent 55%),
+    /* Warmed off #F7F9F8 -> #EFF4F3, a cool grey that made the gold beside
+       it look dull. Ivory reads as paper, and gold belongs on paper. */
+    linear-gradient(180deg, #FAF8F3 0%, #F1F0E9 100%);
+  /* Fixed so the tint stays put while the page scrolls: glass panels then
+     refract a stable ground instead of dragging the gradient with them.
+     The two tints are the brand's own emerald and brass — without some
+     colour behind them, white glass on a white ground has nothing to show. */
+  background-attachment: fixed;
+}
+
+/* Surfaces: frosted glass rather than flat white. The values below are the
+   ones from the glass control panel, mapped one-to-one onto CSS so the
+   numbers stay legible and tunable in one place:
+
+     Light  -45 deg / 80%  -> --glass-light-angle / --glass-light
+     Refraction 80         -> --glass-refraction  (edge highlight + saturation)
+     Depth      20         -> --glass-depth       (inner falloff, in px)
+     Dispersion 50         -> --glass-dispersion  (brass rim strength)
+     Frost      4          -> --glass-frost       (blur = frost * 5px = 20px)
+     Splay       0         -> --glass-splay       (outer shadow spread)
+
+   The fill stays white-dominant on purpose: the page ground is light, so a
+   white glass keeps panels reading clean and keeps dark ink text at full
+   contrast, while the blur/rim/inner-shadow supply the depth. */
+.admin-theme {
+  --glass-light-angle: -45deg;
+  --glass-light: 0.8;
+  --glass-refraction: 0.8;
+  --glass-depth: 20px;
+  --glass-dispersion: 0.5;
+  --glass-frost: 4;
+  --glass-splay: 0px;
+
+  --glass-blur: calc(var(--glass-frost) * 5px);
+
+  /* Alpha is carried high on purpose. These panels hold tables and form
+     fields, so the glass has to stay a readable surface first: the blur,
+     the -45deg sheen, the brass rim and the inner falloff do the work, and
+     the fill stays dense enough that nothing behind bleeds into the text. */
+  --glass-fill:
+    linear-gradient(
+      var(--glass-light-angle),
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.66) 46%,
+      rgba(246, 241, 231, 0.76) 100%
+    );
+  --glass-fill-strong:
+    linear-gradient(
+      var(--glass-light-angle),
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.82) 46%,
+      rgba(246, 241, 231, 0.89) 100%
+    );
+
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-border-strong: rgba(255, 255, 255, 0.88);
+
+  --glass-shadow:
+    /* refraction: the bright edge where light enters the panel */
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    /* depth: light falling away toward the bottom inside the panel */
+    inset 0 calc(var(--glass-depth) * -1) var(--glass-depth)
+      calc(var(--glass-depth) * -1) rgba(14, 43, 38, 0.1),
+    /* dispersion: a faint brass rim, the brand accent doing the fringing */
+    0 0 0 1px rgba(216, 194, 135, calc(var(--glass-dispersion) * 0.56)),
+    /* lift, with splay 0 meaning no spread */
+    0 18px 44px calc(var(--glass-splay) - 18px) rgba(14, 43, 38, 0.2);
+}
+
+/* One material for every surface: cards, stat cards, the sidebar, the topbar
+   pill, dropdowns and modal panels all resolve to these same rules, so the
+   admin reads as a single glass system instead of each component inventing
+   its own background.
+
+   `background` is !important because Bootstrap ships `.bg-white` and friends
+   as !important utilities with the same names as Tailwind's (see the note
+   further up this file) and would otherwise repaint these panels solid. */
+.admin-theme .glass,
+.admin-theme .glass-strong,
+.admin-theme .pj-glass-panel,
+.admin-theme .pj-card {
+  background: var(--glass-fill) !important;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur))
+    saturate(calc(100% + var(--glass-refraction) * 100%));
+  -webkit-backdrop-filter: blur(var(--glass-blur))
+    saturate(calc(100% + var(--glass-refraction) * 100%));
+  box-shadow: var(--glass-shadow);
+}
+
+/* The raised tier: modal panels and `.glass-strong` sit above other glass,
+   so they carry a denser fill to stay readable over whatever is behind. */
+.admin-theme .glass-strong,
+.admin-theme .pj-glass-panel {
+  background: var(--glass-fill-strong) !important;
+  border-color: var(--glass-border-strong);
+}
+
+.admin-theme .glass-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(196, 168, 93, 0.55);
+  box-shadow:
+    var(--glass-shadow),
+    0 22px 48px -20px rgba(14, 43, 38, 0.26);
+}
+
+/* Text: the ivory/brass scale was written to sit on dark teal. On white it
+   would be near-invisible, so each step is remapped to its light-theme
+   equivalent rather than every class being renamed across the pages.
+   Ivory = primary/body text, brass = the muted + accent tiers. */
+.admin-theme .text-ivory,
+.admin-theme .text-ivory-100,
+.admin-theme .text-ivory-200 {
+  color: #12312B;
+}
+
+/* Was a pale gold used for hints and secondary labels on dark. A muted
+   slate-teal is the readable counterpart — gold at this size on white
+   fails contrast badly. */
+.admin-theme .text-brass-300,
+.admin-theme .text-brass-200,
+.admin-theme .text-brass-100 {
+  /* was #667C78 — measured 4.45:1 on white, a hair under the 4.5 AA floor */
+  color: #4A5F5B;
+}
+
+/* The genuine accent tiers stay gold, darkened enough to be legible. */
+.admin-theme .text-brass-500,
+.admin-theme .text-brass-600,
+.admin-theme .text-brass-700 {
+  /* was #9A7B33 — measured exactly 4.0:1 on white. Still unmistakably gold,
+     just dark enough to clear AA at the small sizes these labels use. */
+  color: #6E5730;
+}
+
+/* Inputs and controls that were translucent-on-dark. */
+.admin-theme input,
+.admin-theme textarea,
+.admin-theme select {
+  color: #12312B;
+}
+.admin-theme input::placeholder,
+.admin-theme textarea::placeholder {
+  color: #93A5A1;
+}
+
+/* Dividers written as white-alpha for the dark theme read as invisible on
+   a light ground. */
+.admin-theme .border-white\/10,
+.admin-theme .border-white\/15,
+.admin-theme .border-white\/20 {
+  border-color: #E3EAE8;
+}
+.admin-theme .bg-white\/5,
+.admin-theme .bg-white\/8,
+.admin-theme .bg-white\/10 {
+  background-color: #F4F7F6;
+}
+
+/* `.dark-surface` re-pointed the whole ink-* scale to pale gold so that
+   `text-ink-900` etc. read light-on-teal (see the block above). Those panels
+   are white now, so the scale has to go back to its real dark-on-light
+   values — otherwise every heading and table cell renders cream on white,
+   which is what made the converted pages look washed out. */
+.admin-theme .dark-surface {
+  --color-ink-900: #0E2B26;
+  --color-ink-800: #163B34;
+  --color-ink-600: #20302D;
+  --color-ink-400: #647672;
+  --color-ink-100: #E4E9E7;
+  --color-ink-50: #F2F4F3;
+  --color-rose: #5B2430;
+}
+
+/* Same reasoning for the dark table variant: hairlines and hover were
+   white-alpha, which is invisible on a white card. */
+.admin-theme .pj-table--dark th {
+  color: #647672;
+  border-bottom: 1px solid #E3EAE8;
+}
+.admin-theme .pj-table--dark td {
+  border-bottom: 1px solid #EDF2F1;
+}
+.admin-theme .pj-table--dark tbody tr:hover td {
+  background: #F4F7F6;
+}
+
+/* Tailwind's alpha modifiers generate their own class names
+   (`text-ivory-100/70`), so matching the base class alone misses them —
+   which is what left the sidebar labels white-on-white. Attribute selectors
+   catch every variant at once.
+   Safe to apply broadly: `bg-ivory*` is used only 6 times admin-wide and is
+   matched separately below, and the primary Button sets its colour inline
+   (dark text on a gold gradient) so it is untouched by these. */
+.admin-theme [class*="text-ivory"] {
+  color: #12312B;
+}
+.admin-theme [class*="text-brass-1"],
+.admin-theme [class*="text-brass-2"],
+.admin-theme [class*="text-brass-3"] {
+  /* was #667C78 — 4.45:1 on white, just short of the 4.5 AA floor. This
+     broad selector sits after the class-based rule above, so it is the one
+     that actually decides the colour. */
+  color: #4A5F5B;
+}
+
+/* Surfaces that were light-alpha fills on the dark gradient — the sidebar's
+   active item, hover states, dividers. */
+.admin-theme [class*="bg-white/"] {
+  background-color: #F1F5F4;
+}
+.admin-theme [class*="border-white/"] {
+  border-color: #E3EAE8;
+}
+
+/* The 6 real ivory backgrounds stay light — they were already the "paper"
+   tone and read correctly on the new ground. */
+.admin-theme [class*="bg-ivory"] {
+  background-color: #FAFBFB;
+}
+
+
+/* ==========================================================================
+   GLASS — modal / dialog surfaces
+   ==========================================================================
+   Modal.jsx portals to <body>, outside .admin-theme, and copies the theme
+   class onto the portal root so the tokens above resolve. These rules are
+   deliberately unscoped where they must also work on the public site.
+   ========================================================================== */
+
+.pj-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* A light brand-tinted scrim, not a heavy black one: the panel above it is
+     white glass, so the backdrop only needs to drop the page back a step.
+     The blur is what sells the glass — it is the page behind, defocused. */
+  background: rgba(14, 43, 38, 0.26);
+  backdrop-filter: blur(6px) saturate(115%);
+  -webkit-backdrop-filter: blur(6px) saturate(115%);
+}
+
+/* Fields inside a modal, matched to the panel they sit on. Checkboxes and
+   radios are excluded — they are small painted controls, and giving them a
+   14px radius and a glass fill would wreck them. */
+.admin-theme .pj-modal-body input:not([type='checkbox']):not([type='radio']),
+.admin-theme .pj-modal-body textarea,
+.admin-theme .pj-modal-body select {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #12312B !important;
+  box-shadow:
+    inset 0 1px 2px rgba(14, 43, 38, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.admin-theme .pj-modal-body input:not([type='checkbox']):not([type='radio'])::placeholder,
+.admin-theme .pj-modal-body textarea::placeholder {
+  color: #8CA09B !important;
+}
+
+.admin-theme .pj-modal-body input:not([type='checkbox']):not([type='radio']):focus,
+.admin-theme .pj-modal-body textarea:focus,
+.admin-theme .pj-modal-body select:focus {
+  outline: none;
+  border-color: rgba(196, 168, 93, 0.75) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow:
+    inset 0 1px 2px rgba(14, 43, 38, 0.05),
+    0 0 0 3px rgba(216, 194, 135, 0.28) !important;
+}
+
+/* Field.jsx renders labels with a hardcoded text-ink-600 and hints with
+   text-ink-400; on glass the label reads better as the brand's gold. */
+.admin-theme .pj-modal-body .text-ink-600 {
+  color: #6E5730 !important;
+}
+
+/* Scrollbar inside the panel — a translucent brass thumb on a clear track,
+   so it belongs to the glass instead of showing up as an OS widget. */
+.pj-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 168, 93, 0.45) transparent;
+}
+.pj-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.pj-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pj-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(196, 168, 93, 0.45);
+  border-radius: 9999px;
+}
+.pj-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 168, 93, 0.65);
+}
+
+/* ---- Login screen ----
+   This is the one admin screen that is dark by design: LoginPage paints the
+   Card with its own teal gradient plus a darkening overlay on top, so the
+   glass fill never shows and is left alone here.
+
+   What did need fixing is the text. `.dark-surface` originally re-pointed the
+   ink-* scale to pale gold so `text-ink-900` read light-on-teal; the white
+   conversion sent that scale back to real dark values for the white panels,
+   which left this still-dark card rendering dark ink on a dark ground — the
+   heading and the "Sign in to the Admin Portal" subtitle were effectively
+   invisible. Restoring the light mapping for this page only. */
+.admin-theme.pj-login-bg .dark-surface {
+  --color-ink-900: #F6F1E7;
+  --color-ink-800: #EFE8D9;
+  --color-ink-600: #D8C287;
+  --color-ink-400: #B9C7C3;
+  --color-ink-100: rgba(255, 255, 255, 0.16);
+  --color-ink-50: rgba(255, 255, 255, 0.08);
+}
+
+/* The login screen is the one admin surface outside AdminLayout, so it never
+   carries a data-admin-theme attribute and falls through to the light theme
+   tokens above. That handed it WHITE glass on a dark ground, which the page
+   then tried to fix by painting its own gradient inline and laying a dark
+   overlay over the result — none of which could win, because .pj-card sets
+   its background with !important. Painted here instead, where the winning
+   rule lives.
+
+   Flat, like every other panel: ramp step 750, no sheen, brass rim. */
+.admin-theme.pj-login-bg {
+  background-color: #041611 !important;
+}
+
+.admin-theme.pj-login-bg .pj-card {
+  background: linear-gradient(rgba(11, 52, 41, 0.96), rgba(11, 52, 41, 0.96)) !important;
+  border-color: rgba(216, 194, 135, 0.22);
+}
+
+/* Destructive confirm button — brand wine, solid.
+   Painted as a flat gradient rather than a background-color on purpose.
+   Bootstrap is loaded inside `@layer bootstrap`, and for !important
+   declarations layered rules beat unlayered ones no matter the specificity,
+   so its `.bg-transparent { background-color: transparent !important }`
+   would win over anything set here. It never touches background-image, so a
+   two-stop gradient paints the fill and stays visible. This is the same
+   reason the glass panels above declare their fill as a gradient. */
+.admin-theme .pj-btn-danger {
+  background-image: linear-gradient(#5B2430, #5B2430) !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+}
+.admin-theme .pj-btn-danger:hover {
+  background-image: linear-gradient(#4A1D27, #4A1D27) !important;
+}
+
+/* ==========================================================================
+   ADMIN — DARK THEME
+   ==========================================================================
+
+   The panel was built dark, converted to white glass at some point, and is
+   now dark again by request. Rather than unpick that conversion rule by rule
+   — it is spread across a dozen places above, each with its own reasoning —
+   this block restates the handful of tokens everything else derives from and
+   is deliberately last in the file, so it wins on order at equal specificity.
+   Anything above that sets a literal light colour is corrected here too.
+
+   Two things made the panel read light: the page ground (a second
+   .admin-theme.dashboard-bg rule repainting it near-white) and the glass FILL
+   being white-dominant. Both are restated below, along with the ink scale;
+   everything else follows, because every admin surface derives from these. */
+
+.admin-theme[data-admin-theme="dark"] {
+  /* Refraction is what a glass panel does to the ground behind it: the blur
+     is paired with a saturation boost so the colour underneath comes
+     through richer, the way it would through a real pane.
+
+     Down from 0.8 (180%). The panels are a flat fill on a flat ground now,
+     so there is nothing behind them worth amplifying — and a saturation
+     boost on a green only ever pushes it back towards the bright, flat
+     green being removed. Kept above zero so the blur still reads as glass. */
+  --glass-refraction: 0.25;
+
+  /* The glass itself. Dark teal at high alpha: these panels carry tables and
+     form fields, so the surface has to stay readable first — the blur and the
+     brass rim supply the depth, not transparency. */
+  /* Flat, both of them.
+
+     These were diagonal gradients running light at one corner to dark at
+     the other, which is where the pale wash across the top of every page
+     came from. A panel does not need a sheen to read as a panel: one step
+     up the ramp from the ground, and a brass rim around it, is enough and
+     it stays a jewel green from corner to corner.
+
+     Written as two-stop gradients rather than a background-color because
+     Bootstrap ships `.bg-white` and friends as !important utilities that
+     would repaint these panels — it never touches background-image. Same
+     trick as .pj-btn-danger further up. */
+  --glass-fill: linear-gradient(rgba(9, 44, 35, 0.95), rgba(9, 44, 35, 0.95));
+  --glass-fill-strong: linear-gradient(var(--lg-fill), var(--lg-fill));
+
+  /* A brass rim rather than a white one — white edges on a dark panel read as
+     a border drawn round it, brass reads as the light catching it.
+
+     Raised from 0.20. The panels now sit LIGHTER than the ground they are
+     on, and a rim too faint to see turns that into a smudge instead of an
+     edge. This one line does more for the royal look than any fill. */
+  --glass-border: rgba(216, 194, 135, 0.26);
+  --glass-border-strong: rgba(216, 194, 135, 0.40);
+
+  --glass-shadow:
+    /* Warm, not white. The near edge of a panel is catching the same gold
+       light as its rim; a white hairline there reads as a highlight from a
+       different room. */
+    inset 0 1px 0 rgba(232, 203, 146, 0.16),
+    inset 0 calc(var(--glass-depth) * -1) var(--glass-depth)
+      calc(var(--glass-depth) * -1) rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(216, 194, 135, calc(var(--glass-dispersion) * 0.30)),
+    0 22px 52px rgba(0, 0, 0, 0.46);
+
+  /* The ink scale, inverted. Everything in the panel writes text as
+     text-ink-900 / text-ink-600 / text-ink-400, so this one mapping turns
+     every heading, label and caption light without touching a component. */
+  --color-ink-900: #F2EEE4;
+  --color-ink-800: #E6DECD;
+  --color-ink-600: #C6D4CF;
+  --color-ink-400: #8FA5A0;
+  --color-ink-100: rgba(255, 255, 255, 0.14);
+  --color-ink-50: rgba(255, 255, 255, 0.06);
+
+  /* Surfaces that were solid cream — chiefly input backgrounds and chips. */
+  --color-ivory: rgba(255, 255, 255, 0.05);
+  --color-ivory-100: rgba(255, 255, 255, 0.05);
+  --color-ivory-200: rgba(255, 255, 255, 0.09);
+
+  /* Accents. The two greens were chosen to sit on white and are unreadable
+     on this ground; brass-700 was darkened for contrast on white for the same
+     reason and has to come back up. */
+  --color-emerald-600: #EAF3F0;
+  --color-emerald-400: #A9C8BC;
+  /* Ramp step 300. The old #7FB3A4 was a dusty sage; on a ground this deep
+     an accent has to be a jewel or it sinks into the panel. */
+  --color-emerald: #37A98A;
+  --color-brass-700: #DCC68D;
+  --color-brass-600: #CBB075;
+  --color-rose: #E79AA5;
+}
+
+/* `.dark-surface` exists to mark a panel that is dark. Now that they all are,
+   its job is the opposite of what the white conversion left it doing: it was
+   resetting the ink scale back to dark-on-light. Inheriting is correct. */
+.admin-theme[data-admin-theme="dark"] .dark-surface {
+  --color-ink-900: inherit;
+  --color-ink-800: inherit;
+  --color-ink-600: inherit;
+  --color-ink-400: inherit;
+  --color-ink-100: inherit;
+  --color-ink-50: inherit;
+  --color-rose: inherit;
+}
+
+/* Form controls sit ON the dark panel rather than being cut out of it, so
+   unlike the white build they inherit the surrounding scale instead of
+   flipping back to dark-on-light. */
+.admin-theme[data-admin-theme="dark"] .dark-surface input,
+.admin-theme[data-admin-theme="dark"] .dark-surface select,
+.admin-theme[data-admin-theme="dark"] .dark-surface textarea,
+.admin-theme[data-admin-theme="dark"] input,
+.admin-theme[data-admin-theme="dark"] select,
+.admin-theme[data-admin-theme="dark"] textarea {
+  --color-ink-900: #F2EEE4;
+  --color-ink-800: #E6DECD;
+  --color-ink-600: #C6D4CF;
+  --color-ink-400: #8FA5A0;
+  --color-ink-100: rgba(255, 255, 255, 0.14);
+  --color-ink-50: rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+}
+
+/* A native dropdown paints its own list with the OS palette; without this the
+   options render black-on-white behind a dark control. */
+.admin-theme[data-admin-theme="dark"] select option {
+  background-color: #082A22;
+  color: #F2EEE4;
+}
+
+/* The white conversion pinned these translucent utilities to a solid light
+   grey. On a dark panel that is a bright block. */
+.admin-theme[data-admin-theme="dark"] .bg-white\/8 {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.admin-theme[data-admin-theme="dark"] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Table hairlines, back to light-on-dark. */
+.admin-theme[data-admin-theme="dark"] .pj-table--dark th {
+  color: #9FB4AF;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.admin-theme[data-admin-theme="dark"] .pj-table--dark td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.admin-theme[data-admin-theme="dark"] .pj-table--dark tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* The login screen painted its own dark card and its own light ink mapping to
+   survive the white build. Both are now what everything else does, so the
+   override is redundant — left inheriting rather than deleted, because the
+   page still sets .pj-login-bg for its background art. */
+.admin-theme[data-admin-theme="dark"].pj-login-bg .dark-surface {
+  --color-ink-900: inherit;
+  --color-ink-800: inherit;
+  --color-ink-600: inherit;
+  --color-ink-400: inherit;
+  --color-ink-100: inherit;
+  --color-ink-50: inherit;
+}
+
+/* Scrollbars, so a long form does not end in a bright rail. */
+.admin-theme[data-admin-theme="dark"] * {
+  scrollbar-color: rgba(216, 194, 135, 0.28) transparent;
+}
+
+/* --- corrections to the white conversion's hard-coded values --------------
+
+   The block above re-points the tokens, which is enough for anything that
+   reads them. These rules do not: the white build wrote literal hex values to
+   force contrast against a white panel, and a literal cannot follow a theme.
+   Each one below is the same selector with the value it needs on dark. They
+   are restated rather than edited in place so the reasoning for the original
+   — the AA measurements in those comments — stays readable next to it. */
+
+/* Gold was darkened to #6E5730 to clear AA on white. On this ground it reads
+   as brown mud; back up to the palette's own gold, which clears AA on dark. */
+.admin-theme[data-admin-theme="dark"] .text-brass-500,
+.admin-theme[data-admin-theme="dark"] .text-brass-600,
+.admin-theme[data-admin-theme="dark"] .text-brass-700,
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-1"],
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-2"],
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-3"] {
+  color: #DCC68D;
+}
+
+/* Field text and placeholders. */
+.admin-theme[data-admin-theme="dark"] input,
+.admin-theme[data-admin-theme="dark"] textarea,
+.admin-theme[data-admin-theme="dark"] select {
+  color: #F2EEE4;
+}
+.admin-theme[data-admin-theme="dark"] input::placeholder,
+.admin-theme[data-admin-theme="dark"] textarea::placeholder {
+  color: #7E948F;
+}
+
+/* Translucent utilities that were pinned to solid light greys. */
+.admin-theme[data-admin-theme="dark"] .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.admin-theme[data-admin-theme="dark"] [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Modal fields sit on the raised glass tier, which is denser but still dark. */
+.admin-theme[data-admin-theme="dark"] .pj-modal-body .text-ink-600 {
+  color: #DCC68D !important;
+}
+.admin-theme[data-admin-theme="dark"] .pj-modal-body input:not([type='checkbox']):not([type='radio'])::placeholder,
+.admin-theme[data-admin-theme="dark"] .pj-modal-body textarea::placeholder {
+  color: #7E948F !important;
+}
+.admin-theme[data-admin-theme="dark"] .pj-modal-body input:not([type='checkbox']):not([type='radio']),
+.admin-theme[data-admin-theme="dark"] .pj-modal-body textarea,
+.admin-theme[data-admin-theme="dark"] .pj-modal-body select {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  color: #F2EEE4 !important;
+}
+.admin-theme[data-admin-theme="dark"] .pj-modal-body input:not([type='checkbox']):not([type='radio']):focus,
+.admin-theme[data-admin-theme="dark"] .pj-modal-body textarea:focus,
+.admin-theme[data-admin-theme="dark"] .pj-modal-body select:focus {
+  background: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Every remaining form control: the white build gave these a light fill and a
+   pale border so they would cut out of a white card. */
+.admin-theme[data-admin-theme="dark"] input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+.admin-theme[data-admin-theme="dark"] textarea,
+.admin-theme[data-admin-theme="dark"] select {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.admin-theme[data-admin-theme="dark"] input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):focus,
+.admin-theme[data-admin-theme="dark"] textarea:focus,
+.admin-theme[data-admin-theme="dark"] select:focus {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(216, 194, 135, 0.55);
+}
+
+/* A colour swatch is the one input whose own fill is the point. */
+.admin-theme[data-admin-theme="dark"] input[type='color'] {
+  background-color: transparent;
+}
+
+/* The page ground itself.
+ *
+ * There are two .admin-theme.dashboard-bg rules above: the original dark teal
+ * gradient, and a later one from the white conversion that repaints it
+ * #F7F9F8 -> #EFF4F3. The later one was winning, which is what actually made
+ * the panel look light — the cream text was being drawn correctly the whole
+ * time, onto a near-white ground.
+ *
+ * Restated dark here, keeping the fixed attachment so the tint stays put
+ * while the page scrolls and the glass refracts a stable ground. */
+.admin-theme[data-admin-theme="dark"].dashboard-bg {
+  background:
+    /* One colour. Ramp step 850, flat.
+
+       There were four gradients here — an emerald pool, a brass bloom, a
+       second pool at the foot and a vignette. Every one of them put light
+       back into the green, and light in a green is exactly what makes it
+       read as flag green rather than as a jewel. A deep flat field is what
+       the inside of a jewellery box looks like, and it is the gold on top
+       of it that does the work.
+
+       Nothing lightens this ground. If a surface needs to be seen, it gets
+       a brass rim, not a glow. */
+    #041611;
+  background-attachment: fixed;
+}
+
+/* body is painted white by the reset; a rubber-band scroll past the end of a
+   short page would otherwise flash white behind the fixed gradient. */
+body:has(.admin-theme[data-admin-theme="dark"]) {
+  background-color: #041611;
+}
+
+/* Light text on light: `text-ivory*` was remapped to a dark teal so it stayed
+   readable on white panels. It is the primary body tier and has to be light
+   again. */
+.admin-theme[data-admin-theme="dark"] .text-ivory,
+.admin-theme[data-admin-theme="dark"] .text-ivory-100,
+.admin-theme[data-admin-theme="dark"] .text-ivory-200,
+.admin-theme[data-admin-theme="dark"] [class*="text-ivory"] {
+  color: #F2EEE4;
+}
+
+/* The two broad attribute selectors above pin EVERY translucent utility to a
+ * solid light grey — `[class*="bg-white/"]` to #F1F5F4 and `[class*="bg-ivory"]`
+ * to #FAFBFB. They are what was left painting the inner panels light: the
+ * section body and each copy block were drawing a near-white box, and the
+ * cream labels on top of it were the faint text.
+ *
+ * Restated as what they were before the white conversion: translucent white,
+ * which over a dark panel reads as a slightly raised surface rather than a
+ * separate light card. Kept as the same broad selectors so nothing slips
+ * through the way `bg-white/[0.04]` slipped past the narrower list. */
+.admin-theme[data-admin-theme="dark"] [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.admin-theme[data-admin-theme="dark"] [class*="bg-ivory"] {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Borders in the same family. */
+.admin-theme[data-admin-theme="dark"] [class*="border-ink-100"] {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* The colour mixer, which lives in a portal on <body>.
+ *
+ * It is deliberately outside .admin-theme so a panel opened on the last row of
+ * a long form is not clipped by the card it belongs to. That also puts it
+ * outside every theme rule above, so it follows the attribute the theme hook
+ * mirrors onto <body> instead. */
+.pj-picker {
+  background-color: #FFFFFF;
+  border-color: var(--color-ink-100, #E4E9E7);
+}
+
+body[data-admin-theme="dark"] .pj-picker {
+  background-color: #082A22;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+body[data-admin-theme="dark"] .pj-picker input {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #F2EEE4;
+}
+
+body[data-admin-theme="dark"] .pj-picker .text-emerald-600 {
+  color: #EAF3F0;
+}
+
+body[data-admin-theme="dark"] .pj-picker .text-ink-400 {
+  color: #8FA5A0;
+}
+
+/* ==========================================================================
+   LIQUID GLASS
+   ==========================================================================
+
+   Built from skills/liquid-glass. That skill is written for SwiftUI on Apple
+   platforms — .glassEffect(), GlassEffectContainer, .buttonStyle(.glass) —
+   none of which exist in a browser, so what is ported here is the design
+   system's RULES, not its API. Every rule below cites the one it follows.
+
+   RULE 1 — "Never apply glass to content itself (lists, tables, media, text
+   blocks). Glass is for controls and navigation only."
+
+     This panel broke that rule everywhere: one .pj-card rule gave the same
+     translucent, blurred material to the sidebar, the modals, the buttons,
+     every table, every form and every box in the Editor. When everything is
+     glass, nothing reads as floating above anything — and each blurred
+     surface costs a CABackdropLayer (three offscreen textures) to say so.
+
+     So the panel now has two materials, and which one a surface gets is
+     decided by what the surface IS:
+
+       navigation layer -> glass   sidebar, topbar, modals/sheets, controls
+       content          -> solid   cards, tables, forms, the Editor's boxes
+
+   RULE 2 — "Glass cannot sample other glass." Nothing inside a glass surface
+   is glass. A modal is glass; the fields inside it are not.
+
+   RULE 3 — Specular edges. Real glass shows the light at its EDGE, not across
+   its face. Every highlight below is an inset hairline. Nothing washes light
+   across a surface — that is what made the green look flat and cheap, and it
+   is what the deep flat ground exists to avoid.
+
+   RULE 4 — Accessibility is part of the material: "Reduced Transparency
+   increases frosting for clarity; Increased Contrast applies stark colors and
+   borders; Reduced Motion tones down animations." Handled at the foot.
+   ========================================================================== */
+
+.admin-theme {
+  /* The material, in one place. */
+  --lg-blur: 28px;
+  --lg-saturate: 130%;
+
+  /* Light theme: glass over a warm ivory ground. */
+  --lg-fill: rgba(255, 255, 255, 0.66);
+  /* The skill has two live styles: .regular ("medium transparency", for
+     toolbars and bars) and .clear ("high transparency"). A sheet needs the
+     opposite of either — it sits over the page it came from, and a form you
+     can read the table through is a form nobody can fill in. Denser. */
+  --lg-fill-dense: rgba(255, 255, 255, 0.94);
+  --lg-rim: rgba(196, 168, 93, 0.30);
+  --lg-specular: rgba(255, 255, 255, 0.85);
+  --lg-shadow: 0 20px 48px -24px rgba(14, 43, 38, 0.30);
+
+  /* Content: opaque, because content is not glass. */
+  --lg-surface: #FFFFFF;
+  --lg-surface-line: var(--color-ink-100);
+  --lg-surface-shadow: 0 12px 32px -22px rgba(14, 43, 38, 0.28);
+}
+
+.admin-theme[data-admin-theme="dark"] {
+  /* Tinted with the ground it sits on, at an alpha low enough that the blur
+     has something to do. Ramp step 700 at 0.55. */
+  --lg-fill: rgba(13, 66, 52, 0.55);
+  --lg-fill-dense: rgba(9, 44, 35, 0.94);
+  --lg-rim: rgba(216, 194, 135, 0.30);
+  --lg-specular: rgba(255, 255, 255, 0.18);
+  --lg-shadow: 0 26px 60px -22px rgba(0, 0, 0, 0.62);
+
+  /* Ramp step 800, opaque. One step off the ground, and the hairline does
+     the separating — no fill gradient, no glow. */
+  --lg-surface: #092C23;
+  --lg-surface-line: rgba(216, 194, 135, 0.14);
+  --lg-surface-shadow: 0 18px 44px -26px rgba(0, 0, 0, 0.66);
+}
+
+/* ---- Content: solid. RULE 1. -------------------------------------------
+   !important for the same reason the rule it replaces needed it: Bootstrap
+   ships .bg-white as an !important utility under the same name as Tailwind's,
+   and Card.jsx puts that class on every card. */
+.admin-theme .pj-card,
+.admin-theme .glass,
+.admin-theme .glass-strong {
+  background: linear-gradient(var(--lg-surface), var(--lg-surface)) !important;
+  border: 1px solid var(--lg-surface-line);
+  box-shadow: var(--lg-surface-shadow);
+  /* No blur. A card is not a window. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ---- The navigation layer: glass. RULE 1 + RULE 3. ---------------------- */
+.admin-theme .pj-glass-panel,
+.admin-theme .pj-sidebar-surface,
+.admin-theme .search-pill {
+  background: linear-gradient(var(--lg-fill), var(--lg-fill)) !important;
+  border: 1px solid var(--lg-rim);
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  /* The specular edge: a bright hairline along the top where the light
+     catches, a brass rim all round, and the surface falling away below.
+     Edges only — nothing crosses the face. */
+  box-shadow:
+    inset 0 1px 0 var(--lg-specular),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    var(--lg-shadow);
+}
+
+/* A sheet is glass, but it is read through, so it takes the dense fill. */
+.admin-theme .pj-glass-panel {
+  background: linear-gradient(var(--lg-fill-dense), var(--lg-fill-dense)) !important;
+}
+
+/* ---- RULE 2: glass cannot sample other glass. --------------------------
+   Anything sitting inside a glass surface is drawn solid, whatever classes it
+   carries. Without this a modal's own cards would each open a second sampling
+   region against the first, which is the "nearby glass looks inconsistent"
+   failure the skill opens with. */
+.admin-theme .pj-glass-panel .pj-card,
+.admin-theme .pj-glass-panel .glass,
+.admin-theme .pj-sidebar-surface .pj-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none;
+}
+
+/* ---- Controls: .buttonStyle(.glass) ------------------------------------
+   Secondary and ghost buttons are the navigation layer too. The primary
+   button keeps its gold fill — that is .glassProminent, "a prominent glass
+   button with full tint surface for primary actions". */
+.admin-theme button:not([data-variant="primary"]).pj-btn-glass {
+  background: linear-gradient(var(--lg-fill), var(--lg-fill));
+  border: 1px solid var(--lg-rim);
+  backdrop-filter: blur(16px) saturate(var(--lg-saturate));
+  -webkit-backdrop-filter: blur(16px) saturate(var(--lg-saturate));
+  box-shadow: inset 0 1px 0 var(--lg-specular);
+}
+
+/* ---- .interactive(): "scales on press, bouncing on release" ------------
+   The shimmer and the touch-point illumination are not portable — they need
+   the compositor's own sampling. The press response is, and it is the half
+   that tells you the control heard you. */
+.admin-theme button:active:not(:disabled),
+.admin-theme a.pj-btn:active {
+  transform: scale(0.97);
+}
+.admin-theme button:not(:disabled) {
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* ---- RULE 4: the material adapts. --------------------------------------
+
+   "Reduced Transparency: increases frosting for clarity." Not "removes the
+   blur" — the surface becomes opaque so nothing shows through it at all. */
+@media (prefers-reduced-transparency: reduce) {
+  .admin-theme .pj-glass-panel,
+  .admin-theme .pj-sidebar-surface,
+  .admin-theme .search-pill,
+  .admin-theme button.pj-btn-glass {
+    background: linear-gradient(var(--lg-surface), var(--lg-surface)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* "Increased Contrast: applies stark colors and borders." */
+@media (prefers-contrast: more) {
+  .admin-theme .pj-card,
+  .admin-theme .glass,
+  .admin-theme .pj-glass-panel,
+  .admin-theme .pj-sidebar-surface,
+  .admin-theme .search-pill {
+    border-color: var(--color-brass-500);
+    box-shadow: none;
+  }
+  .admin-theme .pj-glass-panel,
+  .admin-theme .pj-sidebar-surface,
+  .admin-theme .search-pill {
+    background: linear-gradient(var(--lg-surface), var(--lg-surface)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* "Reduced Motion: tones down animations and elastic effects." */
+@media (prefers-reduced-motion: reduce) {
+  .admin-theme button:active:not(:disabled),
+  .admin-theme a.pj-btn:active {
+    transform: none;
+  }
+  .admin-theme .glass-hover:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   DARK — THE MESH
+   ==========================================================================
+
+   Last word on the dark theme, and it is deliberately last in the file so it
+   wins on source order over everything above.
+
+   Three things were asked for and they pull against each other, so the way
+   they are reconciled matters:
+
+     "kyay light green nai"   — no light green anywhere
+     "high contrast nai"      — surfaces must not jump apart
+     "mesh gradient"          — movement across the ground
+
+   A mesh gradient normally gets its life from LIGHT stops. This one cannot
+   have any. So every stop below is a step on the green ramp between #030F0C
+   and #0C3A2E — a band about nine percent of the way up from black. Nothing
+   in the dark theme is lighter than that, panels included.
+
+   What gives it depth instead of brightness is that the stops are different
+   HUES within the same tiny lightness band: 158 degrees at one corner, 168 at
+   another. The eye reads that as a surface catching light differently across
+   its width; a photometer would say it is all the same darkness. That is the
+   whole trick, and it is why the contrast between any two points here is
+   under three percent while the ground still does not look printed.
+
+   Surfaces sit close together on purpose. The brass hairline was dropped from
+   0.26 to 0.16 for the same reason: enough to find the edge of a card, not
+   enough to be a line you look at.
+   ========================================================================== */
+
+.admin-theme[data-admin-theme="dark"] {
+  /* ---- The mesh. Six stops, all inside the dark band. ---- */
+  --mesh-ground:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(12, 58, 46, 0.60), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(7, 42, 36, 0.62), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(10, 50, 38, 0.44), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(8, 46, 35, 0.46), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(4, 22, 18, 0.42), transparent 72%),
+    linear-gradient(#051A14, #051A14);
+
+  /* The same mesh, quieter, for a content surface. A card is small, so its
+     stops are placed wider apart — a full copy of the ground's mesh inside a
+     120px box would read as a stripe. */
+  --mesh-surface:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(13, 60, 47, 0.55), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(5, 28, 22, 0.55), transparent 74%),
+    linear-gradient(#082A22, #082A22);
+
+  /* Glass keeps its blur but loses its lift. It was the lightest thing on the
+     screen; it is now inside the band with everything else. */
+  --lg-fill: rgba(9, 46, 37, 0.66);
+  --lg-fill-dense: rgba(7, 38, 30, 0.95);
+
+  /* A hairline, not a border. */
+  --lg-rim: rgba(216, 194, 135, 0.16);
+  --lg-surface-line: rgba(216, 194, 135, 0.12);
+
+  /* The specular edge was white at 0.18 — the one genuinely light thing left
+     on a glass panel. Warm and faint: it reads as the edge catching the same
+     gold as the rim, not as a strip lit from somewhere else. */
+  --lg-specular: rgba(232, 203, 146, 0.10);
+
+  --lg-shadow: 0 26px 60px -24px rgba(0, 0, 0, 0.66);
+  --lg-surface-shadow: 0 18px 44px -28px rgba(0, 0, 0, 0.70);
+}
+
+/* The ground wears the mesh. `fixed` so it stays put while the page scrolls —
+   a mesh that scrolls with the content reads as a pattern printed on the
+   page rather than as the room the page is in. */
+.admin-theme[data-admin-theme="dark"].dashboard-bg {
+  background: var(--mesh-ground);
+  background-attachment: fixed;
+}
+
+/* Behind the ground, for a rubber-band scroll past the end of a short page. */
+body:has(.admin-theme[data-admin-theme="dark"]) {
+  background-color: #051A14;
+}
+
+/* Content surfaces wear the quieter one. Still solid, still not glass —
+   RULE 1 of the Liquid Glass block above is unchanged. */
+.admin-theme[data-admin-theme="dark"] .pj-card,
+.admin-theme[data-admin-theme="dark"] .glass,
+.admin-theme[data-admin-theme="dark"] .glass-strong {
+  background: var(--mesh-surface) !important;
+  border: 1px solid var(--lg-surface-line);
+  box-shadow: var(--lg-surface-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* The login screen is outside AdminLayout and carries no theme attribute, so
+   it never reaches the rules above. Given the mesh by name. */
+.admin-theme.pj-login-bg {
+  background: var(--mesh-login, none), #051A14 !important;
+  background-attachment: fixed;
+}
+
+.admin-theme.pj-login-bg .pj-card {
+  background:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(13, 60, 47, 0.55), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(5, 28, 22, 0.55), transparent 74%),
+    linear-gradient(#082A22, #082A22) !important;
+  border-color: rgba(216, 194, 135, 0.16);
+}
+
+.admin-theme.pj-login-bg {
+  --mesh-login:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(12, 58, 46, 0.60), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(7, 42, 36, 0.62), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(10, 50, 38, 0.44), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(8, 46, 35, 0.46), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(4, 22, 18, 0.42), transparent 72%);
+}
+
+/* The dashboard's own cards (StatCard, Quick actions, Recent inquiries) are
+   rendered with `Card glass`, which drops the .pj-card class and paints the
+   surface from an INLINE style reading --glass-fill / --glass-border. Inline
+   beats a stylesheet, so those cards were still wearing the pre-mesh tokens —
+   a flat fill and a 0.26 rim, brighter than everything around them.
+   Re-pointed rather than reached into the JSX: same tokens, new material. */
+.admin-theme[data-admin-theme="dark"] {
+  --glass-fill: var(--mesh-surface);
+  --glass-border: var(--lg-surface-line);
+  --glass-border-strong: var(--lg-rim);
+  --glass-shadow: var(--lg-surface-shadow);
+}
+
+/* ---- Dither ------------------------------------------------------------
+
+   A mesh this dark and this low-contrast bands. Screens carry 8 bits per
+   channel, and the whole theme lives inside about nine of the 256 steps
+   available — so a gradient crossing two of those steps has nowhere to put
+   the values in between and draws a hard arc instead. On the login screen,
+   which is one large empty field, the arcs were plainly visible.
+
+   The fix is the one film and print have always used: add noise finer than
+   the banding and the eye integrates it back into a smooth ramp. This is a
+   140px tile of fractal turbulence at 4% — invisible as texture, decisive
+   against the bands. It is a data URI rather than a file so it cannot 404 and
+   costs no request.
+
+   It goes on TOP of the mesh, and only on the two full-page grounds. Panels
+   are small enough not to band. */
+.admin-theme[data-admin-theme="dark"] {
+  --mesh-dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+.admin-theme[data-admin-theme="dark"].dashboard-bg {
+  background: var(--mesh-dither), var(--mesh-ground);
+  background-attachment: fixed;
+}
+
+.admin-theme.pj-login-bg {
+  --mesh-dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)' opacity='0.04'/%3E%3C/svg%3E");
+  background: var(--mesh-dither), var(--mesh-login, none), #051A14 !important;
+  background-attachment: fixed;
+}
+
+/* ==========================================================================
+   DARK — DEEPER
+   ==========================================================================
+
+   The band moved down. It ran from about 5% to 14% of the way up from black;
+   it now runs from 3% to 9%, so every surface in the panel is at least 90%
+   dark. Same hue spread (158-168 degrees), same trick — the depth still comes
+   from hue rather than lightness, there is simply less lightness to spend.
+
+   Premium, in colour, is not a colour you add. It is what you take away: at
+   this depth the gold is the only chromatic event on the screen, and one
+   warm thing against a very deep, very even field is what reads as expensive.
+   So the gold gets slightly warmer and everything else gets darker.
+   ========================================================================== */
+
+.admin-theme[data-admin-theme="dark"] {
+  --mesh-ground:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(9, 46, 36, 0.62), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(5, 31, 26, 0.64), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(7, 39, 30, 0.46), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(6, 35, 27, 0.48), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(2, 12, 9, 0.46), transparent 72%),
+    linear-gradient(#03100C, #03100C);
+
+  --mesh-surface:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(9, 46, 36, 0.52), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(2, 14, 11, 0.58), transparent 74%),
+    linear-gradient(#061F19, #061F19);
+
+  --lg-fill: rgba(7, 39, 31, 0.70);
+  --lg-fill-dense: rgba(5, 28, 22, 0.96);
+
+  /* Warmer gold. #DCC68D was a pale straw; champagne carries more red and
+     reads as metal rather than as yellow — the difference between gilt and
+     paint, and the only thing on this screen with any colour in it. */
+  --color-brass-700: #E3CE9E;
+  --color-brass-600: #D3BA83;
+
+  --lg-shadow: 0 28px 64px -24px rgba(0, 0, 0, 0.74);
+  --lg-surface-shadow: 0 20px 48px -28px rgba(0, 0, 0, 0.78);
+}
+
+body:has(.admin-theme[data-admin-theme="dark"]) {
+  background-color: #03100C;
+}
+
+.admin-theme.pj-login-bg {
+  --mesh-login:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(9, 46, 36, 0.62), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(5, 31, 26, 0.64), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(7, 39, 30, 0.46), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(6, 35, 27, 0.48), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(2, 12, 9, 0.46), transparent 72%);
+  background: var(--mesh-dither), var(--mesh-login), #03100C !important;
+}
+
+.admin-theme.pj-login-bg .pj-card {
+  background:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(9, 46, 36, 0.52), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(2, 14, 11, 0.58), transparent 74%),
+    linear-gradient(#061F19, #061F19) !important;
+}
+
+/* The dark theme's gold text rule further up pins a literal #DCC68D. */
+.admin-theme[data-admin-theme="dark"] .text-brass-500,
+.admin-theme[data-admin-theme="dark"] .text-brass-600,
+.admin-theme[data-admin-theme="dark"] .text-brass-700,
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-1"],
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-2"],
+.admin-theme[data-admin-theme="dark"] [class*="text-brass-3"] {
+  color: #E3CE9E;
+}
+
+/* ==========================================================================
+   DARK — TWICE AS DEEP
+   ==========================================================================
+
+   Every value below is the previous one with its LIGHTNESS halved, hue held.
+   The band ran 3%-9% of the way up from black; it now runs about 1.5%-5%.
+
+   Halving lightness rather than subtracting a fixed amount is the point. Take
+   ten off each stop and the darkest ones hit black first, the mesh collapses
+   into a flat field, and the green goes with it. Halve them and every stop
+   keeps its ratio to its neighbours — the mesh is the same shape, drawn an
+   octave lower, and it is still recognisably green rather than black.
+
+   Hue is unchanged at ~163 degrees. At this depth that matters more, not
+   less: there are only a handful of 8-bit steps left to carry the colour, and
+   a hue that drifts here reads as black with a cast.
+
+   Text got EASIER to read, not harder — cream on a darker ground is more
+   contrast, not less. What needed watching was the surfaces, and they are
+   still found by the brass hairline, which is relatively brighter now.
+
+   SCOPE: `.admin-theme[data-admin-theme="dark"]` and `.pj-login-bg`. Nothing
+   here can reach the public website — it renders under `.web-theme`, carries
+   no theme attribute, and paints its own literal colours.
+   ========================================================================== */
+
+.admin-theme[data-admin-theme="dark"] {
+  --mesh-ground:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(4, 26, 20, 0.64), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(3, 16, 13, 0.66), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(4, 22, 16, 0.48), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(3, 18, 14, 0.50), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(1, 6, 4, 0.48), transparent 72%),
+    linear-gradient(#010806, #010806);
+
+  --mesh-surface:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(4, 26, 20, 0.54), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(1, 7, 6, 0.60), transparent 74%),
+    linear-gradient(#030F0C, #030F0C);
+
+  --lg-fill: rgba(4, 21, 16, 0.72);
+  --lg-fill-dense: rgba(3, 15, 12, 0.97);
+
+  /* Shadows do almost nothing against a ground this dark — there is nowhere
+     darker for them to go. The hairline is what separates a surface now, so
+     it comes up a little to carry the work the shadow no longer can. */
+  --lg-rim: rgba(227, 206, 158, 0.20);
+  --lg-surface-line: rgba(227, 206, 158, 0.15);
+  --lg-specular: rgba(232, 203, 146, 0.12);
+}
+
+body:has(.admin-theme[data-admin-theme="dark"]) {
+  background-color: #010806;
+}
+
+.admin-theme.pj-login-bg {
+  --mesh-login:
+    radial-gradient(ellipse 62% 48% at 14% 8%, rgba(4, 26, 20, 0.64), transparent 68%),
+    radial-gradient(ellipse 54% 44% at 88% 4%, rgba(3, 16, 13, 0.66), transparent 66%),
+    radial-gradient(ellipse 58% 50% at 74% 62%, rgba(4, 22, 16, 0.48), transparent 70%),
+    radial-gradient(ellipse 60% 46% at 18% 88%, rgba(3, 18, 14, 0.50), transparent 70%),
+    radial-gradient(ellipse 70% 56% at 52% 46%, rgba(1, 6, 4, 0.48), transparent 72%);
+  background: var(--mesh-dither), var(--mesh-login), #010806 !important;
+}
+
+.admin-theme.pj-login-bg .pj-card {
+  background:
+    radial-gradient(ellipse 80% 120% at 8% 0%, rgba(4, 26, 20, 0.54), transparent 72%),
+    radial-gradient(ellipse 90% 130% at 96% 100%, rgba(1, 7, 6, 0.60), transparent 74%),
+    linear-gradient(#030F0C, #030F0C) !important;
+  border-color: rgba(227, 206, 158, 0.20);
+}
+
+/* The login ground was never actually being painted.
+ *
+ * `.pj-login-bg` also carries Tailwind's `!bg-ink-900`, and Tailwind v4 emits
+ * its utilities inside `@layer utilities`. For !important declarations a
+ * LAYERED rule beats an unlayered one whatever the specificity — the same
+ * trap this file already documents for Bootstrap's `.bg-white`. So every
+ * background-COLOR set for this page lost, and the mesh above was compositing
+ * over `--color-ink-900` (#0A2A22) instead of over the deep ground. That is
+ * why the login screen stayed visibly lighter than the panel.
+ *
+ * The workaround is the one used for .pj-btn-danger further up: a background
+ * IMAGE. Tailwind's bg-* utilities only ever set background-color, so a
+ * two-stop gradient as the bottom layer is untouchable by them.
+ */
+.admin-theme.pj-login-bg {
+  background:
+    var(--mesh-dither),
+    var(--mesh-login),
+    linear-gradient(#010806, #010806) !important;
+  background-attachment: fixed;
+}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The admin panel is not public content.
+Disallow: /admin
+
+Sitemap: /sitemap.xml

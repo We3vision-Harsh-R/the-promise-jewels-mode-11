@@ -1,0 +1,1086 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String        @id @default(uuid())
+  name             String
+  email            String        @unique
+  password         String
+  isActive         Boolean       @default(true)
+  isOtpVerified    Boolean       @default(false)
+  otpCode          String?
+  otpExpiresAt     DateTime?
+  otpPurpose       OtpPurpose?
+  refreshTokenHash String?
+  lastLoginAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  otpAttempts      Int           @default(0)
+  role             UserRole      @default(ADMIN)
+  /// The role this account holds. Nullable on purpose: an account with no
+  /// role has no permissions, which is the right answer for one created
+  /// before its role was decided, and for every account that existed before
+  /// RBAC did.
+  roleId           String?
+  roleRef          Role?         @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  brands           brands[]
+  collections      collections[]
+  exhibitions      exhibitions[]
+  announcements    Announcement[] @relation("AnnouncementAuthor")
+  notifications    Notification[]
+  secureNotes      SecureNote[]
+
+  // Exhibition operations. Named relations because User is reachable from
+  // several of these tables at once and Prisma cannot tell them apart by
+  // type alone.
+  exhibitionLeadsAssigned  ExhibitionLead[]      @relation("LeadAssignee")
+  exhibitionLeadsCaptured  ExhibitionLead[]      @relation("LeadCapturer")
+  exhibitionCrew           ExhibitionCrew[]      @relation("CrewMember")
+  exhibitionTasks          ExhibitionTask[]      @relation("TaskOwner")
+  exhibitionDocuments      ExhibitionDocument[]  @relation("DocumentUploader")
+  exhibitionLogs           ExhibitionLog[]       @relation("LogAuthor")
+  exhibitionReconciliations ExhibitionInventory[] @relation("InventoryReconciler")
+
+  @@map("users")
+}
+
+model ActivityLog {
+  id        String   @id
+  action    String
+  module    String
+  details   String
+  userName  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model brand_images {
+  id           String   @id
+  brandId      String
+  imageUrl     String
+  altText      String?
+  caption      String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  brands       brands   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+}
+
+model brands {
+  id            String         @id
+  name          String
+  slug          String         @unique
+  description   String
+  overview      String?
+  logoUrl       String?
+  bannerUrl     String?
+  ctaTitle      String?
+  ctaButtonText String?
+  displayOrder  Int            @default(0)
+  isActive      Boolean        @default(true)
+  createdBy     String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  brand_images  brand_images[]
+  users         User           @relation(fields: [createdBy], references: [id])
+  collections   collections[]
+}
+
+model cms_pages {
+  id          String   @id
+  pageName    String   @unique
+  title       String
+  content     String
+  bannerImage String?
+  isPublished Boolean  @default(false)
+  updatedAt   DateTime
+}
+
+model collection_images {
+  id           String      @id
+  collectionId String
+  imageUrl     String
+  altText      String?
+  caption      String?
+  displayOrder Int         @default(0)
+  isThumbnail  Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  collections  collections @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+}
+
+model collections {
+  id                String              @id
+  brandId           String
+  name              String
+  slug              String              @unique
+  description       String
+  category          String?
+  bannerUrl         String?
+  specification     String?
+  ctaTitle          String?
+  ctaButtonText     String?
+  featured          Boolean             @default(false)
+  displayOrder      Int                 @default(0)
+  isActive          Boolean             @default(true)
+  createdBy         String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  collection_images collection_images[]
+  brands            brands              @relation(fields: [brandId], references: [id])
+  users             User                @relation(fields: [createdBy], references: [id])
+
+  /// Lines on a show's stock list that point at this collection.
+  exhibitionInventory ExhibitionInventory[]
+}
+
+model exhibition_images {
+  id           String      @id @default(uuid())
+  exhibitionId String
+  imageUrl     String
+  altText      String?
+  caption      String?
+  displayOrder Int         @default(0)
+  createdAt    DateTime    @default(now())
+  exhibitions  exhibitions @relation(fields: [exhibitionId], references: [id], onDelete: Cascade)
+}
+
+model exhibitions {
+  id                  String                @id @default(uuid())
+  title               String
+  slug                String                @unique
+  thumbnailUrl        String?
+  description         String
+  venue               String
+  city                String?
+  country             String?
+  startDate           DateTime
+  endDate             DateTime
+  featured            Boolean               @default(false)
+  isActive            Boolean               @default(true)
+  createdBy           String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  year                Int?
+  edition             String?
+  organiser           String?
+  audience            String?
+  hours               String?
+  whyWeExhibit        String?
+  highlights          Json?
+  venues              Json?
+  datesConfirmed      Boolean               @default(true)
+  customSections      Json?
+  exhibition_images   exhibition_images[]
+  exhibition_sections exhibition_sections[]
+  users               User                  @relation(fields: [createdBy], references: [id])
+
+  /// The operations record for this show, if one has been opened. See the
+  /// EXHIBITION OPERATIONS block at the foot of this file for why it is a
+  /// separate table and not more columns here.
+  ops                 ExhibitionOps?
+}
+
+/// One operator-defined block on a show — renders as its own headed section on
+/// the public page. Real rows rather than a Json blob so the content can be
+/// queried, ordered and cascade-deleted like everything else.
+model exhibition_sections {
+  id           String                      @id @default(uuid())
+  exhibitionId String
+  title        String
+  displayOrder Int                         @default(0)
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  fields       exhibition_section_fields[]
+  exhibitions  exhibitions                 @relation(fields: [exhibitionId], references: [id], onDelete: Cascade)
+
+  @@index([exhibitionId])
+}
+
+/// One labelled line inside a section. `value` is a String, which Prisma maps
+/// to Postgres `text`, so there is no column-level length limit — the cap in
+/// exhibition.validation.ts is the one that applies.
+model exhibition_section_fields {
+  id           String              @id @default(uuid())
+  sectionId    String
+  label        String
+  value        String
+  displayOrder Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  section      exhibition_sections @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+}
+
+model inquiries {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  company   String?
+  message   String
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+}
+
+model settings {
+  id            String   @id
+  siteName      String
+  logoUrl       String?
+  faviconUrl    String?
+  email         String?
+  phone         String?
+  address       String?
+  facebookUrl   String?
+  instagramUrl  String?
+  linkedinUrl   String?
+  youtubeUrl    String?
+  updatedAt     DateTime
+  businessHours String?
+
+  /// Whether signing in needs the emailed one-time code as a second step.
+  ///
+  /// Defaults to FALSE. The panel is useless to a locked-out administrator,
+  /// and OTP delivery depends on a mail sender that is easy to get wrong —
+  /// so the safe default is the one that cannot lock anybody out. Turn it on
+  /// from Settings once mail is known to arrive.
+  otpRequired   Boolean  @default(false)
+}
+
+model team_members {
+  id           String   @id
+  name         String
+  designation  String
+  bio          String?
+  photoUrl     String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model SeoSettings {
+  id                     String       @id @default(cuid())
+  siteName               String
+  siteUrl                String
+  defaultMetaTitle       String
+  defaultMetaDescription String
+  defaultOgImage         String?
+  robots                 RobotsPolicy @default(INDEX_FOLLOW)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@map("seo_settings")
+}
+
+model SeoPage {
+  id                 String                  @id @default(cuid())
+  slug               String                  @unique
+  entityType         SeoEntityType
+  entityId           String?
+  metaTitle          String
+  metaDescription    String
+  canonicalUrl       String?
+  robots             RobotsPolicy            @default(INDEX_FOLLOW)
+  ogTitle            String?
+  ogDescription      String?
+  ogImage            String?
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+  schemaType         SchemaType?
+  priority           Float?                  @default(0.5)
+  changeFrequency    SitemapChangeFrequency?
+  includeInSitemap   Boolean                 @default(true)
+  isIndexed          Boolean                 @default(true)
+  isPublished        Boolean                 @default(true)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  displayName        String
+  tags               SeoPageTag[]
+
+  @@map("seo_pages")
+}
+
+model SeoTag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  pages     SeoPageTag[]
+
+  @@map("seo_tags")
+}
+
+model SeoPageTag {
+  seoPageId String
+  seoTagId  String
+  seoPage   SeoPage @relation(fields: [seoPageId], references: [id], onDelete: Cascade)
+  seoTag    SeoTag  @relation(fields: [seoTagId], references: [id], onDelete: Cascade)
+
+  @@id([seoPageId, seoTagId])
+  @@map("seo_page_tags")
+}
+
+/// Uploaded image library for the site's CMS-managed sections.
+/// One row per uploaded file. Files live in the Supabase "cms" bucket;
+/// storagePath is kept so the object can be removed when the row is deleted.
+model media_assets {
+  id            String           @id @default(uuid())
+  url           String
+  storagePath   String
+  fileName      String
+  mimeType      String
+  fileSize      Int
+  createdAt     DateTime         @default(now())
+  sectionImages section_images[]
+}
+
+/// Which library image is currently published into which numbered frame of a
+/// page section. The public site reads this table, so writing/deleting a row
+/// here is what makes an image appear on or disappear from the website.
+///
+/// `slot` is the frame number the admin panel shows (1..section.slots, going
+/// clockwise from the top of the ring). It is the image's identification
+/// number: one row per frame, so replacing frame 7 never disturbs frame 8.
+/// The same library image may fill several slots, so there is deliberately no
+/// unique constraint on assetId.
+model section_images {
+  id        String       @id @default(uuid())
+  section   String
+  assetId   String
+  createdAt DateTime     @default(now())
+  slot      Int
+  updatedAt DateTime     @updatedAt
+  asset     media_assets @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([section, slot])
+  @@index([section, slot])
+}
+
+/// Editable copy for the public website, one row per overridden string.
+///
+/// Key/value rather than a column per field: which strings are editable is
+/// declared in code (page-content.constants.ts), so adding an editable
+/// heading is a code change and never a migration. A field with no row here
+/// falls back to the copy bundled with the site, which is why an empty table
+/// renders every page exactly as it shipped.
+model page_content {
+  id        String   @id @default(uuid())
+  page      String
+  section   String
+  field     String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, section, field])
+  @@index([page])
+}
+
+model blog_comments {
+  id         String     @id @default(cuid())
+  postId     String
+  name       String
+  email      String?
+  body       String
+  status     String     @default("pending")
+  createdAt  DateTime   @default(now())
+  post       blog_posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, status])
+  @@index([status, createdAt])
+}
+
+model blog_posts {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  excerpt         String?
+  content         String
+  coverUrl        String?
+  authorName      String?
+  tags            String[]        @default([])
+  status          String          @default("draft")
+  publishedAt     DateTime?
+  metaTitle       String?
+  metaDescription String?
+  ogImageUrl      String?
+  canonicalUrl    String?
+  noindex         Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  comments        blog_comments[]
+
+  @@index([slug])
+  @@index([status, publishedAt])
+}
+
+enum OtpPurpose {
+  LOGIN
+  FORGOT_PASSWORD
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+}
+
+enum SeoEntityType {
+  STATIC_PAGE
+  BRAND
+  COLLECTION
+  EXHIBITION
+  BLOG
+  PRODUCT
+  LOCATION
+}
+
+enum RobotsPolicy {
+  INDEX_FOLLOW
+  INDEX_NOFOLLOW
+  NOINDEX_FOLLOW
+  NOINDEX_NOFOLLOW
+}
+
+enum SitemapChangeFrequency {
+  ALWAYS
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  NEVER
+}
+
+enum SchemaType {
+  WEBSITE
+  ORGANIZATION
+  BRAND
+  EXHIBITION
+  COLLECTION
+  EVENT
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// ---------------------------------------------------------------------------
+// RBAC
+//
+// A role is a named bundle of permissions; a user holds exactly one. The
+// permissions themselves are rows rather than a JSON blob so that "which roles
+// can delete a brand" is a query rather than a scan, and so a permission that
+// no longer exists in the catalogue can be found and cleaned up.
+//
+// Nothing here is nullable-by-accident: a user without a role has no
+// permissions at all, which is the correct answer for an account created
+// before its role was decided.
+// ---------------------------------------------------------------------------
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+
+  /// The master role. Cannot be renamed, deleted, or stripped of permissions,
+  /// and always passes a permission check — see permissions.catalog.ts.
+  isSystem    Boolean  @default(false)
+
+  permissions RolePermission[]
+  users       User[]
+  targetedBy  AnnouncementTarget[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model RolePermission {
+  id       String @id @default(uuid())
+  roleId   String
+  /// A key from RESOURCES in permissions.catalog.ts.
+  resource String
+  /// One of ACTIONS. Stored apart from the resource so a role's grants can be
+  /// read back grouped by screen without parsing strings.
+  action   String
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, resource, action])
+  @@index([roleId])
+  @@map("role_permissions")
+}
+
+// ---------------------------------------------------------------------------
+// Declarations and the notifications they produce
+//
+// A declaration is written once and addressed to one or more roles. The
+// notification rows are fanned out at the moment it is published, rather than
+// resolved on read, for two reasons: who held a role at the time of writing is
+// the audience that was intended, and a per-user row is what gives each
+// recipient their own read state.
+// ---------------------------------------------------------------------------
+
+model Announcement {
+  id       String @id @default(uuid())
+  title    String
+  body     String
+
+  authorId String
+  author   User   @relation("AnnouncementAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  targets       AnnouncementTarget[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@map("announcements")
+}
+
+model AnnouncementTarget {
+  id             String @id @default(uuid())
+  announcementId String
+  roleId         String
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, roleId])
+  @@index([roleId])
+  @@map("announcement_targets")
+}
+
+model Notification {
+  id             String    @id @default(uuid())
+  userId         String
+  announcementId String
+  readAt         DateTime?
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, announcementId])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+/// The order sections appear in on a page, and whether each one appears at all.
+///
+/// A row per (page, section). Absent rows are not an error: a section the
+/// catalogue declares but nobody has reordered simply falls back to its
+/// declaration order and to visible. That means this table starts empty and
+/// every page renders exactly as it did before anyone touched the layout.
+/// The vault: notes and passwords the owner keeps in the panel.
+///
+/// Everything a person typed lives in `payload` as ONE sealed blob —- the
+/// title, the body, the username, the password, the kind of note it is, its
+/// tags. Nothing readable is stored beside it.
+///
+/// That is deliberate and it is stricter than it needs to be for the
+/// password alone. A column of readable titles is a map of what the vault
+/// holds: "HDFC net banking", "GST portal", "Tally licence" tells an
+/// attacker where to spend their time even if every password stays sealed.
+/// A column saying `kind = credential` says how many passwords are in here.
+/// So the only things in the clear are the ones the database itself needs
+/// to do its job: who owns the row, when it changed, and whether it is
+/// pinned. Filtering and search happen after decryption, in the API — a
+/// vault holds tens of rows, not millions.
+///
+/// See server/src/utils/secureBox.ts for the sealing, and
+/// secure-notes.service.ts for why even the Master role cannot read these.
+model SecureNote {
+  id      String @id @default(uuid())
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  /// Opaque. "v1.<iv>.<tag>.<ciphertext>", all base64 — see secureBox.ts.
+  payload String
+
+  /// In the clear because ordering needs it, and because "one of these is
+  /// pinned" tells an attacker nothing.
+  pinned Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, pinned, updatedAt])
+  @@map("secure_notes")
+}
+
+/// A section an admin designed in the panel rather than a developer in code.
+///
+/// The declared sections (page-content.constants.ts) are React components with
+/// their own animations; these are built from a short list of blocks — a
+/// heading, a paragraph, a picture, a button — and rendered by one component
+/// that reads this row. That is the trade: a custom section cannot do anything
+/// a bespoke component can, but it can be created, placed and removed without
+/// a deploy, which is the whole point.
+///
+/// `blocks` and `style` are JSON because their shape is the design itself.
+/// Columns for "the third block's letter spacing" is not a schema, it is a
+/// spreadsheet. Both are validated against a Zod schema on the way in, so what
+/// is stored is never arbitrary.
+model CustomSection {
+  id    String @id @default(uuid())
+  /// Which page it belongs to — a key from CONTENT_PAGES.
+  page  String
+  /// Its key in the arrangement. Prefixed "custom-" so a declared section and
+  /// a designed one can never collide, whatever anyone names it.
+  sectionKey String
+  label String
+  blocks Json
+  style  Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, sectionKey])
+  @@index([page])
+  @@map("custom_sections")
+}
+
+model PageSection {
+  id         String  @id @default(uuid())
+  /// A key from CONTENT_PAGES — "home", "about".
+  page       String
+  /// A section key within that page — "hero", "welcome".
+  sectionKey String
+  /// Ascending. Gaps are fine; only the relative order is read.
+  position   Int
+  isVisible  Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, sectionKey])
+  @@index([page, position])
+  @@map("page_sections")
+}
+
+// ===========================================================================
+// EXHIBITION OPERATIONS
+// ===========================================================================
+//
+// Running a show, as opposed to advertising one.
+//
+// The `exhibitions` model above is a PUBLISHING record: title, venue, dates,
+// gallery, the copy the website prints. Everything below is what the company
+// needs in order to actually attend — stall numbers, money, the buyers met at
+// the stall, the gold carried there and back.
+//
+// WHY NONE OF THIS IS A COLUMN ON `exhibitions`
+//
+// exhibition.repository.ts reads the public show with `include`, not `select`.
+// That returns EVERY column on the row. A `stallCost` or `goldWeightOut`
+// column added up there would travel straight out of the public API onto the
+// website, and nothing in the code would object — it would be a leak that
+// depends on somebody remembering to exclude a field.
+//
+// Kept in their own tables that cannot happen. The public query has no reason
+// to join them, so operational data is not "hidden from" the website; it is
+// simply not reachable from it.
+//
+// MONEY AND WEIGHT ARE Decimal, NEVER Float
+//
+// A float cannot hold 0.1 exactly. For a business weighing gold to the
+// milligram and reconciling what left against what came back, a rounding error
+// is not a cosmetic bug — it is an unexplained discrepancy in stock.
+
+enum ExhibitionStage {
+  PLANNED
+  BOOKED
+  LIVE
+  CONCLUDED
+  CANCELLED
+}
+
+enum LeadRating {
+  HOT
+  WARM
+  COLD
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
+}
+
+enum CostCategory {
+  STALL
+  TRAVEL
+  HOTEL
+  SHIPPING
+  PRINTING
+  STAFF
+  SAMPLES
+  OTHER
+}
+
+enum TaskStage {
+  TODO
+  DOING
+  DONE
+}
+
+enum AppointmentStage {
+  SCHEDULED
+  MET
+  NO_SHOW
+  CANCELLED
+}
+
+/// The operations header for one show. One row per exhibition, created on
+/// demand the first time somebody opens its Operations tab.
+model ExhibitionOps {
+  id           String      @id @default(uuid())
+  exhibitionId String      @unique
+  exhibition   exhibitions @relation(fields: [exhibitionId], references: [id], onDelete: Cascade)
+
+  stage       ExhibitionStage @default(PLANNED)
+  hall        String?
+  stallNumber String?
+  stallSize   String?
+
+  /// Setup and teardown are not the show dates. A stall is built the day
+  /// before and stripped the night after, and the team's travel is booked
+  /// around those, not around the dates printed on the website.
+  setupAt    DateTime?
+  teardownAt DateTime?
+
+  organiserName  String?
+  organiserPhone String?
+  organiserEmail String?
+
+  /// ISO 4217. Shows abroad are budgeted in their own currency.
+  currency String @default("INR")
+
+  /// What the whole show is allowed to cost. Compared against the sum of
+  /// actual costs on the report.
+  budget Decimal? @db.Decimal(14, 2)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leads        ExhibitionLead[]
+  costs        ExhibitionCost[]
+  crew         ExhibitionCrew[]
+  tasks        ExhibitionTask[]
+  documents    ExhibitionDocument[]
+  logs         ExhibitionLog[]
+  inventory    ExhibitionInventory[]
+  appointments ExhibitionAppointment[]
+  fields       ExhibitionOpsField[]
+
+  @@map("exhibition_ops")
+}
+
+/// A buyer met at the stall.
+///
+/// Deliberately NOT the `inquiries` table. That one is fed by the website's
+/// contact form — a stranger typing into a box. This is filled in by staff
+/// standing at a stall with a person in front of them, and it needs a rating,
+/// an owner and a follow-up date that a web enquiry has no use for. One table
+/// serving both would mean mostly-empty columns in two directions.
+model ExhibitionLead {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  name    String
+  company String?
+  city    String?
+  country String?
+  phone   String?
+  email   String?
+
+  /// What they were looking at. Free text on purpose — "22k bangles, light
+  /// weight" is more useful than any dropdown anyone would build.
+  interest String?
+
+  rating LeadRating @default(WARM)
+  stage  LeadStage  @default(NEW)
+
+  /// Roughly what it could be worth. An estimate typed at a stall, not a quote.
+  estimatedValue Decimal? @db.Decimal(14, 2)
+
+  assignedToId String?
+  assignedTo   User?   @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  followUpAt DateTime?
+  notes      String?
+
+  capturedById String?
+  capturedBy   User?   @relation("LeadCapturer", fields: [capturedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments ExhibitionAppointment[]
+
+  @@index([opsId, stage])
+  @@index([opsId, rating])
+  @@map("exhibition_leads")
+}
+
+/// One line of what the show cost.
+model ExhibitionCost {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  category CostCategory @default(OTHER)
+  label    String
+  vendor   String?
+
+  /// Both are kept. "We budgeted two lakh and spent two point six" is the
+  /// sentence the report exists to produce, and it needs both numbers.
+  plannedAmount Decimal? @db.Decimal(14, 2)
+  actualAmount  Decimal? @db.Decimal(14, 2)
+
+  isPaid Boolean   @default(false)
+  paidAt DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId, category])
+  @@map("exhibition_costs")
+}
+
+/// Who is going.
+///
+/// `userId` is optional because the people who man a stall are not all panel
+/// accounts — a karigar or a driver has no login and still needs to be on the
+/// roster and in the travel plan.
+model ExhibitionCrew {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation("CrewMember", fields: [userId], references: [id], onDelete: SetNull)
+
+  name  String
+  role  String?
+  phone String?
+
+  travelFrom DateTime?
+  travelTo   DateTime?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shifts ExhibitionShift[]
+
+  @@index([opsId])
+  @@map("exhibition_crew")
+}
+
+/// One person on the stall for one stretch of one day.
+model ExhibitionShift {
+  id     String         @id @default(uuid())
+  crewId String
+  crew   ExhibitionCrew @relation(fields: [crewId], references: [id], onDelete: Cascade)
+
+  onDate DateTime
+
+  /// "10:00" / "18:30". Stored as text: a shift is a wall-clock time at the
+  /// venue, and putting it in a DateTime invites a timezone conversion that
+  /// would silently move it.
+  startTime String
+  endTime   String
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([crewId, onDate])
+  @@map("exhibition_shifts")
+}
+
+/// Something that has to happen before, during or after the show.
+model ExhibitionTask {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  title  String
+  detail String?
+  stage  TaskStage @default(TODO)
+  dueAt  DateTime?
+
+  ownerId String?
+  owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  doneAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId, stage])
+  @@map("exhibition_tasks")
+}
+
+/// A file that belongs to the show — stall allotment letter, invoice, passes.
+model ExhibitionDocument {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  title   String
+  kind    String?
+  fileUrl String
+  notes   String?
+
+  uploadedById String?
+  uploadedBy   User?   @relation("DocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([opsId])
+  @@map("exhibition_documents")
+}
+
+/// What happened on a given day of the show.
+model ExhibitionLog {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  onDate DateTime
+  note   String
+
+  authorId String?
+  author   User?   @relation("LogAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId, onDate])
+  @@map("exhibition_logs")
+}
+
+/// Stock carried to the show, and what came back.
+///
+/// The whole point of this table is the difference between the two. Gold goes
+/// out, some is sold, the rest returns — and the numbers have to meet. Every
+/// weight and value is Decimal for the reason given at the top of this block.
+model ExhibitionInventory {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  itemName String
+  sku      String?
+
+  /// Optional link to a catalogue collection, so a line can say WHICH range
+  /// went without duplicating the collection's own record.
+  collectionId String?
+  collection   collections? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  /// Out
+  piecesOut      Int      @default(0)
+  grossWeightOut Decimal? @db.Decimal(12, 3)
+  netWeightOut   Decimal? @db.Decimal(12, 3)
+  valueOut       Decimal? @db.Decimal(14, 2)
+
+  /// Back. Null while the show is still running — "not counted yet" and
+  /// "counted, none came back" are different facts and must not share a value.
+  piecesBack      Int?
+  grossWeightBack Decimal? @db.Decimal(12, 3)
+  netWeightBack   Decimal? @db.Decimal(12, 3)
+  valueBack       Decimal? @db.Decimal(14, 2)
+
+  /// Set when the line has been counted back in, and by whom.
+  reconciledAt   DateTime?
+  reconciledById String?
+  reconciledBy   User?     @relation("InventoryReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId])
+  @@map("exhibition_inventory")
+}
+
+/// A buyer meeting booked into the show's diary.
+model ExhibitionAppointment {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  /// Set when the meeting came out of a lead already captured, so the two do
+  /// not become two half-records of the same person.
+  leadId String?
+  lead   ExhibitionLead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  buyerName String
+  company   String?
+  phone     String?
+
+  scheduledAt  DateTime
+  durationMins Int              @default(30)
+  stage        AppointmentStage @default(SCHEDULED)
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId, scheduledAt])
+  @@map("exhibition_appointments")
+}
+
+/// The hybrid half: anything the fixed tables above did not anticipate.
+///
+/// A label and a value, grouped and ordered, added from the panel without a
+/// developer. This is where "the electricity meter reading", "the courier
+/// docket number" or whatever next year's show needs goes.
+///
+/// It is deliberately NOT where money, weights or leads go. Those are in real
+/// tables because they have to be summed, filtered and reported on, and a
+/// label/value pair cannot be. A field here is a note you can find again, not
+/// a number the system understands.
+///
+/// Separate from `exhibition_sections`, which is the operator-defined content
+/// PUBLISHED on the website. These are internal and never leave the panel.
+model ExhibitionOpsField {
+  id    String        @id @default(uuid())
+  opsId String
+  ops   ExhibitionOps @relation(fields: [opsId], references: [id], onDelete: Cascade)
+
+  group        String @default("General")
+  label        String
+  value        String
+  displayOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opsId, group])
+  @@map("exhibition_ops_fields")
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="53" height="53" viewBox="0 0 53 53" fill="none">
+  <!-- Outer Circle -->
+  <circle cx="26.21" cy="26.21" r="25.21" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Diamond Outline -->
+  <path d="M17.8066 21.168L26.21 12.7646L34.6133 21.168L26.21 39.6553L17.8066 21.168Z" stroke="#FFBD77" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Diamond Facets -->
+  <path d="M17.8066 21.168H34.6133M26.21 12.7646V39.6553M30.4116 21.168L26.21 39.6553L22.0083 21.168" stroke="#FFBD77" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>

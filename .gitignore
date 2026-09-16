@@ -1,0 +1,49 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+build/
+
+# logs
+logs/
+*.log
+
+# environment
+#
+# Every .env* variant, not just the two that existed when this file was
+# written: a backup copy (.env.bak-prod-api) was committed once because the
+# pattern below did not match it. On a managed host these values live in the
+# panel's environment-variables screen, never in the repository.
+.env
+.env.*
+!.env.example
+
+# editor
+.vscode/
+.idea/
+
+# operating system
+.DS_Store
+Thumbs.db
+
+# prisma
+prisma/dev.db
+
+# uploads
+uploads/
+
+# coverage
+coverage/
+
+# cache
+.cache/
+
+# turbo
+.turbo/
+
+# pnpm
+.pnpm-store/
+
+# vite
+.vite/

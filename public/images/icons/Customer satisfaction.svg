@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="53" height="53" viewBox="0 0 53 53" fill="none">
+  <!-- Outer Circle -->
+  <circle cx="26.21" cy="26.21" r="25.21" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Crown -->
+  <path d="M16 11.084L22 16.126L26 9.40332L30 16.126L36 11.084L34 19.4873H18L16 11.084Z" stroke="#FFBD77" stroke-width="2" stroke-linejoin="round"></path>
+
+  <!-- Head -->
+  <circle cx="26" cy="27.05" r="5" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Shoulders -->
+  <path d="M18.647 38.815C18.647 34.1931 22.0083 32.0923 26.21 32.0923C30.4116 32.0923 33.773 34.1931 33.773 38.815" stroke="#FFBD77" stroke-width="2" stroke-linecap="round"></path>
+</svg>

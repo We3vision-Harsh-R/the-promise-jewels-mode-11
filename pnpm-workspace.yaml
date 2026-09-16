@@ -1,0 +1,33 @@
+# Lets pnpm rebuild node_modules in non-interactive runs instead of aborting.
+confirmModulesPurge: false
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true
+# Transitive dependency pins.
+#
+# qs reaches this project four ways through express, and every one of them
+# resolved to a version with the advisory below. Pinning it once here fixes all
+# four paths at the same time, which is why it is an override rather than four
+# direct dependencies.
+#
+#   GHSA-4mjr-xmp4-gh2g  qs — denial of service via attacker-controlled isBuffer
+#   qs array-limit bypass via bracket-key comma parsing
+#
+# pnpm 11 reads these from this file; the old "pnpm.overrides" block in
+# package.json is silently ignored, which is how the first attempt appeared to
+# succeed while changing nothing.
+overrides:
+  qs: ">=6.16.0"
+
+  # Both of these arrive through the Prisma CLI (@prisma/config), not through
+  # anything that touches a request. They are pinned anyway: "not currently
+  # reachable" is a fact about today's code, and the next person to import a
+  # Prisma helper should not have to re-derive it.
+  #
+  #   deepmerge-ts  — stack exhaustion on deeply recursive merges
+  #   effect        — AsyncLocalStorage context lost/contaminated
+  deepmerge-ts: ">=8.0.0"
+  effect: ">=3.20.0"

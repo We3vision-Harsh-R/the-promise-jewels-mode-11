@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="53" height="53" viewBox="0 0 53 53" fill="none">
+  <!-- Outer Circle -->
+  <circle cx="26.21" cy="26.21" r="25.21" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Left Person -->
+  <circle cx="16.9663" cy="21.168" r="3.3613" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Right Person -->
+  <circle cx="35.4536" cy="21.168" r="3.3613" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Center Person -->
+  <circle cx="26.21" cy="17.8066" r="4.2016" stroke="#FFBD77" stroke-width="2"></circle>
+
+  <!-- Left Body -->
+  <path d="M21.2084 31.252C20.1083 29.1047 18.1326 27.8906 16.9663 27.8906C15.2856 27.8906 11.9243 30.4116 11.9243 34.6133" stroke="#FFBD77" stroke-width="2" stroke-linecap="round"></path>
+
+  <!-- Right Body -->
+  <path d="M31.2117 31.252C32.3117 29.1047 34.2874 27.8906 35.4537 27.8906C37.1344 27.8906 40.4957 30.4116 40.4957 34.6133" stroke="#FFBD77" stroke-width="2" stroke-linecap="round"></path>
+
+  <!-- Center Body -->
+  <path d="M19.4873 36.294C19.4873 31.252 22.8486 27.8906 26.21 27.8906C29.5713 27.8906 32.9326 31.252 32.9326 36.294" stroke="#FFBD77" stroke-width="2" stroke-linecap="round"></path>
+</svg>

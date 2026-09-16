@@ -1,0 +1,80 @@
+/* Shared, truly global tokens (safe to keep at :root). */
+:root {
+  --sidebar-w-collapsed: 72px;
+  --topbar-h: 68px;
+}
+
+/* ---- WEB (teammate's public site) ----
+   Wrap the public site's top-level layout element with class="web-theme"
+   so these only apply there. */
+.web-theme {
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+
+  --font-primary: "Optika", sans-serif;
+  --font-secondary: "Poppins", sans-serif;
+}
+
+/* ---- ADMIN (this dashboard) ----
+   Real brand palette (teal / gold / ivory / wine), pulled from the team's
+   reference build. Applied via class="admin-theme" on the admin app's
+   root wrapper (AdminLayout + LoginPage). */
+.admin-theme {
+  /* Mirrors the @theme block in globals.css — see the ramp comment there
+     for why these are the values they are. Both have to move together. */
+  --ink-900: #0A2A22;
+  --ink-800: #123F33;
+  --ink-600: #1D332C;
+  --ink-400: #5E7570;
+  --ink-100: #E1E9E6;
+  --ink-50: #F0F5F3;
+
+  --ivory: #F6F1E7;
+  --ivory-100: #F6F1E7;
+  --ivory-200: #EFE8D9;
+
+  --brass: #C4A85D;
+  --brass-100: #F1E4C6;
+  --brass-300: #D8C287;
+  --brass-500: #C4A85D;
+  --brass-600: #AF8E52;
+  --brass-700: #6E5730; /* darkened: #8A6F3F measured 4.0:1 on white, just under AA */
+
+  --emerald: #10513F;
+  --emerald-400: #15654E;
+  --emerald-600: #0D4234;
+
+  --rose: #5B2430;
+
+  --sidebar-w: 230px;
+
+  /* Glassmorphism tokens — dashboard glass panels (sidebar, topbar pill,
+     stat cards, Inquiry Trends, Quick actions, Recent inquiries). Kept as
+     shared vars so every glass surface stays visually consistent instead
+     of each component hand-rolling its own blur/opacity/border values.
+
+     FINAL polish pass (glass reflection): layout/colors/spacing/opacity-
+     of-the-base-fill untouched from the previous round — this only adds
+     a soft reflection sheen and a touch more lift, both very subtle:
+     - --glass-fill / --glass-fill-strong: same dark-teal translucent
+       base as before, with one added top layer — a thin white sheen
+       that fades out by ~30% down the panel — so the upper portion
+       reads as light glancing off glass, while the rest of the panel
+       (and its overall darkness/translucency) is unchanged.
+     - --glass-shadow: same soft outer lift + top-edge inset highlight
+       as before, nudged slightly for a bit more "floating" depth under
+       each panel; still one soft shadow, not a heavy stack.
+     - --glass-border: unchanged, still 0.14–0.18 white range. */
+  --glass-fill:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 32%),
+    linear-gradient(160deg, rgba(8, 62, 64, 0.48) 0%, rgba(20, 84, 84, 0.34) 48%, rgba(34, 100, 100, 0.26) 100%);
+  --glass-fill-strong:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 32%),
+    linear-gradient(180deg, rgba(5, 58, 61, 0.56) 0%, rgba(18, 78, 78, 0.42) 50%, rgba(34, 100, 100, 0.34) 100%);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-blur: 22px;
+  --glass-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
