@@ -35,9 +35,14 @@
 
 import path from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 
-const root = process.cwd()
+// The project root is found from where THIS FILE lives, not from the folder the
+// scheduler happens to start it in. Hostinger's cron box starts commands in a
+// folder of its own choosing, and a script that assumed "the current folder is
+// the project" failed there before it could touch anything.
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(path.join(root, 'package.json'))
 
 function stamp() {
@@ -45,11 +50,13 @@ function stamp() {
 }
 
 async function main() {
-  require(path.join(root, 'node_modules/dotenv')).config()
+  // Does nothing if the host already supplied the variables (for example with
+  // node --env-file=...), and reads the project's own .env otherwise.
+  require(path.join(root, 'node_modules/dotenv')).config({ path: path.join(root, '.env'), quiet: true })
 
   if (!process.env.DATABASE_URL) {
     console.error(`[${stamp()}] keep-alive FAILED: DATABASE_URL is not set.`)
-    console.error('  Run this from the project root, where the .env file is.')
+    console.error(`  Looked for a .env file in ${root} and in the environment of this command.`)
     process.exit(1)
   }
 
