@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "@/components/common/Navbar.jsx";
 import SmoothScroll from "@/components/common/SmoothScroll.jsx";
 import CustomCursor from "@/components/common/CustomCursor.jsx";
 import PageTransition from "@/components/common/PageTransition.jsx";
 import { scrollToTop, settleToSection } from "@/utils/scroll.js";
+import { prefetchPages } from "@/app/routes/lazyPages.js";
+import { pingVisit } from "@/features/visitors/tracker.js";
 
 export default function ClientLayout() {
   const { pathname, hash } = useLocation();
@@ -22,6 +24,31 @@ export default function ClientLayout() {
     return settleToSection(hash.slice(1));
   }, [pathname, hash]);
 
+  // Tells the server this visitor is here — on arrival, on every page change,
+  // and every thirty seconds while the tab is in view. Only a country and a page
+  // are kept; see features/visitors/tracker.js.
+  useEffect(() => {
+    pingVisit(pathname);
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") pingVisit(pathname);
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, [pathname]);
+
+  // Once the first page has loaded, fetch the others while the browser is idle
+  // so every link after this one opens instantly.
+  useEffect(() => {
+    if (document.readyState === "complete") {
+      prefetchPages();
+      return undefined;
+    }
+
+    window.addEventListener("load", prefetchPages, { once: true });
+    return () => window.removeEventListener("load", prefetchPages);
+  }, []);
+
   return (
     <div className="web-theme">
       {/* Both are render-null and self-disable on touch / reduced-motion, so
@@ -32,7 +59,9 @@ export default function ClientLayout() {
       {/* Keyed on the path so each route mounts a fresh wrapper and replays
           the entrance, instead of the router swapping content in silently. */}
       <PageTransition key={pathname}>
-        <Outlet />
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </PageTransition>
     </div>
   );

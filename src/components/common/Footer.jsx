@@ -33,6 +33,7 @@ const NAV_LINKS = [
 // database or a failed request — so the footer never renders blank.
 const BAND = {
   tagline: "JEWELLERY MANUFACTURER & WHOLESALE",
+  copyright: "",
   logo: "",
   textColor: "#0B5B5D",
 };
@@ -166,6 +167,11 @@ export default function Footer() {
       >
         {band.tagline}
       </p>
+      {band.copyright ? (
+        <p className="mt-[8px] text-[0.8rem] tracking-[0.08em] text-[#0B5B5D]" style={{ color: band.textColor }}>
+          {band.copyright}
+        </p>
+      ) : null}
 
       {/* Social links */}
       <SocialLinks

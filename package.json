@@ -25,7 +25,8 @@
     "error:check": "tsx server/src/middleware/error.middleware.selftest.ts",
     "ops:check": "node server/src/modules/exhibition-ops/exhibition-ops.e2e.mjs",
     "security:harden": "tsx server/src/scripts/harden.ts",
-    "security:check": "tsx server/src/scripts/securityCheck.ts"
+    "security:check": "tsx server/src/scripts/securityCheck.ts",
+    "smoke:check": "tsx server/src/scripts/smokeCheck.ts"
   },
   "prisma": {
     "schema": "server/prisma/schema.prisma"
@@ -79,6 +80,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.1",
+    "geoip-country": "^5.0.202610140208",
     "gsap": "^3.15.0",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",

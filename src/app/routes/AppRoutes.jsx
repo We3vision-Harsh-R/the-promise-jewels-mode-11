@@ -2,15 +2,18 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ClientLayout from '@/layouts/MainLayout.jsx'
 import Home from '@/pages/Home/Home.jsx'
-import AboutPage from '@/pages/About/AboutPage.jsx'
-import OurBrandsPage from '@/features/brands/pages/OurBrandsPage.jsx'
-import OurCollectionPage from '@/features/collections/pages/OurCollectionPage.jsx'
-import CollectionDetailsPage from '@/features/collections/pages/CollectionDetailsPage.jsx'
-import ContactPage from '@/pages/Contact/ContactPage.jsx'
-import ExhibitionPage from '@/features/exhibitions/pages/ExhibitionPage.jsx'
-import ExhibitionDetailPage from '@/features/exhibitions/pages/ExhibitionDetailPage.jsx'
-import BlogListPage from '@/features/blog/pages/BlogListPage.jsx'
-import BlogPostPage from '@/features/blog/pages/BlogPostPage.jsx'
+import {
+  AboutPage,
+  OurBrandsPage,
+  OurCollectionPage,
+  CollectionDetailsPage,
+  ContactPage,
+  ExhibitionPage,
+  ExhibitionDetailPage,
+  BlogListPage,
+  BlogPostPage,
+  NotFoundPage,
+} from '@/app/routes/lazyPages.js'
 
 // The admin panel is loaded on demand, not with the website.
 //
@@ -43,6 +46,8 @@ export default function AppRoutes() {
             slug on the post record is what appears here. */}
         <Route path="blog" element={<BlogListPage />} />
         <Route path="blog/:slug" element={<BlogPostPage />} />
+        {/* Anything else on the website. */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route
         path="/admin/*"

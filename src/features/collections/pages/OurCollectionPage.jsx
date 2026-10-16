@@ -25,6 +25,14 @@ const HERO = {
   ctaLabel: "Browse Collections",
 }
 
+// The closing panel's words. Editable under Admin > Editor > Collections page.
+const CTA = {
+  eyebrow: "Explore Our Collections",
+  title: "Explore Collections",
+  subtitle: "Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries.",
+  ctaLabel: "Get Started",
+};
+
 /**
  * Public "Our Collection" page (route: /our-collection).
  *
@@ -48,6 +56,7 @@ export default function OurCollectionPage() {
   useSeoMeta("our-collection");
 
   const navigate = useNavigate();
+  const cta = useSectionContent("collections", "cta", CTA);
   const { social } = usePublicSettings();
   const { brands } = usePublicBrands();
   const { collections } = usePublicCollections();
@@ -173,10 +182,10 @@ export default function OurCollectionPage() {
     inquiry: () => <InquiryForm id="inquiry" />,
     cta: () => (
       <PageHeroCircle
-        eyebrow="Explore Our Collections"
-        title="Explore Collections"
-        subtitle="Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries."
-        ctaText="Get Started"
+        eyebrow={cta.eyebrow}
+        title={cta.title}
+        subtitle={cta.subtitle}
+        ctaText={cta.ctaLabel}
         onCtaClick={() => navigate("/contact")}
         showTicker={false}
       />

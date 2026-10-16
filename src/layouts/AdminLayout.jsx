@@ -19,6 +19,7 @@ const TITLES = {
   '/admin/footer': ['Footer', 'The footer shown at the bottom of every page'],
   '/admin/blog': ['Blog', 'Posts, comments and the journal page'],
   '/admin/seo': ['SEO', 'Per-page meta title, description & OG image'],
+  '/admin/visitors': ['Visitors', 'Who is on the website, from which country, and on which page'],
   '/admin/settings': ['Settings', 'Site settings, contact details & password'],
   '/admin/users': ['Users', 'Who may sign in, and the role each of them holds'],
   '/admin/roles': ['Roles', 'What each role may see and change'],

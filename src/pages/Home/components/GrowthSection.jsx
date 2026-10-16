@@ -114,8 +114,10 @@ const CIRCLE_COMPONENT_VARS =
   "max-[430px]:[--outer-card-w:2rem] " +
   "max-[430px]:[--outer-card-h:2.3rem]";
 
-export default function GrowthSection() {
-  const text = useSectionContent("home", "growth", GROWTH_TEXT);
+// `page` picks whose copy the band shows. Home, Brands and Blog share the Home
+// copy (their Editor tabs say so); About keeps its own and passes page="about".
+export default function GrowthSection({ page = "home" } = {}) {
+  const text = useSectionContent(page, "growth", GROWTH_TEXT);
   const sectionRef = useRef(null);
   const outerRef = useRef(null);
   const outerWrapperRef = useRef(null);

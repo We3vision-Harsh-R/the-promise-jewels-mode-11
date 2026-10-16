@@ -8,6 +8,7 @@ import BrandsPage from '@/features/brands/pages/BrandsPage.jsx'
 import ExhibitionsPage from '@/features/exhibitions/pages/ExhibitionsPage.jsx'
 import InquiriesPage from '@/features/inquiries/pages/InquiriesPage.jsx'
 import SeoPage from '@/features/seo/pages/SeoPage.jsx'
+import VisitorsPage from '@/features/visitors/pages/VisitorsPage.jsx'
 import SettingsPage from '@/features/settings/pages/SettingsPage.jsx'
 import EditorPage from '@/features/page-content/pages/EditorPage.jsx'
 import SectionDesignerPage from '@/features/page-content/pages/SectionDesignerPage.jsx'
@@ -156,6 +157,14 @@ export default function AdminRoutes() {
           </RequirePermission>
           }
         />
+        <Route
+          path="visitors"
+          element={
+          <RequirePermission resource="visitors">
+            <VisitorsPage />
+          </RequirePermission>
+          }
+        />
         {/* System */}
         <Route
           path="users"
@@ -183,8 +192,11 @@ export default function AdminRoutes() {
         />
       </Route>
 
-      <Route index element={<Navigate to="dashboard" replace />} />
-      <Route path="*" element={<Navigate to="dashboard" replace />} />
+      {/* Absolute on purpose: a relative "dashboard" resolved against the unknown
+          address and redirected to /admin/<unknown>/dashboard, then again from
+          there, forever. */}
+      <Route index element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   )
 }

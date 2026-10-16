@@ -11,6 +11,7 @@ import ExhibitionFaq from "@/features/exhibitions/components/ExhibitionFaq.jsx";
 import ExhibitionSchema from "@/features/exhibitions/components/ExhibitionSchema.jsx";
 import { EXHIBITIONS, sortForDisplay } from "@/features/exhibitions/data/exhibitions.js";
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
+import { typeStyle } from '@/features/page-content/typeStyle.js'
 import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
 import PageSections from "@/features/page-content/PageSections.jsx";
 
@@ -65,6 +66,22 @@ const FAQS = [
   },
 ];
 
+// Everything the two copy bands below say. Editable under Admin > Editor >
+// Exhibitions page; these are the words they shipped with.
+const CTA = {
+  eyebrow: "Plan Your Visit",
+  title: "Tell us which show you're attending, and we'll hold a slot.",
+  text: "Share your requirements ahead of time and our team will have the relevant collections ready when you arrive at the stall.",
+  buttonLabel: "Book a meeting",
+};
+
+const FAQ_TEXT = {
+  eyebrow: "Before You Visit",
+  headingLight: "Frequently asked",
+  headingBold: "questions",
+  ...Object.fromEntries(FAQS.flatMap((faq, i) => [[`items.${i + 1}.question`, faq.question], [`items.${i + 1}.answer`, faq.answer]])),
+};
+
 /**
  * /Exhibition — the page the "Exhibition Highlights" navbar link points at.
  *
@@ -83,6 +100,15 @@ export default function ExhibitionPage() {
   // exactly what the page shipped with.
   const hero = useSectionContent('exhibitions', 'hero', HERO)
   const heroRing = useMemo(() => ringFrom(hero), [hero])
+  const cta = useSectionContent('exhibitions', 'cta', CTA)
+  const faqText = useSectionContent('exhibitions', 'faq', FAQ_TEXT)
+  const faqs = useMemo(
+    () => FAQS.map((faq, i) => ({
+      question: faqText[`items.${i + 1}.question`] || faq.question,
+      answer: faqText[`items.${i + 1}.answer`] || faq.answer,
+    })),
+    [faqText],
+  )
 
   // Loaded through the same service the admin panel writes to, so anything
   // edited under /admin/exhibitions appears here. EXHIBITIONS is the seed the
@@ -143,15 +169,14 @@ export default function ExhibitionPage() {
             <span className="mb-[12px] flex items-center gap-[12px]">
               <span className="h-px w-[30px] bg-[#C9A15A]" />
               <span className="font-ticker text-[0.66rem] max-[479px]:text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-[#E8CB92]">
-                Plan Your Visit
+                {cta.eyebrow}
               </span>
             </span>
             <h2 className="m-0 max-w-[560px] font-ticker text-[1.9rem] font-medium leading-[1.25] text-white max-[479px]:text-[1.4rem]">
-              Tell us which show you're attending, and we'll hold a slot.
+              {cta.title}
             </h2>
             <p className="mt-[14px] max-w-[560px] text-[0.96rem] leading-[1.7] text-white/75 max-[479px]:text-[0.9rem]">
-              Share your requirements ahead of time and our team will have the
-              relevant collections ready when you arrive at the stall.
+              {cta.text}
             </p>
           </div>
 
@@ -159,12 +184,12 @@ export default function ExhibitionPage() {
             to="/contact"
             className="shrink-0 rounded-full border-[1px] border-[#C9A15A] bg-[#C9A15A] px-[32px] py-[15px] font-ticker text-[0.95rem] font-semibold text-white no-underline shadow-[0_14px_30px_rgba(201,161,90,0.35)] [transition:box-shadow_0.45s_ease,translate_0.45s_cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_20px_38px_rgba(201,161,90,0.45)]"
           >
-            Book a meeting
+            {cta.buttonLabel}
           </Link>
         </div>
       </section>
     ),
-    faq: () => <ExhibitionFaq faqs={FAQS} />,
+    faq: () => <ExhibitionFaq faqs={faqs} eyebrow={faqText.eyebrow} headingLight={faqText.headingLight} headingBold={faqText.headingBold} lightStyle={typeStyle(faqText, 'headingLight')} boldStyle={typeStyle(faqText, 'headingBold')} />,
     inquiry: () => <InquiryForm id="inquiry" />,
   };
 
@@ -172,7 +197,7 @@ export default function ExhibitionPage() {
     <>
       {/* Structured data for the shows. Not a band on the page — it is markup
           for search engines, so it is not part of the arrangement. */}
-      <ExhibitionSchema exhibitions={ordered} faqs={FAQS} />
+      <ExhibitionSchema exhibitions={ordered} faqs={faqs} />
 
       <PageSections page="exhibitions" sections={sections} />
       <Footer />

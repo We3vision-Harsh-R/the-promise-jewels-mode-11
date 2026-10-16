@@ -18,6 +18,7 @@ import exhibitionOpsRoutes from "../modules/exhibition-ops/exhibition-ops.routes
 import blogRoutes from "../modules/blog/blog.routes.js";
 import rbacRoutes from "../modules/rbac/rbac.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
+import visitorRoutes from "../modules/visitors/visitor.routes.js";
 
 const router = Router();
 //public routes
@@ -55,4 +56,6 @@ router.use("/blog", blogRoutes);
 router.use("/rbac", rbacRoutes);
 // Admin accounts.
 router.use("/users", userRoutes);
+// Who is on the website. POST /ping is public; the reads are admin-only.
+router.use("/visitors", visitorRoutes);
 export default router;

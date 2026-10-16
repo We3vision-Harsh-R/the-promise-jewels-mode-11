@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import SectionHeading from "@/components/common/SectionHeading.jsx";
 import usePublicSettings from "@/features/settings/hooks/usePublicSettings.js";
+import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
+import { typeStyle } from "@/features/page-content/typeStyle.js";
 import usePublicCollections from "@/features/collections/hooks/usePublicCollections.js";
 import { createInquiry } from "@/features/inquiries/inquiry.api.js";
 import { classNames } from "@/utils/helpers.js";
@@ -20,6 +22,36 @@ const DEFAULT_COLLECTIONS = [
   "Bridal Sets",
   "Chains",
 ];
+
+// What the form says. Editable under Admin > Editor > Enquiry form; these are the
+// words it shipped with and the fallback when nothing has been saved.
+const FORM_TEXT = {
+  panelImage: "/images/collection/image_366.png",
+  headingLight: "Let's Discuss Your",
+  headingBold: "Jewelry Requirements",
+  panelTitle: "Business Inquiry",
+  phoneLabel: "Phone",
+  emailLabel: "Email",
+  locationLabel: "Location",
+  hoursLabel: "Business Hours",
+  nameLabel: "Full Name",
+  emailFieldLabel: "Email Address",
+  companyLabel: "Company Name",
+  phoneFieldLabel: "Phone Number",
+  collectionLabel: "Selected Collection",
+  messageLabel: "Your Message",
+  namePlaceholder: "Name",
+  emailPlaceholder: "Email Address",
+  companyPlaceholder: "Your Company",
+  phonePlaceholder: "Your Phone Number",
+  noCollectionLabel: "No specific collection",
+  messagePlaceholder: "Tell us about your jewellery requirements, quantity, customization needs, and timeline.",
+  submitLabel: "Send Business Inquiry",
+  submittingLabel: "Sending inquiry...",
+  successTitle: "Thank you, {name}!",
+  successText: "Your inquiry has been received. Our team will get back to you shortly at",
+  againLabel: "Send another inquiry",
+};
 
 // Left-panel photo (teal "Business Inquiry" card).
 const PANEL_IMAGE = "/images/collection/image_366.png";
@@ -213,6 +245,7 @@ export default function InquiryForm({
   defaultCollection,
 }) {
   const { contact } = usePublicSettings();
+  const t = useSectionContent("enquiry", "form", FORM_TEXT);
   const { collections: liveCollections } = usePublicCollections();
 
   // An explicit prop wins; otherwise the live names, falling back to the
@@ -321,7 +354,7 @@ export default function InquiryForm({
       className="w-full bg-white px-[8%] pt-[30px] pb-[90px] max-[991px]:pb-[70px] max-[479px]:px-[6%]"
     >
       <div className="text-center">
-        <SectionHeading light="Let's Discuss Your" bold="Jewelry Requirements" className="text-center" />
+        <SectionHeading light={t.headingLight} bold={t.headingBold} lightStyle={typeStyle(t, "headingLight")} boldStyle={typeStyle(t, "headingBold")} className="text-center" />
       </div>
 
       <div
@@ -336,7 +369,7 @@ export default function InquiryForm({
 <div className="relative overflow-hidden rounded-[40px] w-full min-h-[420px] max-[991px]:min-h-[300px] shadow-[0_24px_60px_-32px_rgba(0,0,0,0.28)] bg-black">
 
   <img
-    src={PANEL_IMAGE}
+    src={t.panelImage || PANEL_IMAGE}
     alt="Business inquiry"
     loading="lazy"
     className="absolute inset-0 h-full w-full object-cover object-center"
@@ -352,7 +385,7 @@ export default function InquiryForm({
   <div className="relative z-[2] flex h-full flex-col justify-end p-[34px] text-white max-[479px]:p-[24px]">
             <span className="mb-[12px] block h-px w-[34px] bg-[#C9A15A]" />
             <h3 className="m-0 mb-[26px] font-ticker text-[1.9rem] font-semibold max-[479px]:text-[1.4rem] max-[479px]:mb-[14px]">
-              Business Inquiry
+              {t.panelTitle}
             </h3>
 
             <ul className="m-0 flex list-none flex-col gap-[20px] p-0 max-[479px]:gap-[14px]">
@@ -361,7 +394,7 @@ export default function InquiryForm({
                   <PhoneIcon />
                 </span>
                 <span>
-                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">Phone</span>
+                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">{t.phoneLabel}</span>
                   <span className="block text-[0.98rem] font-ticker max-[479px]:text-[0.85rem]">{contact.phone}</span>
                 </span>
               </li>
@@ -370,7 +403,7 @@ export default function InquiryForm({
                   <MailIcon />
                 </span>
                 <span>
-                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">Email</span>
+                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">{t.emailLabel}</span>
                   <span className="block break-all text-[0.98rem] font-ticker max-[479px]:text-[0.8rem] max-[479px]:leading-[1.3]">{contact.email}</span>
                 </span>
               </li>
@@ -379,7 +412,7 @@ export default function InquiryForm({
                   <LocationIcon />
                 </span>
                 <span>
-                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">Location</span>
+                  <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">{t.locationLabel}</span>
                   <span className="block text-[0.98rem] leading-[1.5] font-ticker max-[479px]:text-[0.8rem] max-[479px]:leading-[1.35]">{contact.address}</span>
                 </span>
               </li>
@@ -389,7 +422,7 @@ export default function InquiryForm({
                     <ClockIcon />
                   </span>
                   <span>
-                    <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">Business Hours</span>
+                    <span className="block text-[0.66rem] max-[479px]:text-[0.7rem] uppercase tracking-[0.24em] text-[#E8CB92]">{t.hoursLabel}</span>
                     {contact.hours.map((line) => (
                       <span key={line} className="block text-[0.98rem] leading-[1.5] font-ticker max-[479px]:text-[0.8rem] max-[479px]:leading-[1.35]">
                         {line}
@@ -410,10 +443,10 @@ export default function InquiryForm({
                 <CheckIcon />
               </span>
               <h3 className="m-0 mb-[10px] font-ticker text-[1.6rem] font-semibold text-[#0B5B5D]">
-                Thank you, {form.name.split(" ")[0] || "there"}!
+                {t.successTitle.replace("{name}", form.name.split(" ")[0] || "there")}
               </h3>
               <p className="m-0 max-w-[420px] text-[1rem] leading-[1.6] text-[#7E9694] font-ticker">
-                Your inquiry has been received. Our team will get back to you shortly at{" "}
+                {t.successText}{" "}
                 <strong className="text-[#0B5B5D]">{form.email}</strong>.
               </p>
               <button
@@ -421,58 +454,58 @@ export default function InquiryForm({
                 onClick={resetForm}
                 className="mt-[28px] rounded-full border-[1px] border-[#0B5B5D] bg-transparent px-[30px] py-[13px] text-[0.95rem] font-semibold text-[#0B5B5D] transition-colors hover:bg-[#0B5B5D] hover:text-white"
               >
-                Send another inquiry
+                {t.againLabel}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-2 gap-[18px] max-[639px]:grid-cols-1">
-                <Field label="Full Name" required error={errors.name}>
+                <Field label={t.nameLabel} required error={errors.name}>
                   <IconInput icon={<UserFieldIcon />}>
                     <input
                       type="text"
                       value={form.name}
                       onChange={update("name")}
-                      placeholder="Name"
+                      placeholder={t.namePlaceholder}
                       {...fieldProps("name", Boolean(errors.name))}
                       className={classNames(inputBase, "pl-[40px]")}
                     />
                   </IconInput>
                 </Field>
 
-                <Field label="Email Address" required error={errors.email}>
+                <Field label={t.emailFieldLabel} required error={errors.email}>
                   <IconInput icon={<MailFieldIcon />}>
                     <input
                       type="email"
                       value={form.email}
                       onChange={update("email")}
-                      placeholder="Email Address"
+                      placeholder={t.emailPlaceholder}
                       {...fieldProps("email", Boolean(errors.email))}
                       className={classNames(inputBase, "pl-[40px]")}
                     />
                   </IconInput>
                 </Field>
 
-                <Field label="Company Name">
+                <Field label={t.companyLabel}>
                   <IconInput icon={<CompanyFieldIcon />}>
                     <input
                       type="text"
                       value={form.company}
                       onChange={update("company")}
-                      placeholder="Your Company"
+                      placeholder={t.companyPlaceholder}
                       {...fieldProps("company", false)}
                       className={classNames(inputBase, "pl-[40px]")}
                     />
                   </IconInput>
                 </Field>
 
-                <Field label="Phone Number" required error={errors.phone}>
+                <Field label={t.phoneFieldLabel} required error={errors.phone}>
                   <IconInput icon={<PhoneFieldIcon />}>
                     <input
                       type="tel"
                       value={form.phone}
                       onChange={update("phone")}
-                      placeholder="Your Phone Number"
+                      placeholder={t.phonePlaceholder}
                       {...fieldProps("phone", Boolean(errors.phone))}
                       className={classNames(inputBase, "pl-[40px]")}
                     />
@@ -480,7 +513,7 @@ export default function InquiryForm({
                 </Field>
 
                 <div className="col-span-2 max-[639px]:col-span-1">
-                  <Field label="Selected Collection">
+                  <Field label={t.collectionLabel}>
                     <IconInput icon={<GemFieldIcon />}>
                       <div className="relative">
                         <select
@@ -489,7 +522,7 @@ export default function InquiryForm({
                           {...fieldProps("collection", false)}
                           className={classNames(inputBase, "appearance-none pl-[40px] pr-[42px] cursor-pointer")}
                         >
-                          <option value="">No specific collection</option>
+                          <option value="">{t.noCollectionLabel}</option>
                           {collections.map((c) => (
                             <option key={c} value={c}>
                               {c}
@@ -507,13 +540,13 @@ export default function InquiryForm({
                 </div>
 
                 <div className="col-span-2 max-[639px]:col-span-1">
-                  <Field label="Your Message" required error={errors.message}>
+                  <Field label={t.messageLabel} required error={errors.message}>
                     <IconInput icon={<PencilFieldIcon />} iconTop>
                       <textarea
                         rows={4}
                         value={form.message}
                         onChange={update("message")}
-                        placeholder="Tell us about your jewellery requirements, quantity, customization needs, and timeline."
+                        placeholder={t.messagePlaceholder}
                         {...fieldProps("message", Boolean(errors.message))}
                         className={classNames(inputBase, "pl-[40px]", "resize-y")}
                       />
@@ -533,7 +566,7 @@ export default function InquiryForm({
                 disabled={submitting}
                 className="mt-[24px] inline-flex items-center gap-[12px] rounded-full border-0 bg-gradient-to-b from-[#01383B] to-[#286F6F] px-[34px] py-[15px] text-[0.98rem] font-semibold text-white cursor-pointer shadow-[0_14px_30px_-10px_rgba(1,56,59,0.55)] [transition:box-shadow_0.45s_ease,translate_0.45s_cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[3px] hover:shadow-[0_20px_38px_-10px_rgba(1,56,59,0.62)] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {submitting ? "Sending inquiry..." : "Send Business Inquiry"}
+                {submitting ? t.submittingLabel : t.submitLabel}
                 <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-gradient-to-b from-[#E8B85C] to-[#C9922E] text-white">
                   <ArrowIcon />
                 </span>

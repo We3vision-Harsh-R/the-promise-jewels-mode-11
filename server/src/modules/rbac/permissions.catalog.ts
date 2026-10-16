@@ -166,6 +166,15 @@ export const RESOURCES: ResourceDefinition[] = [
     description: "Per-page meta titles, descriptions and sharing images.",
     actions: ["view", "edit"],
   },
+  {
+    key: "visitors",
+    label: "Visitors",
+    path: "/admin/visitors",
+    group: "Marketing",
+    description:
+      "Who is on the website right now, which countries they come from and which pages they read. Shows a country and a page per visit, never a name or an address.",
+    actions: ["view"],
+  },
 
   {
     key: "settings",

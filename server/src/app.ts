@@ -14,6 +14,7 @@ import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
 import { normaliseQuery } from "./middleware/validation.middleware.js";
 import { EMBED_HOSTS } from "./modules/blog/blog.sanitize.js";
 import routes from "./routes/index.js";
+import { publicCache } from "./middleware/publicCache.middleware.js";
 
 const app = express();
 
@@ -146,8 +147,15 @@ app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 app.use(
   express.static("public", {
     dotfiles: "deny",
-    setHeaders(res) {
-      res.setHeader("Cache-Control", "public, max-age=86400, must-revalidate");
+    setHeaders(res, filePath) {
+      // Typefaces are never swapped under the same name, so they are kept for a
+      // month — the first screen is set in them and they should not be asked
+      // for again. Everything else keeps the one-day rule above.
+      const isFont = /[\\/]fonts[\\/]/.test(filePath);
+      res.setHeader(
+        "Cache-Control",
+        isFont ? "public, max-age=2592000, immutable" : "public, max-age=86400, must-revalidate",
+      );
     },
   }),
 );
@@ -181,6 +189,10 @@ app.use("/api", normaliseQuery);
 // came from. Mounted after cookieParser (it reads nothing from cookies, but
 // order keeps the chain readable) and before the routes.
 app.use("/api", csrfProtection);
+
+// Answers the website's read-only calls from memory and empties that memory
+// whenever the admin panel saves something — see publicCache.middleware.ts.
+app.use("/api/v1", publicCache);
 
 // API Routes
 app.use("/api/v1", routes);

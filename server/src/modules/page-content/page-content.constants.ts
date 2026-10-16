@@ -394,6 +394,17 @@ const LONG = 400;
 
 
 /**
+ * One piece of copy with its own font, size, weight and spacing controls.
+ *
+ * withTypography does this for a whole page; this is for the few headings on the
+ * pages that are not wrapped, where every control offered has to be one the
+ * component really reads.
+ */
+function typed(field: ContentField): ContentField[] {
+  return [field, ...face(field.key, field.label, field.group), ...style(field.key, field.label, field.group)];
+}
+
+/**
  * Puts the typography controls around each piece of copy.
  *
  * The alternative was writing face()/style() out by hand beside all 42 text
@@ -996,6 +1007,8 @@ function inquirySection(
 
 // --- About page -----------------------------------------------------------
 
+const HOME_GROWTH: ContentSection = HOME_SECTIONS.find((section) => section.key === "growth")!;
+
 const ABOUT_SECTIONS: ContentSection[] = [
   {
     key: "hero",
@@ -1092,53 +1105,15 @@ const ABOUT_SECTIONS: ContentSection[] = [
       colour("captionColor", "Captions", "#2F6B6B"),
     ],
   },
+  // The About page's closing band is the same component as the Home page's, so
+  // it declares the SAME fields with the SAME defaults — a different default
+  // here would override what the component ships with the first time the page
+  // loaded, and the band would change without anyone touching it. Its values
+  // are stored separately (page "about"), so editing one does not edit the other.
   {
-    key: "growth",
-    label: "Let's Drive Growth",
+    ...HOME_GROWTH,
     description:
       "The closing band. This page keeps its own copy, so editing it here does not change the same band on the Home page.",
-    fields: [
-      { key: "eyebrow", label: "Eyebrow", type: "text", default: "JEWELLERY MANUFACTURER & WHOLESALER", max: MEDIUM },
-      tint("eyebrow", "Eyebrow", "#0B5B5D"),
-      { key: "title", label: "Title", type: "text", default: "Let's Drive Growth", max: MEDIUM },
-      tint("title", "Title", "#0B5B5D"),
-      { key: "highlight", label: "Highlighted words", type: "text", default: "Growth", max: SHORT },
-      tint("highlight", "Highlighted words", "#C9A15A"),
-      {
-        key: "subtitle",
-        label: "Paragraph",
-        type: "textarea",
-        default:
-          "From concept to craftsmanship, Promise Jewels partners with retailers and wholesalers to build collections that sell.",
-        max: LONG,
-      },
-      tint("subtitle", "Paragraph", "#0B5B5D"),
-      { key: "ctaLabel", label: "Button label", type: "text", default: "Get Started", max: SHORT },
-      tint("ctaLabel", "Button label", "#FFFFFF"),
-      // The button's own fill, not the label's — left as a pair of its own so
-      // it is not mistaken for the colour of the words on it.
-      colour("ctaBgColor", "Button background — colour (top)", "#01383B"),
-      colour("ctaBgColorTo", "Button background — colour (bottom)", "#286F6F"),
-      picture("img.1", "Frame 1", "/images/jewellery/image_20_1.webp", "Rotating photographs", "Square images look best — they are masked into rounded tiles."),
-      picture("img.2", "Frame 2", "/images/jewellery/image_22.webp", "Rotating photographs"),
-      picture("img.3", "Frame 3", "/images/jewellery/image_56.webp", "Rotating photographs"),
-      picture("img.4", "Frame 4", "/images/jewellery/image_77.webp", "Rotating photographs"),
-      picture("img.5", "Frame 5", "/images/jewellery/image_78.webp", "Rotating photographs"),
-      picture("img.6", "Frame 6", "/images/jewellery/image_79.webp", "Rotating photographs"),
-      picture("img.7", "Frame 7", "/images/jewellery/image_80.webp", "Rotating photographs"),
-      picture("img.8", "Frame 8", "/images/jewellery/image_81.webp", "Rotating photographs"),
-      picture("img.9", "Frame 9", "/images/jewellery/image_82.webp", "Rotating photographs"),
-      picture("img.10", "Frame 10", "/images/jewellery/image_83.webp", "Rotating photographs"),
-      picture("img.11", "Frame 11", "/images/jewellery/image_84.webp", "Rotating photographs"),
-      picture("img.12", "Frame 12", "/images/jewellery/image_86.webp", "Rotating photographs"),
-      picture("img.13", "Frame 13", "/images/jewellery/image_89.webp", "Rotating photographs"),
-      picture("img.14", "Frame 14", "/images/jewellery/image_90.webp", "Rotating photographs"),
-      picture("img.15", "Frame 15", "/images/jewellery/image_91.webp", "Rotating photographs"),
-      picture("img.16", "Frame 16", "/images/jewellery/image_92.webp", "Rotating photographs"),
-      picture("img.17", "Frame 17", "/images/jewellery/image_93.webp", "Rotating photographs"),
-      picture("img.18", "Frame 18", "/images/jewellery/image_94.webp", "Rotating photographs"),
-
-    ],
   },
 ];
 
@@ -1193,26 +1168,34 @@ const COLLECTIONS_SECTIONS: ContentSection[] = [
   inquirySection(
     "listing",
     "The collections themselves",
-    "Each collection is a record with its own images, description and page. They are managed on their own screen rather than duplicated here.",
+    "Each collection is a record with its own images, description and page — managed on its own screen. Only the heading above the grid is edited here.",
     { label: "Open Collections", path: "/admin/collections" },
     [
-      { key: "heading", label: "Section heading", type: "text", default: "Our Collections", max: MEDIUM },
-      {
-        key: "intro",
-        label: "Introduction above the grid",
-        type: "textarea",
-        default: "Explore the ranges we design and manufacture.",
-        max: LONG,
-      },
-      colour("headingColor", "Section heading", "#01383B", "Colours"),
-      colour("introColor", "Introduction", "#2F6B6B", "Colours"),
+      ...typed({ key: "headingLight", label: "Heading — first word", type: "text", default: "Collection", max: MEDIUM }),
+      ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "Categories", max: MEDIUM }),
     ],
   ),
   structural("inquiry", "Enquiry form", "The enquiry form near the foot of the page.", {
     label: "Read enquiries under Inquiries",
     path: "/admin/inquiries",
   }),
-  structural("cta", "Closing panel", "The second spinning-ring panel that closes the page."),
+  {
+    key: "cta",
+    label: "Closing panel",
+    description: "The second spinning-ring panel that closes the page.",
+    fields: [
+      { key: "eyebrow", label: "Eyebrow", type: "text", default: "Explore Our Collections", max: MEDIUM },
+      { key: "title", label: "Title", type: "text", default: "Explore Collections", max: MEDIUM },
+      {
+        key: "subtitle",
+        label: "Paragraph",
+        type: "textarea",
+        default: "Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries.",
+        max: LONG,
+      },
+      { key: "ctaLabel", label: "Button label", type: "text", default: "Get Started", max: SHORT },
+    ],
+  },
 ];
 
 const BRANDS_SECTIONS: ContentSection[] = [
@@ -1228,23 +1211,11 @@ const BRANDS_SECTIONS: ContentSection[] = [
       ctaLabel: "Meet the Brands",
     }),
   },
-  inquirySection(
+  structural(
     "listing",
     "The brands themselves",
-    "Each brand is a record with its own logo, description and page — managed on its own screen.",
+    "Each brand is a record with its own logo, photographs and words — managed on its own screen.",
     { label: "Open Brands", path: "/admin/brands" },
-    [
-      { key: "heading", label: "Section heading", type: "text", default: "Our Brands", max: MEDIUM },
-      {
-        key: "intro",
-        label: "Introduction above the grid",
-        type: "textarea",
-        default: "The labels we manufacture for.",
-        max: LONG,
-      },
-      colour("headingColor", "Section heading", "#01383B", "Colours"),
-      colour("introColor", "Introduction", "#2F6B6B", "Colours"),
-    ],
   ),
   structural(
     "growth",
@@ -1271,26 +1242,51 @@ const EXHIBITIONS_SECTIONS: ContentSection[] = [
     label: "Open Exhibitions",
     path: "/admin/exhibitions",
   }),
-  inquirySection(
+  structural(
     "listing",
     "The shows themselves",
     "Each show is a record with its own dates, stand number and gallery — managed on its own screen.",
     { label: "Open Exhibitions", path: "/admin/exhibitions" },
-    [
-      { key: "heading", label: "Section heading", type: "text", default: "Exhibition Highlights", max: MEDIUM },
+  ),
+  {
+    key: "cta",
+    label: "Plan your visit",
+    description: "The dark panel inviting visitors to book a meeting.",
+    fields: [
+      { key: "eyebrow", label: "Eyebrow", type: "text", default: "Plan Your Visit", max: MEDIUM },
+      { key: "title", label: "Title", type: "text", default: "Tell us which show you're attending, and we'll hold a slot.", max: MEDIUM },
       {
-        key: "intro",
-        label: "Introduction above the list",
+        key: "text",
+        label: "Paragraph",
         type: "textarea",
-        default: "The fairs we are showing at this season.",
+        default: "Share your requirements ahead of time and our team will have the relevant collections ready when you arrive at the stall.",
         max: LONG,
       },
-      colour("headingColor", "Section heading", "#01383B", "Colours"),
-      colour("introColor", "Introduction", "#2F6B6B", "Colours"),
+      { key: "buttonLabel", label: "Button label", type: "text", default: "Book a meeting", max: SHORT },
     ],
-  ),
-  structural("cta", "Plan your visit", "The dark panel inviting visitors to book a meeting."),
-  structural("faq", "Questions", "The frequently asked questions below the shows."),
+  },
+  {
+    key: "faq",
+    label: "Questions",
+    description: "The frequently asked questions below the shows. They are also given to search engines as structured data.",
+    fields: [
+      { key: "eyebrow", label: "Small line above the heading", type: "text", default: "Before You Visit", max: MEDIUM },
+      ...typed({ key: "headingLight", label: "Heading — first words", type: "text", default: "Frequently asked", max: MEDIUM }),
+      ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "questions", max: MEDIUM }),
+      { key: "items.1.question", label: "Question", type: "text", default: "Which jewellery exhibitions does Promise Jewels attend?", group: "Question 1", max: 200 },
+      { key: "items.1.answer", label: "Answer", type: "textarea", default: "Promise Jewels exhibits at IIJS Bharat Premiere in Mumbai, GGJS — Gujarat Gold Jewellery Show in Gandhinagar, and ROOTZ — the Gems & Jewellery Manufacturers' Show in Surat. All three are business-to-business trade shows covering gold and diamond jewellery manufacturing.", group: "Question 1", max: 1200 },
+      { key: "items.2.question", label: "Question", type: "text", default: "Are these jewellery exhibitions open to the public?", group: "Question 2", max: 200 },
+      { key: "items.2.answer", label: "Answer", type: "textarea", default: "No. IIJS Bharat Premiere, GGJS and ROOTZ are all trade-only B2B exhibitions. Entry is limited to registered trade visitors — retailers, wholesalers, distributors, importers and exporters — and you will need valid business credentials to register.", group: "Question 2", max: 1200 },
+      { key: "items.3.question", label: "Question", type: "text", default: "Where is IIJS Bharat Premiere 2026 held, and on what dates?", group: "Question 3", max: 200 },
+      { key: "items.3.answer", label: "Answer", type: "textarea", default: "IIJS Bharat Premiere 2026 runs across two Mumbai venues on staggered dates: the Jio World Convention Centre in BKC from 5 to 9 August 2026, and the Bombay Exhibition Centre at NESCO, Goregaon from 6 to 10 August 2026. Both halls open 10:00 to 19:00 and a shuttle service connects them.", group: "Question 3", max: 1200 },
+      { key: "items.4.question", label: "Question", type: "text", default: "How do I book a meeting with Promise Jewels at a show?", group: "Question 4", max: 200 },
+      { key: "items.4.answer", label: "Answer", type: "textarea", default: "Send an enquiry through the form on this page with the exhibition name and the day you plan to visit. We will confirm a time slot and share our stall number once the organiser publishes the floor plan. Booking ahead matters at IIJS in particular, where the floor is busiest.", group: "Question 4", max: 1200 },
+      { key: "items.5.question", label: "Question", type: "text", default: "Why does a jewellery manufacturer exhibit at trade shows?", group: "Question 5", max: 200 },
+      { key: "items.5.answer", label: "Answer", type: "textarea", default: "Trade shows are where the buying season is written. They let retailers and wholesalers see the full range and finish quality in person, compare manufacturing capability, and place bulk orders for festive and bridal collections — none of which translates well to a catalogue or a website.", group: "Question 5", max: 1200 },
+      { key: "items.6.question", label: "Question", type: "text", default: "Can I see Promise Jewels collections before the exhibition?", group: "Question 6", max: 200 },
+      { key: "items.6.answer", label: "Answer", type: "textarea", default: "Yes. Our current necklace, ring, earring and pendant lines are on the collections page of this site, and we can send a detailed catalogue on request ahead of any show so your team arrives with a shortlist.", group: "Question 6", max: 1200 },
+    ],
+  },
   structural("inquiry", "Enquiry form", "The enquiry form that closes the page.", {
     label: "Read enquiries under Inquiries",
     path: "/admin/inquiries",
@@ -1310,20 +1306,124 @@ const CONTACT_SECTIONS: ContentSection[] = [
       ctaLabel: "Send an Enquiry",
     }),
   },
-  inquirySection(
+  structural(
     "details",
     "Address and contact details",
-    "The phone number, address and email shown on the page. Enquiries submitted through the form are read under Inquiries.",
-    { label: "Open Inquiries", path: "/admin/inquiries" },
-    [
-      { key: "heading", label: "Section heading", type: "text", default: "Get in Touch", max: MEDIUM },
-      { key: "phone", label: "Phone", type: "text", default: "+91 00000 00000", max: SHORT },
-      { key: "email", label: "Email", type: "text", default: "info@promisejewels.com", max: MEDIUM },
-      { key: "address", label: "Address", type: "textarea", default: "Rajkot, Gujarat, India", max: LONG },
-      colour("headingColor", "Section heading", "#01383B", "Colours"),
-      colour("detailColor", "Details text", "#2F6B6B", "Colours"),
-    ],
+    "The phone number, email, address and business hours beside the form are the site-wide Settings, so they are the same everywhere. The form's own words are under Enquiry form.",
+    { label: "Open Settings", path: "/admin/settings" },
   ),
+];
+
+// --- Enquiry form ---------------------------------------------------------
+//
+// One form, shown on the Contact, Collections and Exhibitions pages, so its
+// words live in one place instead of three. The phone, email and address in
+// its photo card come from Settings, not from here.
+
+const ENQUIRY_SECTIONS: ContentSection[] = [
+  {
+    key: "form",
+    label: "Enquiry form",
+    description:
+      "Every word of the enquiry form that closes the Contact, Collections and Exhibitions pages. The phone, email, address and hours in its photo card are edited under Settings.",
+    manage: { label: "Contact details are under Settings", path: "/admin/settings" },
+    fields: [
+      ...typed({ key: "headingLight", label: "Heading — first words", type: "text", default: "Let's Discuss Your", group: "Heading", max: MEDIUM }),
+      ...typed({ key: "headingBold", label: "Heading — bold words", type: "text", default: "Jewelry Requirements", group: "Heading", max: MEDIUM }),
+      picture("panelImage", "Photo on the left", "/images/collection/image_366.png", "Contact card", "A tall picture works best — it fills the card and is dimmed behind the text."),
+      { key: "panelTitle", label: "Photo card title", type: "text", default: "Business Inquiry", group: "Contact card", max: MEDIUM },
+      { key: "phoneLabel", label: "Phone label", type: "text", default: "Phone", group: "Contact card", max: MEDIUM },
+      { key: "emailLabel", label: "Email label", type: "text", default: "Email", group: "Contact card", max: MEDIUM },
+      { key: "locationLabel", label: "Address label", type: "text", default: "Location", group: "Contact card", max: MEDIUM },
+      { key: "hoursLabel", label: "Business hours label", type: "text", default: "Business Hours", group: "Contact card", max: MEDIUM },
+      { key: "nameLabel", label: "Name field label", type: "text", default: "Full Name", group: "Form labels", max: MEDIUM },
+      { key: "emailFieldLabel", label: "Email field label", type: "text", default: "Email Address", group: "Form labels", max: MEDIUM },
+      { key: "companyLabel", label: "Company field label", type: "text", default: "Company Name", group: "Form labels", max: MEDIUM },
+      { key: "phoneFieldLabel", label: "Phone field label", type: "text", default: "Phone Number", group: "Form labels", max: MEDIUM },
+      { key: "collectionLabel", label: "Collection field label", type: "text", default: "Selected Collection", group: "Form labels", max: MEDIUM },
+      { key: "messageLabel", label: "Message field label", type: "text", default: "Your Message", group: "Form labels", max: MEDIUM },
+      { key: "namePlaceholder", label: "Name placeholder", type: "text", default: "Name", group: "Placeholders", max: MEDIUM },
+      { key: "emailPlaceholder", label: "Email placeholder", type: "text", default: "Email Address", group: "Placeholders", max: MEDIUM },
+      { key: "companyPlaceholder", label: "Company placeholder", type: "text", default: "Your Company", group: "Placeholders", max: MEDIUM },
+      { key: "phonePlaceholder", label: "Phone placeholder", type: "text", default: "Your Phone Number", group: "Placeholders", max: MEDIUM },
+      { key: "noCollectionLabel", label: "Collection list — empty choice", type: "text", default: "No specific collection", group: "Placeholders", max: MEDIUM },
+      { key: "messagePlaceholder", label: "Message placeholder", type: "textarea", default: "Tell us about your jewellery requirements, quantity, customization needs, and timeline.", group: "Placeholders", max: LONG },
+      { key: "submitLabel", label: "Send button", type: "text", default: "Send Business Inquiry", group: "Button", max: MEDIUM },
+      { key: "submittingLabel", label: "Send button while sending", type: "text", default: "Sending inquiry...", group: "Button", max: MEDIUM },
+      { key: "successTitle", label: "Thank-you title", type: "text", default: "Thank you, {name}!", group: "After sending", hint: "{name} is replaced with the visitor's first name.", max: MEDIUM },
+      { key: "successText", label: "Thank-you message", type: "textarea", default: "Your inquiry has been received. Our team will get back to you shortly at", group: "After sending", max: LONG },
+      { key: "againLabel", label: "Send-another button", type: "text", default: "Send another inquiry", group: "After sending", max: MEDIUM },
+    ],
+  },
+];
+
+// --- Collection and exhibition detail pages --------------------------------
+//
+// The pages a visitor lands on from a tile: /our-collection/<name> and
+// /Exhibition/<name>. What a collection or a show says about itself is edited
+// on its own admin screen; these are the words AROUND it — buttons, labels and
+// headings — which are the same for every collection and every show.
+
+const COLLECTION_DETAIL_SECTIONS: ContentSection[] = [
+  {
+    key: "page",
+    label: "Collection page",
+    description:
+      "The words around a single collection: the buttons, headings and labels. A collection's own name, description, specifications and pictures are edited under Collections.",
+    manage: { label: "Edit the collections themselves", path: "/admin/collections" },
+    fields: [
+      { key: "heroSubtitle", label: "Paragraph under the title", type: "textarea", default: "We combine strategy, creativity, and AI-driven insights to help ambitious brands grow smarter and faster.", group: "Top of the page", max: LONG },
+      { key: "heroButton", label: "Main button", type: "text", default: "Get in touch", group: "Top of the page", max: MEDIUM },
+      { key: "heroSecondaryButton", label: "Second button", type: "text", default: "View Collection", group: "Top of the page", max: MEDIUM },
+      { key: "descLight", label: "Description heading — first word", type: "text", default: "Collection", group: "Description", max: MEDIUM },
+      { key: "descBold", label: "Description heading — bold word", type: "text", default: "Description", group: "Description", max: MEDIUM },
+      { key: "specsLabel", label: "Specifications label", type: "text", default: "Specifications", group: "Description", max: MEDIUM },
+      { key: "enquireLabel", label: "Enquiry button (when the collection sets none)", type: "text", default: "Enquire now", group: "Description", max: MEDIUM },
+      { key: "feature1Title", label: "Card 1 — title", type: "text", default: "Premium Craftsmanship", group: "Cards shown for the category pages", max: MEDIUM },
+      { key: "feature1Description", label: "Card 1 — text", type: "textarea", default: "Expertly crafted by skilled artisans with precision and attention to every detail.", group: "Cards shown for the category pages", max: LONG },
+      { key: "feature2Title", label: "Card 2 — title", type: "text", default: "Timeless Designs", group: "Cards shown for the category pages", max: MEDIUM },
+      { key: "feature2Description", label: "Card 2 — text", type: "textarea", default: "Contemporary and classic designs that complement every jewellery collection.", group: "Cards shown for the category pages", max: LONG },
+      { key: "galleryBold", label: "Gallery heading — second word", type: "text", default: "Collection", group: "Gallery", max: MEDIUM },
+      { key: "closeEyebrow", label: "Closing panel — eyebrow", type: "text", default: "Explore Our Collections", group: "Closing panel", max: MEDIUM },
+      { key: "closeTitle", label: "Closing panel — title", type: "text", default: "Explore Collections", group: "Closing panel", max: MEDIUM },
+      { key: "closeSubtitle", label: "Closing panel — paragraph", type: "textarea", default: "Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries.", group: "Closing panel", max: LONG },
+      { key: "closeButton", label: "Closing panel — button", type: "text", default: "Get Started", group: "Closing panel", max: MEDIUM },
+      { key: "notFoundLight", label: "Missing collection — heading", type: "text", default: "Collection", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundBold", label: "Missing collection — bold word", type: "text", default: "not found", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundText", label: "Missing collection — message", type: "textarea", default: "This collection is no longer listed, or the link is wrong.", group: "When a link is wrong", max: LONG },
+      { key: "notFoundButton", label: "Missing collection — button", type: "text", default: "See all collections", group: "When a link is wrong", max: MEDIUM },
+    ],
+  },
+];
+
+const EXHIBITION_DETAIL_SECTIONS: ContentSection[] = [
+  {
+    key: "page",
+    label: "Exhibition page",
+    description:
+      "The words around a single show: the buttons, labels and panel titles. A show's own name, dates, venue and gallery are edited under Exhibitions.",
+    manage: { label: "Edit the shows themselves", path: "/admin/exhibitions" },
+    fields: [
+      { key: "eyebrowFallback", label: "Small line above the title (when the show has no edition)", type: "text", default: "Exhibition", group: "Top of the page", max: MEDIUM },
+      { key: "heroButton", label: "Main button", type: "text", default: "Book a meeting", group: "Top of the page", max: MEDIUM },
+      { key: "heroSecondaryButton", label: "Second button", type: "text", default: "All exhibitions", group: "Top of the page", max: MEDIUM },
+      { key: "datesLabel", label: "Dates label", type: "text", default: "Dates", group: "Labels", max: MEDIUM },
+      { key: "datesPending", label: "Note when dates are not confirmed", type: "text", default: "Dates to be confirmed with the organiser.", group: "Labels", max: MEDIUM },
+      { key: "venueLabel", label: "Venue label", type: "text", default: "Venue", group: "Labels", max: MEDIUM },
+      { key: "cityLabel", label: "City label", type: "text", default: "City / Region", group: "Labels", max: MEDIUM },
+      { key: "hoursLabel", label: "Hours label", type: "text", default: "Show Hours", group: "Labels", max: MEDIUM },
+      { key: "audienceLabel", label: "Audience label", type: "text", default: "Who Attends", group: "Labels", max: MEDIUM },
+      { key: "organiserLabel", label: "Organiser label", type: "text", default: "Organised By", group: "Labels", max: MEDIUM },
+      { key: "whyTitle", label: "'Why we exhibit' panel title", type: "text", default: "Why We Exhibit", group: "Panels", max: MEDIUM },
+      { key: "highlightsTitle", label: "Highlights panel title", type: "text", default: "Highlights", group: "Panels", max: MEDIUM },
+      { key: "galleryLight", label: "Gallery heading — first words", type: "text", default: "From the", group: "Gallery", max: MEDIUM },
+      { key: "galleryBold", label: "Gallery heading — bold word", type: "text", default: "Show", group: "Gallery", max: MEDIUM },
+      { key: "notFoundLight", label: "Missing show — heading", type: "text", default: "Exhibition", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundBold", label: "Missing show — bold word", type: "text", default: "not found", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundText", label: "Missing show — message", type: "textarea", default: "This show is no longer listed, or the link is wrong.", group: "When a link is wrong", max: LONG },
+      { key: "notFoundButton", label: "Missing show — button", type: "text", default: "See all exhibitions", group: "When a link is wrong", max: MEDIUM },
+    ],
+  },
 ];
 
 // --- Header and Footer ----------------------------------------------------
@@ -1361,7 +1461,7 @@ const FOOTER_SECTIONS: ContentSection[] = [
     description: "The closing band on every page: the wording, the colours and the moving line of names.",
     fields: [
       { key: "tagline", label: "Tagline", type: "text", default: "Crafted in Gujarat, worn everywhere.", max: MEDIUM },
-      { key: "copyright", label: "Copyright line", type: "text", default: "© Promise Jewels Pvt Ltd", max: MEDIUM },
+      { key: "copyright", label: "Copyright line", type: "text", default: "", hint: "Shown under the tagline when filled in. Leave empty to show nothing.", max: MEDIUM },
       picture("logo", "Logo", "/images/PROMISE_LOGO.webp", "Branding"),
       colour("background", "Footer background", "#0E2B26", "Colours"),
       colour("textColor", "Text", "#F7F3EA", "Colours"),
@@ -1419,6 +1519,9 @@ export const CONTENT_PAGES: ContentPage[] = [
   { key: "exhibitions", label: "Exhibitions page", path: "/Exhibition", sections: EXHIBITIONS_SECTIONS, arrangeable: true },
   { key: "contact", label: "Contact page", path: "/contact", sections: CONTACT_SECTIONS, arrangeable: true },
   { key: "blog", label: "Blog", path: "/blog", sections: BLOG_SECTIONS, arrangeable: true },
+  { key: "enquiry", label: "Enquiry form", path: "/contact", sections: ENQUIRY_SECTIONS },
+  { key: "collectionDetail", label: "Collection page", path: "/our-collection", sections: COLLECTION_DETAIL_SECTIONS },
+  { key: "exhibitionDetail", label: "Exhibition page", path: "/Exhibition", sections: EXHIBITION_DETAIL_SECTIONS },
   // Not pages — the two bands that wrap every page. See the note above.
   { key: "header", label: "Header", path: "/", sections: HEADER_SECTIONS, standalone: true },
   { key: "footer", label: "Footer", path: "/", sections: FOOTER_SECTIONS, standalone: true },

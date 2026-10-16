@@ -25,14 +25,18 @@ export default function SectionHeading({
   as: Tag = "h2",
   className = "",
   sizeClassName = DEFAULT_SIZE,
+  // Optional inline styles for the two halves — the Editor's font, size,
+  // weight and spacing for each. Empty by default, so nothing changes.
+  lightStyle,
+  boldStyle,
 }) {
   return (
     <Tag className={`m-0 font-light leading-[1.25] ${GRADIENT_TEXT} ${sizeClassName} ${className}`}>
-      {light}
+      {lightStyle && Object.keys(lightStyle).length ? <span style={lightStyle}>{light}</span> : light}
       {bold ? (
         <>
           {light ? " " : null}
-          <strong className={`font-semibold ${GRADIENT_TEXT}`}>{bold}</strong>
+          <strong className={`font-semibold ${GRADIENT_TEXT}`} style={boldStyle}>{bold}</strong>
         </>
       ) : null}
     </Tag>

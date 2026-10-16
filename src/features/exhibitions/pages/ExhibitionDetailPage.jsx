@@ -7,6 +7,30 @@ import usePublicSettings from "@/features/settings/hooks/usePublicSettings.js";
 import usePublicExhibition from "@/features/exhibitions/hooks/usePublicExhibition.js";
 import { formatRange, getStatus } from "@/features/exhibitions/data/exhibitions.js";
 import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
+import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
+
+// The words around a show. Editable under Admin > Editor > Exhibition page;
+// these are what the page shipped with and the fallback when nothing is saved.
+const PAGE_TEXT = {
+  eyebrowFallback: "Exhibition",
+  heroButton: "Book a meeting",
+  heroSecondaryButton: "All exhibitions",
+  datesLabel: "Dates",
+  datesPending: "Dates to be confirmed with the organiser.",
+  venueLabel: "Venue",
+  cityLabel: "City / Region",
+  hoursLabel: "Show Hours",
+  audienceLabel: "Who Attends",
+  organiserLabel: "Organised By",
+  whyTitle: "Why We Exhibit",
+  highlightsTitle: "Highlights",
+  galleryLight: "From the",
+  galleryBold: "Show",
+  notFoundLight: "Exhibition",
+  notFoundBold: "not found",
+  notFoundText: "This show is no longer listed, or the link is wrong.",
+  notFoundButton: "See all exhibitions",
+};
 
 const STATUS_PILL = {
   upcoming: "bg-[#F1F7F5] text-[#0B5B5D] border-[#D3E6E2]",
@@ -69,6 +93,7 @@ export default function ExhibitionDetailPage() {
   const navigate = useNavigate();
   const { social } = usePublicSettings();
   const { exhibition, loading } = usePublicExhibition(slug);
+  const t = useSectionContent("exhibitionDetail", "page", PAGE_TEXT);
 
   // A per-show SEO record if one exists in /admin/seo; no-ops otherwise.
   useSeoMeta(`exhibition-${slug || ""}`);
@@ -81,15 +106,15 @@ export default function ExhibitionDetailPage() {
     return (
       <>
         <section className="flex min-h-[60vh] w-full flex-col items-center justify-center bg-white px-[8%] text-center">
-          <SectionHeading light="Exhibition" bold="not found" className="text-center" />
+          <SectionHeading light={t.notFoundLight} bold={t.notFoundBold} className="text-center" />
           <p className="mt-[18px] max-w-[520px] text-[1rem] leading-[1.7] text-[#0B5B5D]/75">
-            This show is no longer listed, or the link is wrong.
+            {t.notFoundText}
           </p>
           <Link
             to="/Exhibition"
             className="mt-[26px] inline-flex items-center rounded-full border-[1px] border-[#C9A15A] px-[26px] py-[12px] font-ticker text-[0.92rem] font-medium text-[#01383B] no-underline transition-colors duration-300 hover:bg-[#C9A15A] hover:text-white"
           >
-            See all exhibitions
+            {t.notFoundButton}
           </Link>
         </section>
         <Footer />
@@ -107,12 +132,12 @@ export default function ExhibitionDetailPage() {
   return (
     <>
       <PageHeroCircle
-        eyebrow={exhibition.edition || "Exhibition"}
+        eyebrow={exhibition.edition || t.eyebrowFallback}
         title={exhibition.name}
         subtitle={exhibition.about}
-        ctaText="Book a meeting"
+        ctaText={t.heroButton}
         onCtaClick={() => navigate("/contact")}
-        secondaryCtaText="All exhibitions"
+        secondaryCtaText={t.heroSecondaryButton}
         onSecondaryCtaClick={() => navigate("/Exhibition")}
         socialLinks={social}
         showTicker={false}
@@ -165,7 +190,7 @@ export default function ExhibitionDetailPage() {
             )}
 
             <dl className="mt-[32px] grid grid-cols-2 gap-x-[34px] gap-y-[22px] max-[639px]:grid-cols-1 max-[639px]:gap-y-[18px]">
-              <Fact label="Dates">
+              <Fact label={t.datesLabel}>
                 {/* One line per venue — a show can open on different days at
                     each hall, which a single range cannot express. */}
                 {exhibition.venues.map((venue) => (
@@ -178,12 +203,12 @@ export default function ExhibitionDetailPage() {
                 ))}
                 {!exhibition.datesConfirmed && (
                   <span className="mt-[6px] block text-[0.78rem] text-[#B23A2E]">
-                    Dates to be confirmed with the organiser.
+                    {t.datesPending}
                   </span>
                 )}
               </Fact>
 
-              <Fact label="Venue">
+              <Fact label={t.venueLabel}>
                 {exhibition.venues.map((venue) => (
                   <span key={venue.name} className="block">
                     {venue.name}
@@ -192,13 +217,13 @@ export default function ExhibitionDetailPage() {
                 ))}
               </Fact>
 
-              {location && <Fact label="City / Region">{location}</Fact>}
+              {location && <Fact label={t.cityLabel}>{location}</Fact>}
 
-              {exhibition.hours && <Fact label="Show Hours">{exhibition.hours} daily</Fact>}
+              {exhibition.hours && <Fact label={t.hoursLabel}>{exhibition.hours} daily</Fact>}
 
-              {exhibition.audience && <Fact label="Who Attends">{exhibition.audience}</Fact>}
+              {exhibition.audience && <Fact label={t.audienceLabel}>{exhibition.audience}</Fact>}
 
-              {exhibition.organiser && <Fact label="Organised By">{exhibition.organiser}</Fact>}
+              {exhibition.organiser && <Fact label={t.organiserLabel}>{exhibition.organiser}</Fact>}
             </dl>
           </div>
         </div>
@@ -208,7 +233,7 @@ export default function ExhibitionDetailPage() {
             over nothing. */}
         <div className="mx-auto mt-[46px] grid w-full max-w-[1240px] gap-[20px] max-[1024px]:mt-[34px]">
           {exhibition.whyWeExhibit && (
-            <Panel title="Why We Exhibit" tone="tinted">
+            <Panel title={t.whyTitle} tone="tinted">
               <p className="m-0 whitespace-pre-line text-[0.98rem] leading-[1.75] text-[#01383B]">
                 {exhibition.whyWeExhibit}
               </p>
@@ -216,7 +241,7 @@ export default function ExhibitionDetailPage() {
           )}
 
           {exhibition.highlights.length > 0 && (
-            <Panel title="Highlights">
+            <Panel title={t.highlightsTitle}>
               <ul className="m-0 flex list-none flex-col gap-[10px] p-0">
                 {exhibition.highlights.map((highlight) => (
                   <li
@@ -254,7 +279,7 @@ export default function ExhibitionDetailPage() {
 
         {gallery.length > 0 && (
           <div className="mx-auto mt-[46px] w-full max-w-[1240px] max-[1024px]:mt-[34px]">
-            <SectionHeading light="From the" bold="Show" className="text-center" />
+            <SectionHeading light={t.galleryLight} bold={t.galleryBold} className="text-center" />
             <div className="mt-[30px] grid grid-cols-4 gap-[16px] max-[1024px]:grid-cols-3 max-[639px]:grid-cols-2 max-[479px]:gap-[10px]">
               {gallery.map((image) => (
                 <span

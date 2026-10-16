@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import PageHeroCircle from "@/components/layout/PageHeroCircle.jsx";
 import SectionHeading from "@/components/common/SectionHeading.jsx";
 import CategoryCard from "@/features/collections/components/CategoryCard.jsx";
@@ -7,6 +7,7 @@ import Footer from "@/components/common/Footer.jsx";
 import usePublicSettings from "@/features/settings/hooks/usePublicSettings.js";
 import { usePublicCollection } from "@/features/collections/hooks/usePublicCollections.js";
 import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
+import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 import BRAND_GALLERIES from "@/services/mock/brandGalleries.js";
 
 /**
@@ -122,22 +123,33 @@ function SparkleIcon() {
   );
 }
 
-// Generic — not tied to a category or brand, matches the two cards in the
-// Figma exactly. Shown when the slug is a legacy category/brand one; a real
-// collection replaces this section with its own description and
-// specifications, which is what the admin panel writes.
-const FEATURE_CARDS = [
-  {
-    Icon: DiamondIcon,
-    title: "Premium Craftsmanship",
-    description: "Expertly crafted by skilled artisans with precision and attention to every detail.",
-  },
-  {
-    Icon: SparkleIcon,
-    title: "Timeless Designs",
-    description: "Contemporary and classic designs that complement every jewellery collection.",
-  },
-];
+// The two generic cards for the category and brand pages are built from the
+// Editor's "Collection page" text — see featureCards inside the component.
+
+// The words around a collection. Editable under Admin > Editor > Collection page;
+// these are what the page shipped with and the fallback when nothing is saved.
+const PAGE_TEXT = {
+  heroSubtitle: "We combine strategy, creativity, and AI-driven insights to help ambitious brands grow smarter and faster.",
+  heroButton: "Get in touch",
+  heroSecondaryButton: "View Collection",
+  descLight: "Collection",
+  descBold: "Description",
+  specsLabel: "Specifications",
+  enquireLabel: "Enquire now",
+  feature1Title: "Premium Craftsmanship",
+  feature1Description: "Expertly crafted by skilled artisans with precision and attention to every detail.",
+  feature2Title: "Timeless Designs",
+  feature2Description: "Contemporary and classic designs that complement every jewellery collection.",
+  galleryBold: "Collection",
+  closeEyebrow: "Explore Our Collections",
+  closeTitle: "Explore Collections",
+  closeSubtitle: "Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries.",
+  closeButton: "Get Started",
+  notFoundLight: "Collection",
+  notFoundBold: "not found",
+  notFoundText: "This collection is no longer listed, or the link is wrong.",
+  notFoundButton: "See all collections",
+};
 
 /**
  * Public "Collection Details" page (route: /our-collection/:categoryId).
@@ -162,14 +174,23 @@ export default function CollectionDetailsPage() {
   const navigate = useNavigate();
   const { social } = usePublicSettings();
   const { collection, loading } = usePublicCollection(slug);
+  const t = useSectionContent("collectionDetail", "page", PAGE_TEXT);
 
   const brand = !collection ? BRAND_GALLERIES[slug] : null;
-  const category =
-    !collection && !brand ? CATEGORY_DETAILS[slug] || CATEGORY_DETAILS.necklaces : null;
+  // A slug that is not a collection, a brand or a category is a wrong link.
+  // It used to fall back to the necklaces page, which showed a made-up
+  // collection for any address typed after /our-collection/.
+  const category = !collection && !brand ? CATEGORY_DETAILS[slug] || null : null;
+  const notFound = !collection && !brand && !category;
+
+  const featureCards = [
+    { Icon: DiamondIcon, title: t.feature1Title, description: t.feature1Description },
+    { Icon: SparkleIcon, title: t.feature2Title, description: t.feature2Description },
+  ];
 
   // Everything the page needs, resolved once from whichever matched above.
   const eyebrow = collection ? collection.brandName || "Collection" : brand ? brand.label : "Collection";
-  const headingLight = collection ? collection.name : brand ? brand.label : category.title;
+  const headingLight = collection ? collection.name : brand ? brand.label : category?.title ?? "";
 
   // A collection's own pictures: its gallery, led by the banner so the tile
   // you clicked is the first thing on the page.
@@ -179,7 +200,7 @@ export default function CollectionDetailsPage() {
       )
     : null;
 
-  const galleryImages = collectionImages ?? (brand ? brand.images : category.images);
+  const galleryImages = collectionImages ?? (brand ? brand.images : category?.images ?? []);
   const gallerySlugPrefix = collection ? collection.slug : brand ? brand.key : slug || "necklaces";
 
   useSeoMeta(`our-collection-${slug || "necklaces"}`);
@@ -189,17 +210,37 @@ export default function CollectionDetailsPage() {
   // name and gallery for a moment before swapping.
   if (loading) return null;
 
+  if (notFound) {
+    return (
+      <>
+        <section className="flex min-h-[60vh] w-full flex-col items-center justify-center bg-white px-[8%] text-center">
+          <SectionHeading light={t.notFoundLight} bold={t.notFoundBold} className="text-center" />
+          <p className="mt-[18px] max-w-[520px] text-[1rem] leading-[1.7] text-[#0B5B5D]/75">
+            {t.notFoundText}
+          </p>
+          <Link
+            to="/our-collection"
+            className="mt-[26px] inline-flex items-center rounded-full border-[1px] border-[#C9A15A] px-[26px] py-[12px] font-ticker text-[0.92rem] font-medium text-[#01383B] no-underline transition-colors duration-300 hover:bg-[#C9A15A] hover:text-white"
+          >
+            {t.notFoundButton}
+          </Link>
+        </section>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeroCircle
         eyebrow={eyebrow}
         logoUrl="/images/PROMISE_LOGO.webp"
-        subtitle="We combine strategy, creativity, and AI-driven insights to help ambitious brands grow smarter and faster."
-        ctaText="Get in touch"
+        subtitle={t.heroSubtitle}
+        ctaText={t.heroButton}
         onCtaClick={() => navigate("/contact")}
         // Second, quieter action: this page is one brand's gallery, so the
         // obvious next step is back out to every collection.
-        secondaryCtaText="View Collection"
+        secondaryCtaText={t.heroSecondaryButton}
         onSecondaryCtaClick={() => navigate("/our-collection")}
         socialLinks={social}
         outerImages={HERO_RING_IMAGES}
@@ -209,7 +250,7 @@ export default function CollectionDetailsPage() {
       {/* Collection Description */}
       <section className="w-full bg-white px-[8%] pt-[10px] pb-[70px] max-[991px]:pb-[50px] max-[479px]:px-[6%]">
         <div className="text-center">
-          <SectionHeading light="Collection" bold="Description" className="text-center" />
+          <SectionHeading light={t.descLight} bold={t.descBold} className="text-center" />
         </div>
 
         {/* A real collection says what it is in its own words — the
@@ -233,7 +274,7 @@ export default function CollectionDetailsPage() {
                 <>
                   <span className="mt-[24px] mb-[14px] block h-px w-[54px] bg-gradient-to-r from-[#C9A15A] to-[#C9A15A]/0" />
                   <p className="m-0 font-ticker text-[1.05rem] font-semibold text-[#0B5B5D]">
-                    Specifications
+                    {t.specsLabel}
                   </p>
                   <p className="mt-[8px] whitespace-pre-line text-[0.95rem] leading-[1.7] text-[#666] max-[479px]:text-[0.85rem]">
                     {collection.specification}
@@ -253,7 +294,7 @@ export default function CollectionDetailsPage() {
                     onClick={() => navigate("/contact")}
                     className="inline-flex items-center gap-[8px] rounded-full border border-[#C9A15A] px-[22px] py-[10px] font-ticker text-[0.88rem] font-medium text-[#01383B] transition-colors duration-300 hover:bg-[#C9A15A] hover:text-white"
                   >
-                    {collection.ctaButtonText || "Enquire now"}
+                    {collection.ctaButtonText || t.enquireLabel}
                     <span aria-hidden="true">&#8594;</span>
                   </button>
                 </div>
@@ -269,7 +310,7 @@ export default function CollectionDetailsPage() {
           instead of clipping/overflowing.
         */
         <div className="mt-[45px] mx-auto grid w-full max-w-[1200px] grid-cols-2 gap-[26px] max-[767px]:grid-cols-1">
-          {FEATURE_CARDS.map(({ Icon, title, description }) => (
+          {featureCards.map(({ Icon, title, description }) => (
             <div
               key={title}
               className="
@@ -300,7 +341,7 @@ export default function CollectionDetailsPage() {
       {/* "{Collection, Category or Brand} Collection" — plain photo grid */}
       <section className="w-full bg-white px-[8%] pt-[10px] pb-[90px] max-[991px]:pb-[70px] max-[479px]:px-[6%]">
         <div className="text-center">
-          <SectionHeading light={headingLight} bold="Collection" className="text-center" />
+          <SectionHeading light={headingLight} bold={t.galleryBold} className="text-center" />
         </div>
 
         <div className="mt-[40px] mx-auto grid w-full max-w-[1200px] grid-cols-4 gap-[26px] max-[1199px]:grid-cols-3 max-[767px]:grid-cols-2 max-[991px]:gap-[20px] max-[479px]:gap-[14px]">
@@ -313,10 +354,10 @@ export default function CollectionDetailsPage() {
       <InquiryForm id="inquiry" />
 
       <PageHeroCircle
-        eyebrow="Explore Our Collections"
-        title="Explore Collections"
-        subtitle="Explore our premium jewellery collections and connect with us for manufacturing, wholesale, and business inquiries."
-        ctaText="Get Started"
+        eyebrow={t.closeEyebrow}
+        title={t.closeTitle}
+        subtitle={t.closeSubtitle}
+        ctaText={t.closeButton}
         onCtaClick={() => navigate("/contact")}
         showTicker={false}
       />

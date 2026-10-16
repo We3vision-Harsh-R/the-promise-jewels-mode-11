@@ -1084,3 +1084,44 @@ model ExhibitionOpsField {
   @@index([opsId, group])
   @@map("exhibition_ops_fields")
 }
+
+// ---------------------------------------------------------------------------
+// Visitors
+//
+// Who is on the website, from where, and on which page. A visit is an
+// anonymous session id the browser makes up for itself (no cookie, no account)
+// plus the COUNTRY looked up from the connection's address at the moment it
+// arrived. The address itself is never stored — only the two-letter country.
+// Rows are written in batches (see visitor.service.ts) and deleted after 90
+// days.
+// ---------------------------------------------------------------------------
+
+model VisitorSession {
+  id          String   @id
+  /// ISO 3166-1 alpha-2, e.g. "IN". Null when the address could not be placed.
+  country     String?
+  currentPage String
+  referrer    String?
+  /// "mobile" | "tablet" | "desktop"
+  device      String
+  pageViews   Int      @default(1)
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+
+  @@index([lastSeen])
+  @@index([firstSeen])
+  @@index([country])
+  @@map("visitor_sessions")
+}
+
+model VisitorPageView {
+  id        Int      @id @default(autoincrement())
+  sessionId String
+  page      String
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([page])
+  @@map("visitor_page_views")
+}

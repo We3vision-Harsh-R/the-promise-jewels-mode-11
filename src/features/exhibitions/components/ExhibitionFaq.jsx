@@ -11,7 +11,14 @@ import useGSAP from "@/hooks/useGSAP.js";
  * Answers are rendered in the DOM at all times (only their height animates),
  * so crawlers read them whether or not a panel is open.
  */
-export default function ExhibitionFaq({ faqs }) {
+export default function ExhibitionFaq({
+  faqs,
+  eyebrow = "Before You Visit",
+  headingLight = "Frequently asked",
+  headingBold = "questions",
+  lightStyle,
+  boldStyle,
+}) {
   const sectionRef = useRef(null);
   const [open, setOpen] = useState(0);
   const panelRefs = useRef([]);
@@ -68,7 +75,7 @@ export default function ExhibitionFaq({ faqs }) {
         <span className="js-faq-head mb-[16px] flex items-center gap-[12px]">
           <span className="h-px w-[34px] bg-[#C9A15A]" />
           <span className="font-ticker text-[0.68rem] max-[479px]:text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-[#C9A15A]">
-            Before You Visit
+            {eyebrow}
           </span>
         </span>
 
@@ -76,7 +83,7 @@ export default function ExhibitionFaq({ faqs }) {
           id="faq-heading"
           className="js-faq-head m-0 mb-[36px] font-ticker text-[2.4rem] font-light leading-[1.15] text-[#01383B] max-[1024px]:text-[2rem] max-[479px]:text-[1.6rem]"
         >
-          Frequently asked <strong className="font-semibold">questions</strong>
+          <span style={lightStyle}>{headingLight}</span> <strong className="font-semibold" style={boldStyle}>{headingBold}</strong>
         </h2>
 
         <div className="flex flex-col">

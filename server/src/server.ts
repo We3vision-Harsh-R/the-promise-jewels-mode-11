@@ -7,6 +7,8 @@ import app from "./app.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { startKeepAlive } from "./jobs/keepAlive.js";
+import { warmPublicCache } from "./middleware/publicCache.middleware.js";
+import { startVisitorTracking } from "./modules/visitors/visitor.service.js";
 import { installResilience } from "./utils/resilience.js";
 import { ensureMasterRole } from "./modules/rbac/rbac.service.js";
 
@@ -66,6 +68,13 @@ const httpServer = app.listen(env.PORT, () => {
   // trivial query a day prevents it. supabase/keep-alive.mjs is the second
   // layer, for when this process is not running at all.
   startKeepAlive();
+
+  // Fills the public cache now, so the first visitor after a restart is not
+  // the one who waits on the database.
+  warmPublicCache(env.PORT);
+
+  // Batches visitor pings into the database and clears out old history.
+  startVisitorTracking();
 });
 
 // Socket timeouts, crash guards and graceful shutdown. Installed immediately

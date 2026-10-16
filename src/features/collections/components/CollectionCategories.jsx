@@ -3,6 +3,11 @@ import { gsap } from "@/lib/gsap.js";
 import useReveal from "@/hooks/useReveal.js";
 import SectionHeading from "@/components/common/SectionHeading.jsx";
 import CategoryCard from "@/features/collections/components/CategoryCard.jsx";
+import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
+import { typeStyle } from "@/features/page-content/typeStyle.js";
+
+// The heading above the grid. Editable under Admin > Editor > Collections page.
+const LISTING_TEXT = { headingLight: "Collection", headingBold: "Categories" };
 
 // Fallback only. The tiles normally come from Admin > Collections via
 // OurCollectionPage, which passes them in as `categories` — see
@@ -74,6 +79,7 @@ export default function CollectionCategories({
   onSelect,
   previewBrand,
 }) {
+  const heading = useSectionContent("collections", "listing", LISTING_TEXT);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("latest");
   const [focused, setFocused] = useState(null);
@@ -150,7 +156,7 @@ export default function CollectionCategories({
       className="w-full bg-white px-[8%] pt-[20px] pb-[90px] max-[991px]:pt-[16px] max-[991px]:pb-[70px] max-[479px]:px-[6%] max-[479px]:pb-[55px]"
     >
       <div data-reveal className="text-center">
-        <SectionHeading light="Collection" bold="Categories" className="text-center" />
+        <SectionHeading light={heading.headingLight} bold={heading.headingBold} lightStyle={typeStyle(heading, "headingLight")} boldStyle={typeStyle(heading, "headingBold")} className="text-center" />
       </div>
 
       {/* Aligns with InquiryForm's max-w-[1200px] container below so the
