@@ -1,0 +1,66 @@
+# Wakes the Supabase project once a day, from GitHub's own scheduler.
+#
+# The third layer of the keep-alive (see supabase/README.md). The first two live
+# on the host — the app's own timer and Hostinger's cron — so both stop if the
+# host is down. This one runs on GitHub and does not care whether the website is
+# up at all.
+#
+# 22:30 UTC is 04:00 in India (IST is UTC+5:30 all year). GitHub may start a
+# scheduled run a few minutes late when it is busy; that does not matter here.
+#
+# WHAT IT SENDS
+# One read of one row-limited query through Supabase's public REST API, using
+# the PUBLISHABLE key — the one that is designed to be public. It cannot read
+# any data (row-level security returns an empty list) and it needs no database
+# password, so nothing sensitive is stored in GitHub.
+#
+# SET UP ONCE (GitHub → this repository → Settings → Secrets and variables →
+# Actions → New repository secret):
+#   SUPABASE_URL              https://<project-ref>.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  the sb_publishable_... key from Supabase →
+#                             Project Settings → API Keys
+#
+# A failed run is marked red and GitHub emails the repository owner, so a keep-
+# alive that has stopped working is noticed within a day, not after the project
+# has already paused. Run it by hand any time from the Actions tab → "Run workflow".
+
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "30 22 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Touch the database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "::error::Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+          # The settings table always exists. One row at most, one column, and the
+          # answer is an empty list for this key — it reads nothing.
+          code=$(curl --silent --show-error --output /dev/null \
+            --write-out "%{http_code}" \
+            --retry 3 --retry-delay 15 --retry-all-errors --max-time 30 \
+            --header "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            "${SUPABASE_URL%/}/rest/v1/settings?select=id&limit=1")
+
+          echo "Supabase answered HTTP ${code}"
+
+          if [ "${code}" != "200" ]; then
+            echo "::error::Supabase did not answer 200 (got ${code}). The project may be paused: open the Supabase dashboard and restore it."
+            exit 1
+          fi

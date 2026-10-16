@@ -4,8 +4,8 @@ A free-tier Supabase project **pauses after about seven days with no database
 activity**. Restoring it is a manual click in the dashboard — which is the
 thing this is here to make sure nobody ever has to do.
 
-Two independent layers. Either one alone is enough; both together means a
-single failure does not lose the week.
+Three independent layers. Any one alone is enough; together a single failure
+does not lose the week. Layers 1 and 2 live on the host; layer 3 runs on GitHub.
 
 ---
 
@@ -44,6 +44,35 @@ current directory. Run from anywhere else it exits 1 and says so.
 
 If `/usr/bin/node` is not where node lives on the box, `which node` over SSH
 gives the right path.
+
+---
+
+## Layer 3 — GitHub's daily schedule (needs two secrets, once)
+
+`.github/workflows/supabase-keep-alive.yml`. Runs on GitHub, so it works even
+when the website, the app timer and the Hostinger cron are all down.
+
+Every day at **04:00 IST** (22:30 UTC) it asks Supabase's public REST API for one
+row of the `settings` table, using the **publishable** key. That key is meant to
+be public and the answer is an empty list (row-level security), so nothing
+sensitive is stored in GitHub and no data is read.
+
+### Set up once
+
+GitHub → this repository → **Settings → Secrets and variables → Actions → New
+repository secret**, twice:
+
+| Name | Value |
+|---|---|
+| `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
+| `SUPABASE_PUBLISHABLE_KEY` | the `sb_publishable_…` key, from Supabase → Project Settings → API Keys |
+
+Then **Actions → Keep Supabase awake → Run workflow** once to check it is green.
+A red run means Supabase did not answer — GitHub emails the repository owner,
+which is how a stopped keep-alive gets noticed within a day.
+
+GitHub switches scheduled workflows off after 60 days without any activity in
+the repository. Pushing a commit (or pressing Run workflow) turns it back on.
 
 ### Check it worked
 
