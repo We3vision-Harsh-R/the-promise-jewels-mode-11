@@ -52,12 +52,45 @@ export async function pingDatabase(): Promise<void> {
 let timer: NodeJS.Timeout | null = null;
 
 /**
+ * India Standard Time is UTC+5:30 all year (no daylight saving), so a fixed
+ * offset is exact and needs no timezone database.
+ */
+const IST_OFFSET_MINUTES = 5 * 60 + 30;
+
+/** The clock time of the daily ping, in IST. 4 a.m. — the quietest hour of the day. */
+const DEFAULT_TIME_IST = "04:00";
+
+/**
+ * Milliseconds from `now` until the next `HH:MM` on the Indian clock.
+ * Exported so the arithmetic can be checked without waiting for 4 a.m.
+ */
+export function msUntilNextIst(timeIst: string, now: Date = new Date()): number {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(timeIst.trim());
+  const hour = match ? Number(match[1]) : 4;
+  const minute = match ? Number(match[2]) : 0;
+  const valid = match && hour < 24 && minute < 60;
+
+  const targetMinutes = valid ? hour * 60 + minute : 4 * 60;
+
+  // Minutes since midnight, on the Indian clock, right now.
+  const nowIst = (((now.getUTCHours() * 60 + now.getUTCMinutes() + IST_OFFSET_MINUTES) % 1440) + 1440) % 1440;
+  const sinceMidnightMs = nowIst * 60_000 + now.getUTCSeconds() * 1000 + now.getUTCMilliseconds();
+
+  let wait = targetMinutes * 60_000 - sinceMidnightMs;
+  if (wait <= 1000) wait += 24 * 60 * 60 * 1000;
+  return wait;
+}
+
+/**
  * Starts the daily ping.
  *
- * Runs once shortly after boot as well as on the interval. A host that
- * restarts the app every few hours would otherwise never reach the first
- * tick — the timer would keep being thrown away and recreated, and the
- * database would never be touched at all.
+ * It runs at 04:00 India time every day (KEEPALIVE_TIME_IST changes the time),
+ * and once shortly after boot as well. A host that restarts the app every few
+ * hours would otherwise never reach 4 a.m. — the timer would keep being thrown
+ * away and recreated, and the database would never be touched at all.
+ *
+ * KEEPALIVE_INTERVAL_HOURS is kept as the on/off switch: a non-positive number
+ * disables the timer, anything else leaves it on.
  */
 export function startKeepAlive(): void {
   if (timer) return;
@@ -69,7 +102,7 @@ export function startKeepAlive(): void {
     return;
   }
 
-  const everyMs = hours * 60 * 60 * 1000;
+  const timeIst = process.env.KEEPALIVE_TIME_IST ?? DEFAULT_TIME_IST;
 
   const tick = async () => {
     try {
@@ -88,18 +121,28 @@ export function startKeepAlive(): void {
   const first = setTimeout(tick, 30_000);
   first.unref();
 
-  timer = setInterval(tick, everyMs);
+  // Re-armed after every run rather than set once with setInterval, so a long
+  // sleep or a clock adjustment cannot push it off the 4 a.m. mark.
+  const arm = () => {
+    timer = setTimeout(async () => {
+      await tick();
+      arm();
+    }, msUntilNextIst(timeIst));
 
-  // unref so this timer alone never holds the process open. The HTTP server
-  // is what keeps it alive; without this, a shutdown would wait for a timer
-  // that may be twenty-three hours from firing.
-  timer.unref();
+    // unref so this timer alone never holds the process open. The HTTP server
+    // is what keeps it alive; without this, a shutdown would wait for a timer
+    // that may be twenty-three hours from firing.
+    timer.unref();
+  };
 
-  logger.info(`[keep-alive] on, every ${hours}h`);
+  arm();
+
+  const minutes = Math.round(msUntilNextIst(timeIst) / 60_000);
+  logger.info(`[keep-alive] on, daily at ${timeIst} IST (next in ${Math.floor(minutes / 60)}h ${minutes % 60}m)`);
 }
 
 /** For tests and clean shutdown. */
 export function stopKeepAlive(): void {
-  if (timer) clearInterval(timer);
+  if (timer) clearTimeout(timer);
   timer = null;
 }

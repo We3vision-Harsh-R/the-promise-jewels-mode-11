@@ -13,10 +13,10 @@ single failure does not lose the week.
 
 `server/src/jobs/keepAlive.ts`. Started by `server.ts` when the port opens.
 
-- Runs one trivial query **30 seconds after boot**, then **once a day**
+- Runs one trivial query **30 seconds after boot**, then **every day at 04:00 India time (IST)**
 - No configuration, no secret, no endpoint, nothing to set up
-- Turn it off or change it with `KEEPALIVE_INTERVAL_HOURS` (a non-positive
-  number disables it)
+- Turn it off with `KEEPALIVE_INTERVAL_HOURS=0`; change the time with
+  `KEEPALIVE_TIME_IST=HH:MM` (24-hour, India time)
 
 **When it is not enough:** it lives inside the web process. If the host
 restarts the app, puts it to sleep, or it crashes over a quiet weekend, the
@@ -34,7 +34,7 @@ care whether the app is up.
 | Field | Value |
 |---|---|
 | Command | `cd /home/USERNAME/domains/thepromisejewels.com/public_html && /usr/bin/node supabase/keep-alive.mjs` |
-| Schedule | Once a day |
+| Schedule | Every day at **04:00 IST**. Hostinger's cron runs on the server's clock, which is usually UTC; 04:00 IST is **22:30 UTC the day before**, i.e. minute `30`, hour `22`, every day. If hPanel shows another time zone, convert 04:00 IST (UTC+5:30) to it. |
 
 Replace `USERNAME` and the path with the real application directory — the one
 holding `package.json` and `.env`.
