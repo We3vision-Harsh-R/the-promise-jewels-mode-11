@@ -87,7 +87,7 @@ records exist), and every button or link goes somewhere.
 | Address | Also check |
 |---|---|
 | `/` | hero, featured collections, brands, exhibitions, "Let's Drive Growth" |
-| `/AboutPage` and `/AboutPage#team` | the "team" link scrolls to Our Leaders; in Our Pillars a diamond turns as you scroll (wide screens, and small on a phone); the "Get Started" button at the bottom opens `/contact` |
+| `/AboutPage` and `/AboutPage#team` | the "team" link scrolls to Our Leaders; the "Get Started" button at the bottom opens `/contact` |
 | `/our-team` | every person shown in Admin → Our Team appears with photo, name and role; one with no photo shows initials; an empty team shows the "introduced soon" message |
 | `/our-brand` | brand rows, closing band |
 | `/our-collection` | brand tabs filter, a collection tile opens its page; a white-background product photo sits on an ivory mat, a dark photograph fills its card |

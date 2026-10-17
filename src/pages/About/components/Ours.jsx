@@ -4,7 +4,6 @@ import { gsap, ScrollTrigger } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import { scrollToTarget } from "@/utils/scroll.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
-import Diamond3D from "@/components/common/Diamond3D.jsx";
 
 const PILLARS = [
   {
@@ -232,19 +231,6 @@ export default function OurPillars() {
         ref={pinRef}
         className="relative flex min-h-screen w-full items-center overflow-hidden px-[6%] py-[60px] max-[767px]:px-[7%] max-[767px]:py-[48px]"
       >
-        {/* The diamond turns with the scroll for as long as this section is on
-            screen. Out at the right on wide screens, where the copy does not
-            reach; small in the corner on a phone; left out in between, where
-            there is no clear space for it. */}
-        <Diamond3D
-          label="A diamond turning as you scroll"
-          className="absolute right-[2.5%] top-1/2 h-[250px] w-[250px] -translate-y-1/2 max-[1279px]:h-[200px] max-[1279px]:w-[200px] max-[1099px]:hidden"
-        />
-        <Diamond3D
-          label="A diamond turning as you scroll"
-          className="absolute right-[5%] top-[44px] hidden h-[92px] w-[92px] max-[767px]:block"
-        />
-
         <div className="mx-auto grid w-full max-w-[1180px] grid-cols-[300px_1fr] items-center gap-[70px] max-[1024px]:grid-cols-[240px_1fr] max-[1024px]:gap-[40px] max-[767px]:grid-cols-1 max-[767px]:gap-[30px]">
           {/* DIAL — measured, so the circle stays a true circle at any size */}
           <div
