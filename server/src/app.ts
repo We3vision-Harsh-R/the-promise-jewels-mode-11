@@ -28,8 +28,16 @@ app.disable("x-powered-by");
 // together, and `secure` cookies would be judged against the wrong protocol.
 // Exactly one hop is trusted — trusting them all would let a client set its
 // own address and walk past the limiter.
+//
+// "One" is right for a host that puts a single proxy in front of the app. A
+// setup with a CDN AND a load balancer, or any private-network layout where the
+// app sits behind two or more hops, must say so with TRUST_PROXY_HOPS — with
+// the wrong number every visitor appears to come from the proxy's own address,
+// so rate limits are shared by everyone and the visitor map shows one place.
+// Count the proxies that add themselves to X-Forwarded-For, no more.
 if (env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
+  const hops = Number(process.env.TRUST_PROXY_HOPS ?? 1);
+  app.set("trust proxy", Number.isInteger(hops) && hops >= 0 && hops <= 5 ? hops : 1);
 }
 
 // Brand logos, banners and galleries live in Supabase Storage, so the
