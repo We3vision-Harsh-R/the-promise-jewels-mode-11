@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "@/components/common/Navbar.jsx";
 import SmoothScroll from "@/components/common/SmoothScroll.jsx";
 import CustomCursor from "@/components/common/CustomCursor.jsx";
+import SiteContextMenu from "@/components/common/SiteContextMenu.jsx";
 import PageTransition from "@/components/common/PageTransition.jsx";
 import { scrollToTop, settleToSection } from "@/utils/scroll.js";
 import { prefetchPages } from "@/app/routes/lazyPages.js";
@@ -75,6 +76,7 @@ export default function ClientLayout() {
           they cost nothing on devices that should not have them. */}
       <SmoothScroll />
       <CustomCursor />
+      <SiteContextMenu />
       <Navbar />
       {/* Keyed on the path so each route mounts a fresh wrapper and replays
           the entrance, instead of the router swapping content in silently. */}
