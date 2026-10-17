@@ -67,12 +67,24 @@ function GalleryCard({ name, image, nameType }) {
   );
 }
 
-// Duplicate each row's items so the strip is twice as long as the visible
-// track — that's what makes the GSAP xPercent(-50) loop below seamless
-// (once it's shifted exactly one full copy's width, it snaps back to 0
-// with the duplicate now sitting where the original started).
+// Each row is two identical halves — that's what makes the GSAP xPercent(-50)
+// loop below seamless (once it has shifted exactly one half, it snaps back to 0
+// with the second half sitting where the first started). Each half must also be
+// at least as wide as the screen, or a gap shows on the right once the strip
+// has moved. Five cards are about 1,700px, so a half repeats the set until it
+// covers the viewport (with room to spare for a window that is then widened).
+function copiesToFill() {
+  if (typeof window === "undefined") return 2;
+  const card = window.innerWidth <= 767 ? 242 : window.innerWidth <= 1024 ? 304 : 374;
+  const setWidth = 5 * card;
+  return Math.max(2, Math.ceil((Math.max(window.innerWidth, 2560) * 1.1) / setWidth));
+}
+
+const COPIES = copiesToFill();
+
 const Row = forwardRef(function Row({ items }, ref) {
-  const doubled = [...items, ...items];
+  const half = Array.from({ length: COPIES }, () => items).flat();
+  const doubled = [...half, ...half];
   return (
     <div ref={ref} className="flex w-max gap-[34px] max-[767px]:gap-[18px]">
       {doubled.map((item, index) => (
@@ -122,7 +134,7 @@ export default function Gallery() {
         marqueesRef.current.push(
           gsap.to(row1Ref.current, {
             xPercent: -50,
-            duration: LOOP_SECONDS,
+            duration: LOOP_SECONDS * COPIES,
             ease: "none",
             repeat: -1,
           })
@@ -138,7 +150,7 @@ export default function Gallery() {
         marqueesRef.current.push(
           gsap.to(row2Ref.current, {
             xPercent: 0,
-            duration: LOOP_SECONDS,
+            duration: LOOP_SECONDS * COPIES,
             ease: "none",
             repeat: -1,
           })
