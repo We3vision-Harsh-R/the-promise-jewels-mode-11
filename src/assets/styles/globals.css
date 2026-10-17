@@ -1,7 +1,7 @@
 @layer overrides, bootstrap, theme, base, components, utilities;
 @import "tailwindcss";
 @import "./utilities.css";
-@import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
+@import "./bootstrap.pruned.css" layer(bootstrap);
 @import "./variables.css";
 
 /* Tailwind v4 theme — real brand palette (teal / gold / ivory / wine) from
