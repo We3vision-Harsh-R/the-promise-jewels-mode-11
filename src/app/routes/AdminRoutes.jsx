@@ -1,25 +1,26 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import RequireAuth from '@/app/routes/RequireAuth.jsx'
 import AdminLayout from '@/layouts/AdminLayout.jsx'
 import LoginPage from '@/features/auth/pages/LoginPage.jsx'
-import DashboardPage from '@/features/dashboard/pages/DashboardPage.jsx'
-import CollectionsPage from '@/features/collections/pages/CollectionsPage.jsx'
-import BrandsPage from '@/features/brands/pages/BrandsPage.jsx'
-import ExhibitionsPage from '@/features/exhibitions/pages/ExhibitionsPage.jsx'
-import InquiriesPage from '@/features/inquiries/pages/InquiriesPage.jsx'
-import SeoPage from '@/features/seo/pages/SeoPage.jsx'
-import VisitorsPage from '@/features/visitors/pages/VisitorsPage.jsx'
-import TeamPage from '@/features/team/pages/TeamPage.jsx'
-import SettingsPage from '@/features/settings/pages/SettingsPage.jsx'
-import EditorPage from '@/features/page-content/pages/EditorPage.jsx'
-import SectionDesignerPage from '@/features/page-content/pages/SectionDesignerPage.jsx'
-import VaultPage from '@/features/vault/pages/VaultPage.jsx'
-import ExhibitionOpsPage from '@/features/exhibition-ops/pages/ExhibitionOpsPage.jsx'
-import HeaderPage from '@/features/page-content/pages/HeaderPage.jsx'
-import FooterPage from '@/features/page-content/pages/FooterPage.jsx'
-import BlogPage from '@/features/blog/pages/BlogPage.jsx'
-import UsersPage from '@/features/users/pages/UsersPage.jsx'
-import RolesPage from '@/features/rbac/pages/RolesPage.jsx'
+const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage.jsx'))
+const CollectionsPage = lazy(() => import('@/features/collections/pages/CollectionsPage.jsx'))
+const BrandsPage = lazy(() => import('@/features/brands/pages/BrandsPage.jsx'))
+const ExhibitionsPage = lazy(() => import('@/features/exhibitions/pages/ExhibitionsPage.jsx'))
+const InquiriesPage = lazy(() => import('@/features/inquiries/pages/InquiriesPage.jsx'))
+const SeoPage = lazy(() => import('@/features/seo/pages/SeoPage.jsx'))
+const VisitorsPage = lazy(() => import('@/features/visitors/pages/VisitorsPage.jsx'))
+const TeamPage = lazy(() => import('@/features/team/pages/TeamPage.jsx'))
+const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage.jsx'))
+const EditorPage = lazy(() => import('@/features/page-content/pages/EditorPage.jsx'))
+const SectionDesignerPage = lazy(() => import('@/features/page-content/pages/SectionDesignerPage.jsx'))
+const VaultPage = lazy(() => import('@/features/vault/pages/VaultPage.jsx'))
+const ExhibitionOpsPage = lazy(() => import('@/features/exhibition-ops/pages/ExhibitionOpsPage.jsx'))
+const HeaderPage = lazy(() => import('@/features/page-content/pages/HeaderPage.jsx'))
+const FooterPage = lazy(() => import('@/features/page-content/pages/FooterPage.jsx'))
+const BlogPage = lazy(() => import('@/features/blog/pages/BlogPage.jsx'))
+const UsersPage = lazy(() => import('@/features/users/pages/UsersPage.jsx'))
+const RolesPage = lazy(() => import('@/features/rbac/pages/RolesPage.jsx'))
 import RequirePermission from '@/app/routes/RequirePermission.jsx'
 
 export default function AdminRoutes() {
@@ -38,7 +39,7 @@ export default function AdminRoutes() {
           path="dashboard"
           element={
           <RequirePermission resource="dashboard">
-            <DashboardPage />
+            <Suspense fallback={null}><DashboardPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -46,7 +47,7 @@ export default function AdminRoutes() {
           path="collections"
           element={
           <RequirePermission resource="collections">
-            <CollectionsPage />
+            <Suspense fallback={null}><CollectionsPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -54,7 +55,7 @@ export default function AdminRoutes() {
           path="team"
           element={
           <RequirePermission resource="team">
-            <TeamPage />
+            <Suspense fallback={null}><TeamPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -62,7 +63,7 @@ export default function AdminRoutes() {
           path="brands"
           element={
           <RequirePermission resource="brands">
-            <BrandsPage />
+            <Suspense fallback={null}><BrandsPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -70,7 +71,7 @@ export default function AdminRoutes() {
           path="exhibitions"
           element={
           <RequirePermission resource="exhibitions">
-            <ExhibitionsPage />
+            <Suspense fallback={null}><ExhibitionsPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -78,7 +79,7 @@ export default function AdminRoutes() {
           path="inquiries"
           element={
           <RequirePermission resource="inquiries">
-            <InquiriesPage />
+            <Suspense fallback={null}><InquiriesPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -86,7 +87,7 @@ export default function AdminRoutes() {
           path="editor"
           element={
           <RequirePermission resource="content">
-            <EditorPage />
+            <Suspense fallback={null}><EditorPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -104,7 +105,7 @@ export default function AdminRoutes() {
           path="exhibitions/:id/ops/:tab?"
           element={
           <RequirePermission resource="exhibitionOps">
-            <ExhibitionOpsPage />
+            <Suspense fallback={null}><ExhibitionOpsPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -112,7 +113,7 @@ export default function AdminRoutes() {
           path="vault"
           element={
           <RequirePermission resource="notes">
-            <VaultPage />
+            <Suspense fallback={null}><VaultPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -120,7 +121,7 @@ export default function AdminRoutes() {
           path="sections/new"
           element={
           <RequirePermission resource="sections">
-            <SectionDesignerPage />
+            <Suspense fallback={null}><SectionDesignerPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -128,7 +129,7 @@ export default function AdminRoutes() {
           path="sections/:id"
           element={
           <RequirePermission resource="sections">
-            <SectionDesignerPage />
+            <Suspense fallback={null}><SectionDesignerPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -138,7 +139,7 @@ export default function AdminRoutes() {
           path="header"
           element={
           <RequirePermission resource="header">
-            <HeaderPage />
+            <Suspense fallback={null}><HeaderPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -146,7 +147,7 @@ export default function AdminRoutes() {
           path="footer"
           element={
           <RequirePermission resource="footer">
-            <FooterPage />
+            <Suspense fallback={null}><FooterPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -154,7 +155,7 @@ export default function AdminRoutes() {
           path="blog"
           element={
           <RequirePermission resource="blog">
-            <BlogPage />
+            <Suspense fallback={null}><BlogPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -162,7 +163,7 @@ export default function AdminRoutes() {
           path="seo"
           element={
           <RequirePermission resource="seo">
-            <SeoPage />
+            <Suspense fallback={null}><SeoPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -170,7 +171,7 @@ export default function AdminRoutes() {
           path="visitors"
           element={
           <RequirePermission resource="visitors">
-            <VisitorsPage />
+            <Suspense fallback={null}><VisitorsPage /></Suspense>
           </RequirePermission>
           }
         />
@@ -179,7 +180,7 @@ export default function AdminRoutes() {
           path="users"
           element={
             <RequirePermission resource="users">
-              <UsersPage />
+              <Suspense fallback={null}><UsersPage /></Suspense>
             </RequirePermission>
           }
         />
@@ -187,7 +188,7 @@ export default function AdminRoutes() {
           path="roles"
           element={
             <RequirePermission resource="roles">
-              <RolesPage />
+              <Suspense fallback={null}><RolesPage /></Suspense>
             </RequirePermission>
           }
         />
@@ -195,7 +196,7 @@ export default function AdminRoutes() {
           path="settings"
           element={
           <RequirePermission resource="settings">
-            <SettingsPage />
+            <Suspense fallback={null}><SettingsPage /></Suspense>
           </RequirePermission>
           }
         />
