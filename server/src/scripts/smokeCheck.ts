@@ -142,7 +142,7 @@ async function timed(url: string, init?: RequestInit) {
   return { status: response.status, ms: Math.round(performance.now() - started), body, headers: response.headers };
 }
 
-const PAGES = ["/", "/AboutPage", "/our-team", "/our-brand", "/our-collection", "/contact", "/Exhibition", "/blog", "/admin/login"];
+const PAGES = ["/", "/AboutPage", "/our-team", "/our-brand", "/our-collection", "/contact", "/Exhibition", "/blog"];
 
 const PUBLIC_API = [
   "/api/health",
@@ -191,6 +191,13 @@ async function checkServer(): Promise<void> {
     if (result.ms > HARD_MS) fail(`page ${page}`, `${result.ms} ms (limit ${HARD_MS})`);
     else pass(`page ${page}`, `${result.ms} ms`);
   }
+
+  // The admin page: open to everyone, or hidden from this address (ADMIN_ALLOWED_IPS).
+  // Both are correct; only a server error is a problem.
+  const admin = await timed(`${BASE}/admin/login`);
+  if (admin.status === 200) pass("page /admin/login", "open to this address");
+  else if (admin.status === 404) pass("page /admin/login", "hidden from this address (ADMIN_ALLOWED_IPS is working)");
+  else fail("page /admin/login", `status ${admin.status}`);
 
   const assets = [...shell.matchAll(/(?:src|href)="(\/(?:assets|fonts)\/[^"]+)"/g)].map((m) => m[1]);
   for (const asset of new Set(assets)) {

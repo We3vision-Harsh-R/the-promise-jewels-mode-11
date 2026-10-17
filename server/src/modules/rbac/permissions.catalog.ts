@@ -137,6 +137,16 @@ export const RESOURCES: ResourceDefinition[] = [
   },
 
   {
+    key: "adminNetwork",
+    label: "Admin access",
+    // Shown inside Settings, under the password box — not a screen of its own.
+    path: "/admin/settings",
+    group: "System",
+    description:
+      "Which internet addresses may open the admin panel at all. Changing it can lock everyone out of the panel, so it is held only by the Master role until it is granted on purpose.",
+    actions: ["view", "create", "edit", "delete"],
+  },
+  {
     key: "notes",
     label: "Vault",
     path: "/admin/vault",

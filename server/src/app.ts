@@ -15,6 +15,7 @@ import { normaliseQuery } from "./middleware/validation.middleware.js";
 import { EMBED_HOSTS } from "./modules/blog/blog.sanitize.js";
 import routes from "./routes/index.js";
 import { publicCache } from "./middleware/publicCache.middleware.js";
+import { adminNetwork } from "./middleware/adminNetwork.middleware.js";
 
 const app = express();
 
@@ -136,6 +137,12 @@ app.use(
 
 // Compression
 app.use(compression());
+
+// The admin panel and every private API call answer only to the addresses in
+// ADMIN_ALLOWED_IPS. Placed before anything that reads a body, a cookie or the
+// database, so a refused request costs nothing. Does nothing when the list is
+// empty. See middleware/adminNetwork.middleware.ts.
+app.use(adminNetwork);
 
 // Body parsers, with an explicit ceiling.
 //

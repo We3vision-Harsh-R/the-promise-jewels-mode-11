@@ -8,6 +8,8 @@ import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { startKeepAlive } from "./jobs/keepAlive.js";
 import { warmPublicCache } from "./middleware/publicCache.middleware.js";
+import { describeAdminNetwork } from "./middleware/adminNetwork.middleware.js";
+import { startAdminNetworkRefresh } from "./modules/admin-network/admin-network.service.js";
 import { startVisitorTracking } from "./modules/visitors/visitor.service.js";
 import { installResilience } from "./utils/resilience.js";
 import { ensureMasterRole } from "./modules/rbac/rbac.service.js";
@@ -55,6 +57,10 @@ app.use((req, res, next) => {
     );
 });
 
+// Read the saved list of admin addresses before anyone can ask for the panel:
+// requests that arrive in the first moments wait for it (see adminNetwork).
+startAdminNetworkRefresh();
+
 // Bind the port first. A slow or failing frontend must not stop the API from
 // coming up, and tooling that waits on the port gets an immediate answer.
 const httpServer = app.listen(env.PORT, () => {
@@ -72,6 +78,24 @@ const httpServer = app.listen(env.PORT, () => {
   // Fills the public cache now, so the first visitor after a restart is not
   // the one who waits on the database.
   warmPublicCache(env.PORT);
+
+  // Say, every time, whether the admin panel is closed to the internet.
+  // The saved list is still being read at this moment; say what is known now.
+  const network = describeAdminNetwork();
+  if (network.invalid.length) {
+    logger.warn(`[admin-network] ignored invalid ADMIN_ALLOWED_IPS entries: ${network.invalid.join(", ")}`);
+  }
+  if (network.guardOff) {
+    logger.warn("[admin-network] ADMIN_IP_GUARD=off: the address protection is switched off");
+  } else if (network.baseline > 0) {
+    logger.info(
+      `[admin-network] ${network.enforced ? "enforcing" : "REPORT ONLY — refusing nobody"}: ${network.baseline} address${network.baseline === 1 ? "" : "es"} from the host's settings (plus the list saved in Settings > Admin access)`,
+    );
+  } else {
+    logger.info(
+      "[admin-network] no address in the host's settings; the list saved in Settings > Admin access decides (open until it is turned on)",
+    );
+  }
 
   // Batches visitor pings into the database and clears out old history.
   startVisitorTracking();

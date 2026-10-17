@@ -1125,3 +1125,37 @@ model VisitorPageView {
   @@index([page])
   @@map("visitor_page_views")
 }
+
+// ---------------------------------------------------------------------------
+// Admin access
+//
+// Which addresses may open the admin panel — the list the admin network guard
+// (middleware/adminNetwork.middleware.ts) enforces — edited from Admin > Admin
+// access instead of the host's settings. The list in the host's environment
+// (ADMIN_ALLOWED_IPS) is a separate, permanent baseline that this screen cannot
+// remove: it is the way back in if a mistake here locks everyone out.
+// ---------------------------------------------------------------------------
+
+model AdminAccessRule {
+  id        String   @id @default(uuid())
+  /// "203.0.113.10", "203.0.113.0/24" or an IPv6 address.
+  address   String   @unique
+  label     String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_access_rules")
+}
+
+model AdminAccessSettings {
+  /// Always "default": there is one row.
+  id        String   @id
+  /// False until someone turns the protection on.
+  enabled   Boolean  @default(false)
+  /// "report" logs who would be refused and refuses nobody; "enforce" refuses.
+  mode      String   @default("report")
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_access_settings")
+}

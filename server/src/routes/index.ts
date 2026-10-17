@@ -20,6 +20,7 @@ import rbacRoutes from "../modules/rbac/rbac.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
 import visitorRoutes from "../modules/visitors/visitor.routes.js";
 import teamRoutes, { teamAdminRoutes } from "../modules/team/team.routes.js";
+import adminNetworkRoutes from "../modules/admin-network/admin-network.routes.js";
 
 const router = Router();
 //public routes
@@ -39,6 +40,8 @@ router.use("/brands", brandRoutes);
 // The people on the Our Team page. GET is public; /admin/team is guarded.
 router.use("/team", teamRoutes);
 router.use("/admin/team", teamAdminRoutes);
+// Which addresses may open the admin panel (Settings > Admin access).
+router.use("/admin/network", adminNetworkRoutes);
 router.use("/admin/brands", brandAdminRoutes);
 router.use("/collections", collectionRoutes);
 router.use("/admin/collections", collectionAdminRoutes);

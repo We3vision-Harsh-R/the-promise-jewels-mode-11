@@ -6,6 +6,7 @@ import { useToast } from '@/components/feedback/Toast.jsx'
 import Card from '@/components/ui/Card.jsx'
 import Button from '@/components/ui/Button.jsx'
 import { Field, Input, Textarea } from '@/components/forms/Field.jsx'
+import AdminAccessCard from '@/features/settings/components/AdminAccessCard.jsx'
 
 
 // Same frosted-glass tokens as every other glass surface in the admin (see
@@ -297,6 +298,9 @@ export default function SettingsPage() {
         </Card>
 
 
+        {/* The password box, and under it the list of addresses that may open this
+          admin panel at all (shown only to roles that hold "Admin access"). */}
+        <div className="space-y-5">
         <Card glass className="p-5 sm:p-6 dark-surface" style={CARD_GLASS}>
           <div className="mb-5 flex items-center gap-2.5">
             <HeaderIcon icon={KeyRound} />
@@ -317,6 +321,9 @@ export default function SettingsPage() {
             </div>
           </form>
         </Card>
+
+          <AdminAccessCard />
+        </div>
       </div>
     </div>
   )

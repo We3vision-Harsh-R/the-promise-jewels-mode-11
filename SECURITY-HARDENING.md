@@ -182,3 +182,61 @@ different from one another.
 - **An audit trail.** Nothing records who read which enquiry or lead.
 - **MFA beyond the emailed code**, and the emailed code is off by default (see
   the OTP notes in `brain.md`).
+
+---
+
+## Admin panel network guard
+
+**Where the list is managed.** In the admin panel: **Settings → Admin access** (under the password box). Add an address or range with a name, use **Add my current address**, then turn the protection on — first in report-only mode, later in refuse mode. The screen refuses any change that would lock its user out, and it shows the address the website sees for you. Changes apply at once and survive a restart. The host's `ADMIN_ALLOWED_IPS` is a second, permanent list that the screen cannot remove (put the one or two addresses that must never be locked out there). `ADMIN_IP_GUARD=off` in the host's settings switches the whole thing off, whatever is saved — the last resort. Holding the **Admin access** permission (Master only by default) is needed to see or change it.
+
+**What it does.** With a list active (the host's, the saved one, or both), the admin panel and every private
+API call answer only to the listed addresses. Anyone else is told the page does
+not exist (404) before any of the application's code runs — the sign-in page is
+not even visible to them. The public website, its API reads, the contact form and
+the visitor ping keep working for everyone.
+
+**Deny by default.** The guard does not list admin routes to block; it lists the
+few things the public website needs (`PUBLIC_RULES` in
+`server/src/middleware/adminNetwork.middleware.ts`) and refuses the rest of
+`/api` and all of `/admin`. A route added tomorrow is private until someone adds it.
+
+**Setting it up (host environment, never the repository):**
+
+| Variable | Example | Meaning |
+|---|---|---|
+| `ADMIN_ALLOWED_IPS` | `203.0.113.10,198.51.100.0/24` | Permanent addresses or IPv4 ranges, in addition to the list saved in Settings. `0.0.0.0/0` is refused. |
+| `ADMIN_IP_GUARD` | `off` | Switches the protection off completely (the way out of a lock-out). |
+| `ADMIN_IP_MODE` | `report` or `enforce` | `report` logs who WOULD be refused and refuses nobody. Default `enforce`. |
+| `TRUST_PROXY_HOPS` | `1` | How many proxies sit in front of the app. Must be right: see below. |
+
+**Safe roll-out**
+
+1. Set `ADMIN_ALLOWED_IPS` (the office, your own address, and any backup line) and
+   `ADMIN_IP_MODE=report`. Redeploy.
+2. Use the admin panel from the office. Read the host's log for lines containing
+   `admin.would_block`. If the office address appears there, the server is seeing a
+   different address from the one on the list — fix the list.
+3. When the log is quiet for the people who should get in, remove `ADMIN_IP_MODE`
+   (or set `enforce`). Redeploy.
+4. If anyone is ever locked out (an office changes its internet address), set
+   `ADMIN_IP_GUARD=off` in the host's settings and redeploy: the panel is open again
+   behind its password and emailed code until the list is fixed. Addresses in
+   `ADMIN_ALLOWED_IPS` keep working even while the saved list is wrong.
+
+**The one thing that can defeat it.** The guard trusts the address the server sees.
+Behind a host's proxy that is the last entry of `X-Forwarded-For`, which the proxy
+writes. `TRUST_PROXY_HOPS` must equal the number of proxies in front of the app: too
+low and everybody looks like the proxy (everyone locked out), too high and a visitor
+can write their own header and walk in. `npm run security:check` proves the
+forged-header case is refused.
+
+**What it does not do.** It is not a replacement for the password and emailed code
+(those stay); it does not protect an admin whose laptop or email is already
+compromised; and it cannot stop a listed office from being used by someone inside it.
+Two-step verification on the host, database, domain and email accounts matters more
+than any list.
+
+**Nothing connects the website to anyone's network.** The server has no tunnel,
+VPN, remote shell or file-transfer code, and its only outbound web calls are to
+itself and the email service. `npm run security:check` (section 7) fails if that
+changes.

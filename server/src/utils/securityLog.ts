@@ -32,6 +32,12 @@ export type SecurityEvent =
   | "user.updated"
   | "user.deleted"
   | "csrf.blocked"
+  // The admin network guard (middleware/adminNetwork.middleware.ts): a request
+  // from an address that is not on ADMIN_ALLOWED_IPS, for something private.
+  | "admin.blocked"
+  | "admin.would_block"
+  // Someone changed the list of addresses (or the on/off switch) from Settings.
+  | "admin.network.changed"
   | "ratelimit.tripped"
   | "upload.rejected";
 
