@@ -397,7 +397,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         <div ref={markRef} className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center">
           <div className="relative flex h-full w-full items-center justify-center rounded-full border border-brass-300/25 bg-ink-900/60 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-            <img src="/images/PROMISE_LOGO_skin_icon_only.webp" alt="Promise Jewel" className="h-full w-full object-contain drop-shadow-lg" />
+            <img src="/images/PROMISE_LOGO_skin_icon_only.webp" alt="Promise Jewels" className="h-full w-full object-contain drop-shadow-lg" />
           </div>
         </div>
 
@@ -417,7 +417,7 @@ export default function LoginPage() {
             <div ref={panelRef} className="relative">
               {mode === 'login' && (
                 <>
-                  <StepHeading title="Promise Jewel" subtitle="Sign in to the Admin Portal" />
+                  <StepHeading title="Promise Jewels" subtitle="Sign in to the Admin Portal" />
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* required dropped from Field (hides its "*" mark, matching
                         the reference); native `required` still passed to the
