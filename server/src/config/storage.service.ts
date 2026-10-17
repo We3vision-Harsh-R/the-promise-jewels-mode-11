@@ -20,6 +20,12 @@ buffer,
 {
 contentType:mimeType,
 upsert:false,
+// Every upload goes to a path that starts with a timestamp, so a given
+// address always means the same picture and a replaced picture gets a NEW
+// address. That makes it safe to let browsers keep the file for a year;
+// without this Supabase answers "no-cache" and every visit re-asks for
+// every picture on the page.
+cacheControl:"31536000",
 }
 );
 

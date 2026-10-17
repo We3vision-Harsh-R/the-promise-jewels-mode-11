@@ -56,6 +56,7 @@ const PUBLIC_GET: RegExp[] = [
   /^\/settings\/public$/,
   /^\/blog\/public(\/[^/]+)?$/,
   /^\/brands(\/[^/]+)?$/,
+  /^\/team$/,
   /^\/collections(\/[^/]+)?$/,
   /^\/exhibitions$/,
   /^\/exhibitions\/search$/,
@@ -244,10 +245,11 @@ export function publicCache(req: Request, res: Response, next: NextFunction): vo
 const WARM_PATHS = [
   "/settings/public",
   "/brands",
+  "/team",
   "/collections",
   "/exhibitions",
   "/blog/public",
-  ...["home", "about", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
+  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
     (page) => [`/page-content/public/${page}`, `/page-content/public/${page}/layout`],
   ),
 ];

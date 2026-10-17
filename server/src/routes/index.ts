@@ -19,6 +19,7 @@ import blogRoutes from "../modules/blog/blog.routes.js";
 import rbacRoutes from "../modules/rbac/rbac.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
 import visitorRoutes from "../modules/visitors/visitor.routes.js";
+import teamRoutes, { teamAdminRoutes } from "../modules/team/team.routes.js";
 
 const router = Router();
 //public routes
@@ -35,6 +36,9 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/exhibitions", exhibitionRoutes);
 router.use("/seo", seoRoutes);
 router.use("/brands", brandRoutes);
+// The people on the Our Team page. GET is public; /admin/team is guarded.
+router.use("/team", teamRoutes);
+router.use("/admin/team", teamAdminRoutes);
 router.use("/admin/brands", brandAdminRoutes);
 router.use("/collections", collectionRoutes);
 router.use("/admin/collections", collectionAdminRoutes);

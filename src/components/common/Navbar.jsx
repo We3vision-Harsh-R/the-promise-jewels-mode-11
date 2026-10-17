@@ -12,7 +12,7 @@ import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 const MENU = [
   { title: "Home", href: "/" },
   { title: "About", href: "/AboutPage" },
-  { title: "Our Team", href: "/AboutPage", hash: "team" },
+  { title: "Our Team", href: "/our-team" },
   { title: "Our Brand", href: "/our-brand" },
   { title: "Collections", href: "/our-collection" },
   { title: "Exhibition Highlights", href: "/Exhibition" },

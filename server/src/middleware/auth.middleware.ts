@@ -83,6 +83,13 @@ const authHandler = async (
           name:true,
           email:true,
           isActive:true,
+          // requireAdmin (authorize.middleware.ts) reads req.user.role. It was
+          // never selected here, so every account looked role-less and EVERY
+          // route behind requireAdmin answered 403 to everyone: saving the
+          // site Settings, editing SEO, and deleting a brand, collection,
+          // exhibition, blog post, enquiry or media file. The permission check
+          // (requirePermission) is still the gate that decides who may.
+          role:true,
         },
 
       });

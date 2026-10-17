@@ -12,6 +12,7 @@ import {
   ExhibitionDetailPage,
   BlogListPage,
   BlogPostPage,
+  OurTeamPage,
   NotFoundPage,
 } from '@/app/routes/lazyPages.js'
 
@@ -32,6 +33,7 @@ export default function AppRoutes() {
       <Route path="/" element={<ClientLayout />}>
         <Route index element={<Home />} />
         <Route path="AboutPage" element={<AboutPage />} />
+        <Route path="our-team" element={<OurTeamPage />} />
         <Route path="our-brand" element={<OurBrandsPage />} />
         <Route path="our-collection" element={<OurCollectionPage />} />
         <Route path="our-collection/:categoryId" element={<CollectionDetailsPage />} />

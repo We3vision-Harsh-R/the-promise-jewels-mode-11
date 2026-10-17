@@ -45,6 +45,7 @@ const PUBLIC: Array<{ file: string; method: string; route: string; why: string }
 
   { file: "inquiry.routes.ts", method: "post", route: "/contact", why: "the public contact form, rate-limited" },
 
+  { file: "team.routes.ts", method: "get", route: "/", why: "the website's Our Team page" },
   { file: "visitor.routes.ts", method: "post", route: "/ping", why: "the website tells us a visitor is here; rate-limited, stores only a country" },
 
   { file: "brand.routes.ts", method: "get", route: "/", why: "the website lists brands" },

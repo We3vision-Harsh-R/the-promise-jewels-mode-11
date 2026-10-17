@@ -7,6 +7,26 @@ import PageTransition from "@/components/common/PageTransition.jsx";
 import { scrollToTop, settleToSection } from "@/utils/scroll.js";
 import { prefetchPages } from "@/app/routes/lazyPages.js";
 import { pingVisit } from "@/features/visitors/tracker.js";
+import { ScrollTrigger } from "@/lib/gsap.js";
+
+/**
+ * Rendered next to the page, inside the same Suspense boundary, so it mounts
+ * only once the page's code has arrived. Pages are loaded on demand, and the
+ * page's pins are created as it mounts — measuring them again a moment later,
+ * when the layout has settled, is what keeps their start and end positions true.
+ */
+function RemeasureWhenPageMounts() {
+  useEffect(() => {
+    const first = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+    const second = window.setTimeout(() => ScrollTrigger.refresh(), 900);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(second);
+    };
+  }, []);
+
+  return null;
+}
 
 export default function ClientLayout() {
   const { pathname, hash } = useLocation();
@@ -61,6 +81,7 @@ export default function ClientLayout() {
       <PageTransition key={pathname}>
         <Suspense fallback={null}>
           <Outlet />
+          <RemeasureWhenPageMounts />
         </Suspense>
       </PageTransition>
     </div>

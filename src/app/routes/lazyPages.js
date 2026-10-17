@@ -21,6 +21,7 @@ const loaders = {
   ExhibitionDetailPage: () => import('@/features/exhibitions/pages/ExhibitionDetailPage.jsx'),
   BlogListPage: () => import('@/features/blog/pages/BlogListPage.jsx'),
   BlogPostPage: () => import('@/features/blog/pages/BlogPostPage.jsx'),
+  OurTeamPage: () => import('@/features/team/pages/OurTeamPage.jsx'),
   NotFoundPage: () => import('@/pages/NotFound/NotFoundPage.jsx'),
 }
 
@@ -33,6 +34,7 @@ export const ExhibitionPage = lazy(loaders.ExhibitionPage)
 export const ExhibitionDetailPage = lazy(loaders.ExhibitionDetailPage)
 export const BlogListPage = lazy(loaders.BlogListPage)
 export const BlogPostPage = lazy(loaders.BlogPostPage)
+export const OurTeamPage = lazy(loaders.OurTeamPage)
 export const NotFoundPage = lazy(loaders.NotFoundPage)
 
 let started = false

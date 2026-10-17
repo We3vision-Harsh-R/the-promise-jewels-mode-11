@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
+import { useNavigate } from "react-router-dom";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
 
 /**
@@ -118,6 +119,7 @@ const CIRCLE_COMPONENT_VARS =
 // copy (their Editor tabs say so); About keeps its own and passes page="about".
 export default function GrowthSection({ page = "home" } = {}) {
   const text = useSectionContent(page, "growth", GROWTH_TEXT);
+  const navigate = useNavigate();
   const sectionRef = useRef(null);
   const outerRef = useRef(null);
   const outerWrapperRef = useRef(null);
@@ -278,6 +280,10 @@ export default function GrowthSection({ page = "home" } = {}) {
                 {text.subtitle}
               </p>
               <button
+                type="button"
+                // "Get Started" goes to the Contact page. The button used to do
+                // nothing at all, on every page that shows this band.
+                onClick={() => navigate("/contact")}
                 style={{
                   color: text.ctaLabelColor,
                   ...typeStyle(text, 'ctaLabel'),

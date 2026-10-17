@@ -8,6 +8,7 @@ declare global {
         name: string;
         email: string;
         isActive: boolean;
+        role?: string;
       } & Partial<JwtPayload>;
 
       userId?: string;

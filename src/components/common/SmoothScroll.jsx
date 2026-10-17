@@ -3,6 +3,62 @@ import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap.js";
 
 /**
+ * Keeps ScrollTrigger's measurements true after the page changes size.
+ *
+ * Pinned sections are measured once, when they are created. Anything that
+ * changes the page's height afterwards — a webfont swapping in and re-wrapping
+ * the text, a photograph arriving, a section that loads after the first paint —
+ * moves everything below it, and from then on pins start and end in the wrong
+ * place: a pillar list that releases early, a band that jumps. So the page's
+ * height is watched, and once it has stopped changing for a moment everything
+ * is measured again. At most one re-measure a second.
+ */
+function useRemeasureOnResize() {
+  useEffect(() => {
+    let settleTimer = 0;
+    let lastRefresh = 0;
+    let lastHeight = document.documentElement.scrollHeight;
+
+    const remeasure = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        const height = document.documentElement.scrollHeight;
+        if (Math.abs(height - lastHeight) < 4) return;
+
+        const wait = 1000 - (Date.now() - lastRefresh);
+        if (wait > 0) {
+          settleTimer = window.setTimeout(remeasure, wait);
+          return;
+        }
+
+        lastRefresh = Date.now();
+        ScrollTrigger.refresh();
+        // The refresh itself resizes the pin spacers; remember the height it
+        // settled at so that does not count as a change.
+        lastHeight = document.documentElement.scrollHeight;
+      }, 300);
+    };
+
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(remeasure);
+    observer?.observe(document.body);
+
+    // Fonts are the commonest cause: the first measure is taken in the fallback
+    // face, and the real one is a different width.
+    document.fonts?.ready.then(() => {
+      lastRefresh = Date.now();
+      ScrollTrigger.refresh();
+      lastHeight = document.documentElement.scrollHeight;
+    });
+
+    return () => {
+      window.clearTimeout(settleTimer);
+      observer?.disconnect();
+    };
+  }, []);
+}
+
+/**
  * Site-wide smooth scrolling.
  *
  * Three things have to be wired together or the pinned sections break:
@@ -24,6 +80,9 @@ import { gsap, ScrollTrigger } from "@/lib/gsap.js";
  * Honours prefers-reduced-motion by not initialising at all.
  */
 export default function SmoothScroll() {
+  // Runs on every device, including the touch ones that skip the smoothing below.
+  useRemeasureOnResize();
+
   useEffect(() => {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"

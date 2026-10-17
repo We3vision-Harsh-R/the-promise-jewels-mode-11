@@ -73,6 +73,14 @@ export const RESOURCES: ResourceDefinition[] = [
     actions: ["view", "create", "edit", "delete"],
   },
   {
+    key: "team",
+    label: "Our Team",
+    path: "/admin/team",
+    group: "Management",
+    description: "The people shown on the website's Our Team page: their photographs, names and roles.",
+    actions: ["view", "create", "edit", "delete"],
+  },
+  {
     key: "exhibitionOps",
     label: "Exhibition operations",
     path: "/admin/exhibitions",

@@ -9,6 +9,7 @@ import ExhibitionsPage from '@/features/exhibitions/pages/ExhibitionsPage.jsx'
 import InquiriesPage from '@/features/inquiries/pages/InquiriesPage.jsx'
 import SeoPage from '@/features/seo/pages/SeoPage.jsx'
 import VisitorsPage from '@/features/visitors/pages/VisitorsPage.jsx'
+import TeamPage from '@/features/team/pages/TeamPage.jsx'
 import SettingsPage from '@/features/settings/pages/SettingsPage.jsx'
 import EditorPage from '@/features/page-content/pages/EditorPage.jsx'
 import SectionDesignerPage from '@/features/page-content/pages/SectionDesignerPage.jsx'
@@ -46,6 +47,14 @@ export default function AdminRoutes() {
           element={
           <RequirePermission resource="collections">
             <CollectionsPage />
+          </RequirePermission>
+          }
+        />
+        <Route
+          path="team"
+          element={
+          <RequirePermission resource="team">
+            <TeamPage />
           </RequirePermission>
           }
         />

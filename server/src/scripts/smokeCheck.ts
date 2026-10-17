@@ -142,16 +142,17 @@ async function timed(url: string, init?: RequestInit) {
   return { status: response.status, ms: Math.round(performance.now() - started), body, headers: response.headers };
 }
 
-const PAGES = ["/", "/AboutPage", "/our-brand", "/our-collection", "/contact", "/Exhibition", "/blog", "/admin/login"];
+const PAGES = ["/", "/AboutPage", "/our-team", "/our-brand", "/our-collection", "/contact", "/Exhibition", "/blog", "/admin/login"];
 
 const PUBLIC_API = [
   "/api/health",
   "/api/v1/settings/public",
   "/api/v1/brands",
+  "/api/v1/team",
   "/api/v1/collections",
   "/api/v1/exhibitions",
   "/api/v1/blog/public",
-  ...["home", "about", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
+  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
     (page) => [`/api/v1/page-content/public/${page}`, `/api/v1/page-content/public/${page}/layout`],
   ),
 ];
@@ -161,6 +162,7 @@ const MUST_BE_LOGGED_IN = [
   "/api/v1/users",
   "/api/v1/rbac/roles",
   "/api/v1/vault",
+  "/api/v1/admin/team",
   "/api/v1/visitors/live",
   "/api/v1/visitors/summary",
   "/api/v1/inquiries",

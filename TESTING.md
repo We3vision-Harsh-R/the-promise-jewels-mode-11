@@ -87,9 +87,10 @@ records exist), and every button or link goes somewhere.
 | Address | Also check |
 |---|---|
 | `/` | hero, featured collections, brands, exhibitions, "Let's Drive Growth" |
-| `/AboutPage` and `/AboutPage#team` | the "team" link scrolls to Our Leaders |
+| `/AboutPage` and `/AboutPage#team` | the "team" link scrolls to Our Leaders; in Our Pillars a diamond turns as you scroll (wide screens, and small on a phone); the "Get Started" button at the bottom opens `/contact` |
+| `/our-team` | every person shown in Admin → Our Team appears with photo, name and role; one with no photo shows initials; an empty team shows the "introduced soon" message |
 | `/our-brand` | brand rows, closing band |
-| `/our-collection` | brand tabs filter, a collection tile opens its page |
+| `/our-collection` | brand tabs filter, a collection tile opens its page; a white-background product photo sits on an ivory mat, a dark photograph fills its card |
 | `/our-collection/<a real slug>` | description, specifications, gallery, enquiry form |
 | `/our-collection/not-a-collection` | shows "Collection not found" with a way back |
 | `/contact` | phone/email/address match Admin → Settings; form validation messages |
@@ -103,10 +104,15 @@ same on both.
 ### Step 3 — admin panel (15 minutes)
 
 Sign in at `/admin` with your test account. Open every screen from the sidebar:
-Dashboard, Collections, Brands, Inquiries, Shows (and the operations screens),
+Dashboard, Collections, Brands, **Our Team**, Inquiries, Shows (and the operations screens),
 Content, Header, Footer, Blog, SEO, **Visitors**, Settings, Users, Roles, Vault.
 Each must load without an error banner. Visit `/admin/not-a-page` — it must land
 on the dashboard, not loop.
+
+**Our Team** (add, edit, replace the photo, remove the photo, hide, reorder with the
+arrows, delete): after each change reload `/our-team` — it must match at once. Use a
+fake person (`TEST – ignore`) and delete them when finished; deleting also removes
+the photo from storage.
 
 ### Step 4 — edit text, colours, fonts, pictures (the main feature)
 

@@ -63,6 +63,7 @@ const NAV = [
     items: [
       { to: '/admin/collections', label: 'Collections', icon: Gem, resource: 'collections' },
       { to: '/admin/brands', label: 'Brands', icon: Building2, resource: 'brands' },
+      { to: '/admin/team', label: 'Our Team', icon: UsersRound, resource: 'team' },
       { to: '/admin/inquiries', label: 'Inquiries', icon: MessagesSquare, resource: 'inquiries' },
     ],
   },

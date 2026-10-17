@@ -20,7 +20,7 @@ import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 const NAV_LINKS = [
   { label: "Home", to: "/" },
   { label: "About", to: "/AboutPage" },
-  { label: "Our Team", to: "/AboutPage#team" },
+  { label: "Our Team", to: "/our-team" },
   { label: "Our Brand", to: "/our-brand" },
   { label: "Our Collection", to: "/our-collection" },
   { label: "Our Exhibition", to: "/Exhibition" },

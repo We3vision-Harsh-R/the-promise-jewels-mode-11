@@ -109,6 +109,13 @@ export const uploadImage: RequestHandler[] = [
   verifyUploads,
 ];
 
+// Team member: one photograph
+export const uploadTeamPhoto: RequestHandler[] = [
+  uploadLimiter,
+  handleUploadErrors(upload.single("photo")),
+  verifyUploads,
+];
+
 // Brand: logo (1), banner (1), gallery (up to 10)
 export const uploadBrandImages: RequestHandler[] = [
   uploadLimiter,

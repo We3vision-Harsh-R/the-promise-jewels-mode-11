@@ -1357,6 +1357,49 @@ const ENQUIRY_SECTIONS: ContentSection[] = [
   },
 ];
 
+// --- Our Team page ---------------------------------------------------------
+//
+// The people themselves — photographs, names and roles — are records managed
+// under Admin > Our Team. What is edited here is the page around them.
+
+const TEAM_SECTIONS: ContentSection[] = [
+  {
+    key: "hero",
+    label: "Hero",
+    description: "The opening screen of the Our Team page.",
+    fields: heroFields({
+      eyebrow: "Our Team",
+      title: "The People Behind the Promise",
+      subtitle:
+        "Behind every piece that leaves our workshop is a team that designs, casts, sets, finishes and checks it. These are the people who keep the promise.",
+      ctaLabel: "Meet the Team",
+    }),
+  },
+  inquirySection(
+    "members",
+    "The team",
+    "Each person is a record with a photograph, a name and a role — managed under Our Team, not here. Only the heading above the photographs and the message shown when nobody is listed yet are edited here.",
+    { label: "Open Our Team", path: "/admin/team" },
+    [
+      ...typed({ key: "headingLight", label: "Heading — first word", type: "text", default: "Meet the", max: MEDIUM }),
+      ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "Team", max: MEDIUM }),
+      {
+        key: "emptyText",
+        label: "Message when nobody is listed yet",
+        type: "textarea",
+        default: "Our team will be introduced here soon.",
+        max: LONG,
+      },
+    ],
+  ),
+  structural(
+    "growth",
+    "Let's Drive Growth",
+    "The closing call to action. Its words are the Home page's — edit them there.",
+    { label: "Edit under Content > Home page", path: "/admin/editor" },
+  ),
+];
+
 // --- Collection and exhibition detail pages --------------------------------
 //
 // The pages a visitor lands on from a tile: /our-collection/<name> and
@@ -1514,6 +1557,7 @@ const FOOTER_SECTIONS: ContentSection[] = [
 export const CONTENT_PAGES: ContentPage[] = [
   { key: "home", label: "Home page", path: "/", sections: withTypography(HOME_SECTIONS), arrangeable: true },
   { key: "about", label: "About page", path: "/AboutPage", sections: withTypography(ABOUT_SECTIONS), arrangeable: true },
+  { key: "team", label: "Our Team page", path: "/our-team", sections: TEAM_SECTIONS, arrangeable: true },
   { key: "collections", label: "Collections page", path: "/our-collection", sections: COLLECTIONS_SECTIONS, arrangeable: true },
   { key: "brands", label: "Brands page", path: "/our-brand", sections: BRANDS_SECTIONS, arrangeable: true },
   { key: "exhibitions", label: "Exhibitions page", path: "/Exhibition", sections: EXHIBITIONS_SECTIONS, arrangeable: true },
