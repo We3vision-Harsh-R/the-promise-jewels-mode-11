@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -141,7 +142,7 @@ if (isProduction) {
     express.static(distDir, {
       index: false,
       setHeaders(res, filePath) {
-        if (filePath.endsWith("index.html")) {
+        if (filePath.endsWith(".html")) {
           res.setHeader("Cache-Control", "no-cache");
           return;
         }
@@ -154,9 +155,12 @@ if (isProduction) {
     }),
   );
 
-  app.get(/.*/, (_req, res) => {
+  // The admin panel is its own page (admin.html) so opening it does not
+  // download the public website's code; everything else gets the website's.
+  app.get(/.*/, (req, res) => {
     res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(path.join(distDir, "index.html"));
+    const page = /^\/admin(\/|$)/.test(req.path) ? "admin.html" : "index.html";
+    res.sendFile(path.join(distDir, page));
   });
 } else {
   // Development: run Vite inside this same process in middleware mode, so one
@@ -185,6 +189,20 @@ if (isProduction) {
           // this stays opt-in and a normal `pnpm dev` keeps full HMR.
           watch: process.env.PJ_NO_WATCH === "1" ? null : undefined,
         },
+      });
+
+      // Same split as production: /admin gets admin.html.
+      app.use(async (req, res, next) => {
+        if (req.method !== "GET" || !/^\/admin(\/|$)/.test(req.path) || req.path.includes(".")) {
+          next();
+          return;
+        }
+        try {
+          const raw = await fs.promises.readFile(path.join(projectRoot, "admin.html"), "utf8");
+          res.status(200).set({ "Content-Type": "text/html" }).end(await vite.transformIndexHtml(req.originalUrl, raw));
+        } catch (error) {
+          next(error);
+        }
       });
 
       app.use(vite.middlewares);

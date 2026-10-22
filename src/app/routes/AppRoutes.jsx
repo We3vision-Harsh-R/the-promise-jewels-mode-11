@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ClientLayout from '@/layouts/MainLayout.jsx'
 import Home from '@/pages/Home/Home.jsx'
@@ -16,16 +16,15 @@ import {
   NotFoundPage,
 } from '@/app/routes/lazyPages.js'
 
-// The admin panel is loaded on demand, not with the website.
-//
-// It was a static import, so its whole dependency tree — Recharts, TipTap and
-// ProseMirror among them — was linked into the single bundle every visitor
-// downloads. Someone reading the homepage was paying to download a charting
-// library and a rich-text editor for a screen they cannot even sign into.
-//
-// Splitting it here means the public site ships without any of that, and the
-// admin chunk is fetched the moment someone actually navigates to /admin.
-const AdminRoutes = lazy(() => import('@/app/routes/AdminRoutes.jsx'))
+// The admin panel is its own page (admin.html, entry admin-main.jsx), so the
+// public bundle carries none of it. A client-side jump to /admin from inside the
+// website becomes a normal page load, which the server answers with that page.
+function OpenAdminPage() {
+  useEffect(() => {
+    window.location.replace(window.location.href)
+  }, [])
+  return null
+}
 
 export default function AppRoutes() {
   return (
@@ -53,11 +52,7 @@ export default function AppRoutes() {
       </Route>
       <Route
         path="/admin/*"
-        element={
-          <Suspense fallback={null}>
-            <AdminRoutes />
-          </Suspense>
-        }
+        element={<OpenAdminPage />}
       />
     </Routes>
   )

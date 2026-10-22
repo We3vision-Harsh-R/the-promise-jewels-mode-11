@@ -10,6 +10,15 @@ import tailwindcss from '@tailwindcss/vite'
 // and the HttpOnly auth cookies are sent without any CORS setup.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Two pages: the public website (index.html) and the admin panel (admin.html).
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        admin: fileURLToPath(new URL('./admin.html', import.meta.url)),
+      },
+    },
+  },
   resolve: {
     alias: {
       // Absolute imports from src. Folder moves no longer mean rewriting a
