@@ -4,6 +4,7 @@ import useReveal from "@/hooks/useReveal.js";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { scrollToTop } from "@/utils/scroll.js";
+import { APP_VERSION } from "@/app/config.js";
 import usePublicSettings from "@/features/settings/hooks/usePublicSettings.js";
 import { SocialLinks } from "@/components/common/SocialIcons.jsx";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
@@ -231,7 +232,8 @@ export default function Footer() {
     </p>
   </div>
 </div>
-    
+
+      <p className="mt-[18px] text-[0.8rem] tracking-[0.08em] text-[#0B5B5D]">Version {APP_VERSION}</p>
 
             {/* Scrolling ticker */}
 <div onMouseEnter={() => setTickerSpeed(0.15)} onMouseLeave={() => setTickerSpeed(1)} className="w-[calc(100%+3.4rem)] -mx-[1.7rem] h-[230px] overflow-hidden whitespace-nowrap mt-[32px] flex items-start min-[768px]:max-[1024px]:w-[calc(100%+3rem)] min-[768px]:max-[1024px]:-mx-[1.5rem] min-[768px]:max-[1024px]:h-[100px] min-[768px]:max-[1024px]:mt-[24px] max-[430px]:w-[calc(100%+2.4rem)] max-[430px]:-mx-[1.2rem] max-[430px]:h-[50px] max-[430px]:mt-[20px]">

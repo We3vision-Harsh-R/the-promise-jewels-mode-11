@@ -7,6 +7,10 @@
 // no CORS, and the HttpOnly auth cookies travel with every request.
 export const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || '/api/v1'
 
+// The version shown in the website footer and under "Admin" in the panel's
+// sidebar. One number for both; change it here when a release goes out.
+export const APP_VERSION = '01'
+
 export const SITE_NAME = import.meta.env?.VITE_SITE_NAME || 'Promise Jewels'
 
 // Where the admin panel is mounted in src/app/routes/AppRoutes.jsx.

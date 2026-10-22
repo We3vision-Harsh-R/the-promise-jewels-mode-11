@@ -12,8 +12,22 @@ import request from '@/services/api/client.js'
  */
 
 /** The caller's own role and permissions, plus the catalogue they are named in. */
+// The panel asks for this at start-up, in parallel with the sign-in check, and
+// the permissions provider asks again a moment later once it knows who signed
+// in. One request answers both, instead of the second waiting for the first.
+let startedAt = 0
+let started = null
 export function getAccessProfile() {
-  return request('/rbac/me')
+  if (started && Date.now() - startedAt < 5000) return started
+  startedAt = Date.now()
+  started = request('/rbac/me')
+  started.catch(() => { started = null })
+  return started
+}
+
+/** Forgets the held answer; called when the signed-in account changes. */
+export function resetAccessProfile() {
+  started = null
 }
 
 export function listRoles() {

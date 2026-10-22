@@ -3,24 +3,25 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import RequireAuth from '@/app/routes/RequireAuth.jsx'
 import AdminLayout from '@/layouts/AdminLayout.jsx'
 import LoginPage from '@/features/auth/pages/LoginPage.jsx'
-const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage.jsx'))
-const CollectionsPage = lazy(() => import('@/features/collections/pages/CollectionsPage.jsx'))
-const BrandsPage = lazy(() => import('@/features/brands/pages/BrandsPage.jsx'))
-const ExhibitionsPage = lazy(() => import('@/features/exhibitions/pages/ExhibitionsPage.jsx'))
-const InquiriesPage = lazy(() => import('@/features/inquiries/pages/InquiriesPage.jsx'))
-const SeoPage = lazy(() => import('@/features/seo/pages/SeoPage.jsx'))
-const VisitorsPage = lazy(() => import('@/features/visitors/pages/VisitorsPage.jsx'))
-const TeamPage = lazy(() => import('@/features/team/pages/TeamPage.jsx'))
-const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage.jsx'))
-const EditorPage = lazy(() => import('@/features/page-content/pages/EditorPage.jsx'))
-const SectionDesignerPage = lazy(() => import('@/features/page-content/pages/SectionDesignerPage.jsx'))
-const VaultPage = lazy(() => import('@/features/vault/pages/VaultPage.jsx'))
-const ExhibitionOpsPage = lazy(() => import('@/features/exhibition-ops/pages/ExhibitionOpsPage.jsx'))
-const HeaderPage = lazy(() => import('@/features/page-content/pages/HeaderPage.jsx'))
-const FooterPage = lazy(() => import('@/features/page-content/pages/FooterPage.jsx'))
-const BlogPage = lazy(() => import('@/features/blog/pages/BlogPage.jsx'))
-const UsersPage = lazy(() => import('@/features/users/pages/UsersPage.jsx'))
-const RolesPage = lazy(() => import('@/features/rbac/pages/RolesPage.jsx'))
+import { adminPageLoaders } from '@/app/routes/adminPageLoaders.js'
+const DashboardPage = lazy(adminPageLoaders.DashboardPage)
+const CollectionsPage = lazy(adminPageLoaders.CollectionsPage)
+const BrandsPage = lazy(adminPageLoaders.BrandsPage)
+const ExhibitionsPage = lazy(adminPageLoaders.ExhibitionsPage)
+const InquiriesPage = lazy(adminPageLoaders.InquiriesPage)
+const SeoPage = lazy(adminPageLoaders.SeoPage)
+const VisitorsPage = lazy(adminPageLoaders.VisitorsPage)
+const TeamPage = lazy(adminPageLoaders.TeamPage)
+const SettingsPage = lazy(adminPageLoaders.SettingsPage)
+const EditorPage = lazy(adminPageLoaders.EditorPage)
+const SectionDesignerPage = lazy(adminPageLoaders.SectionDesignerPage)
+const VaultPage = lazy(adminPageLoaders.VaultPage)
+const ExhibitionOpsPage = lazy(adminPageLoaders.ExhibitionOpsPage)
+const HeaderPage = lazy(adminPageLoaders.HeaderPage)
+const FooterPage = lazy(adminPageLoaders.FooterPage)
+const BlogPage = lazy(adminPageLoaders.BlogPage)
+const UsersPage = lazy(adminPageLoaders.UsersPage)
+const RolesPage = lazy(adminPageLoaders.RolesPage)
 import RequirePermission from '@/app/routes/RequirePermission.jsx'
 
 export default function AdminRoutes() {

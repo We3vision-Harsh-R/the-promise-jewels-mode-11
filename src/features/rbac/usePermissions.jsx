@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { getAccessProfile } from '@/features/rbac/rbac.api.js'
+import { getAccessProfile, resetAccessProfile } from '@/features/rbac/rbac.api.js'
 import { PermissionsContext, usePermissions } from '@/features/rbac/permissionsContext.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
 
@@ -51,6 +51,7 @@ export function PermissionsProvider({ children }) {
 
     return () => {
       alive = false
+      resetAccessProfile()
     }
   }, [userId])
 

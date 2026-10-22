@@ -5,6 +5,7 @@ import {
   UsersRound, ListChecks, CalendarClock, FolderOpen, NotebookPen, SlidersHorizontal, Radio }
   from 'lucide-react'
 import { classNames, initials } from '@/utils/helpers.js'
+import { APP_VERSION } from '@/app/config.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
 import { usePermissions } from '@/features/rbac/permissionsContext.js'
 import { MODULES } from '@/features/exhibition-ops/opsSpec.js'
@@ -416,6 +417,7 @@ function BrandMark() {
       <div className="leading-tight whitespace-nowrap">
         <p className="font-display text-base text-ink-900">Promise Jewel</p>
         <p className="text-[10px] uppercase tracking-wider text-ink-400">Admin</p>
+        <p className="text-[10px] tracking-wider text-ink-400">Version {APP_VERSION}</p>
       </div>
     </div>
   )

@@ -5,6 +5,16 @@ import Providers from '@/app/providers.jsx'
 import AdminRoutes from '@/app/routes/AdminRoutes.jsx'
 
 import '@/assets/styles/globals.css'
+import { preloadAdminPage } from '@/app/routes/adminPageLoaders.js'
+import { getAccessProfile } from '@/features/rbac/rbac.api.js'
+
+// Do not wait for the sign-in check to find out what is needed next: fetch the
+// code of the screen being opened and the signed-in person's permissions now,
+// side by side with it. Without a session these just fail quietly.
+if (!window.location.pathname.startsWith('/admin/login')) {
+  preloadAdminPage(window.location.pathname)
+  getAccessProfile().catch(() => {})
+}
 
 // The admin panel's own entry (admin.html). The public website's entry
 // (main.jsx) and everything only it needs - the page transitions, smooth scroll,

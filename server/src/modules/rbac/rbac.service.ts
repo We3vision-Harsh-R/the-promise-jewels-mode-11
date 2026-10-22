@@ -1,4 +1,5 @@
 import { prisma } from "../../database/prisma.js";
+import { clearAuthUserCache } from "../../middleware/auth.middleware.js";
 import { ApiError } from "../../utils/ApiError.js";
 import {
   ALL_PERMISSIONS,
@@ -33,6 +34,7 @@ interface CachedPermissions {
 const cache = new Map<string, CachedPermissions>();
 
 export function clearPermissionCache(userId?: string): void {
+  clearAuthUserCache(userId);
   if (userId) cache.delete(userId);
   else cache.clear();
 }
