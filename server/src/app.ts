@@ -2,6 +2,8 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
+import path from "node:path";
+import fs from "node:fs";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 
@@ -154,6 +156,22 @@ app.use(adminNetwork);
 // can make the server hold in memory.
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
+
+// Same URL, smaller bytes: a browser that accepts WebP and asks for a .png that
+// has a "<name>.png.webp" beside it (made from it at quality 90) is sent that
+// instead. The address and the markup do not change; `Vary: Accept` keeps
+// caches from handing the WebP to a browser that cannot read it.
+const imagesRoot = path.resolve("public", "images");
+app.use("/images", (req, res, next) => {
+  if ((req.method !== "GET" && req.method !== "HEAD") || !/\.png$/i.test(req.path)) return next();
+  res.vary("Accept");
+  if (!/image\/webp/.test(String(req.headers.accept || ""))) return next();
+  const file = path.resolve(imagesRoot, "." + decodeURIComponent(req.path) + ".webp");
+  if (!file.startsWith(imagesRoot + path.sep) || !fs.existsSync(file)) return next();
+  res.type("image/webp");
+  res.setHeader("Cache-Control", "public, max-age=86400, must-revalidate");
+  res.sendFile(file, { dotfiles: "deny" }, (err) => { if (err) next(); });
+});
 
 // Unlike /dist these filenames are hand-written and stable, so they cannot be
 // cached forever — replacing a photo keeps its name. A day of freshness with
