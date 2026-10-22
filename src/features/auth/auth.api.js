@@ -2,6 +2,7 @@
 // auth now follows its own flag (USE_MOCK_AUTH) instead of the shared one,
 // since the auth backend module is live while dashboard/collections/
 // brands aren't yet.
+import { primeAccessProfile } from '@/features/rbac/rbac.api.js'
 import request, { USE_MOCK_AUTH as USE_MOCK, mockDelay } from '@/services/api/client.js'
 
 const SESSION_KEY = 'pj_admin_session' // mock-only; real auth uses HttpOnly cookies + GET /me
@@ -98,12 +99,27 @@ export async function getSession() {
     return raw ? JSON.parse(raw) : null
   }
 
-  try {
-    return await request('/auth/me')
-  } catch {
-    return null
+  // One request answers both "who is this" and "what may they do"; the second
+  // half is handed to the permissions provider so it does not ask again. Held
+  // for a moment so the early call from admin-main.jsx and the provider's own
+  // call are one request, not two.
+  if (!sessionInFlight || Date.now() - sessionAt > 3000) {
+    sessionAt = Date.now()
+    sessionInFlight = request('/auth/session')
+      .then((data) => {
+        primeAccessProfile(data.access)
+        return data.user
+      })
+      .catch(() => {
+        sessionInFlight = null
+        return null
+      })
   }
+  return sessionInFlight
 }
+
+let sessionInFlight = null
+let sessionAt = 0
 
 export async function forgotPassword(email) {
   if (USE_MOCK) {

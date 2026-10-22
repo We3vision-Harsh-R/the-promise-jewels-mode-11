@@ -27,6 +27,11 @@ router.post(
 
 router.get("/me", authenticate, authController.me);
 
+// Who is signed in AND what they may do, in one request. The panel used to ask
+// /auth/me and /rbac/me separately, each paying for its own sign-in check and
+// its own trips to a database that is a network hop away.
+router.get("/session", authenticate, authController.session);
+
 router.post("/refresh", authController.refresh);
 
 router.post("/logout", authenticate, authController.logout);

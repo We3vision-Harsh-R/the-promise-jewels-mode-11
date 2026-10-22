@@ -1,3 +1,4 @@
+import { accessProfileFor } from "../rbac/rbac.service.js";
 import { Request, Response } from "express";
 import authService from "./auth.service.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
@@ -80,6 +81,17 @@ class AuthController {
     res
       .status(200)
       .json(new ApiResponse(true, "Current user fetched successfully.", user));
+  });
+
+  session = asyncHandler(async (req: Request, res: Response) => {
+    const [user, access] = await Promise.all([
+      authService.me(req.user!.id),
+      accessProfileFor(req.user!.id),
+    ]);
+
+    res
+      .status(200)
+      .json(new ApiResponse(true, "Session fetched successfully.", { user, access }));
   });
 
   refresh = asyncHandler(async (req: Request, res: Response) => {

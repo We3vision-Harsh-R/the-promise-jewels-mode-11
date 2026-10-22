@@ -6,14 +6,14 @@ import AdminRoutes from '@/app/routes/AdminRoutes.jsx'
 
 import '@/assets/styles/globals.css'
 import { preloadAdminPage } from '@/app/routes/adminPageLoaders.js'
-import { getAccessProfile } from '@/features/rbac/rbac.api.js'
+import { getSession } from '@/features/auth/auth.api.js'
 
 // Do not wait for the sign-in check to find out what is needed next: fetch the
-// code of the screen being opened and the signed-in person's permissions now,
+// code of the screen being opened and the session (who is signed in and what they may do, one request) now,
 // side by side with it. Without a session these just fail quietly.
 if (!window.location.pathname.startsWith('/admin/login')) {
   preloadAdminPage(window.location.pathname)
-  getAccessProfile().catch(() => {})
+  getSession()
 }
 
 // The admin panel's own entry (admin.html). The public website's entry

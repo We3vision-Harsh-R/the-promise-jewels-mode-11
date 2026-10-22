@@ -25,6 +25,12 @@ export function getAccessProfile() {
   return started
 }
 
+/** Hands over an answer that arrived with the sign-in check (/auth/session). */
+export function primeAccessProfile(profile) {
+  startedAt = Date.now()
+  started = Promise.resolve(profile)
+}
+
 /** Forgets the held answer; called when the signed-in account changes. */
 export function resetAccessProfile() {
   started = null
