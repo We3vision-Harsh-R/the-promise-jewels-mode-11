@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { SidebarDesktop, SidebarMobile } from '@/components/layout/Sidebar.jsx'
 import Topbar from '@/components/layout/Topbar.jsx'
 import useAdminTheme from '@/hooks/useAdminTheme.js'
+import { prefetchAdminPagesInBackground } from '@/app/routes/adminPageLoaders.js'
 
 const TITLES = {
   '/admin/dashboard': ['Dashboard', 'Overview of collections, brands, exhibitions & inquiries'],
@@ -49,6 +50,8 @@ export default function AdminLayout() {
   const [title, subtitle] =
     TITLES[location.pathname] ||
     PREFIX_TITLES.find(([prefix]) => location.pathname.startsWith(prefix))?.[1] || ['Admin', '']
+
+  useEffect(() => { prefetchAdminPagesInBackground() }, [])
 
   useEffect(() => {
     setMobileOpen(false)

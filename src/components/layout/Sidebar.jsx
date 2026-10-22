@@ -6,6 +6,7 @@ import {
   from 'lucide-react'
 import { classNames, initials } from '@/utils/helpers.js'
 import { APP_VERSION } from '@/app/config.js'
+import { preloadAdminPage } from '@/app/routes/adminPageLoaders.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
 import { usePermissions } from '@/features/rbac/permissionsContext.js'
 import { MODULES } from '@/features/exhibition-ops/opsSpec.js'
@@ -142,14 +143,18 @@ const SIDEBAR_GLASS = {
  * before and simply forgets between visits, which is the right way for a
  * convenience to fail.
  */
-const COLLAPSED_KEY = 'pj-admin-nav-collapsed'
+// v2: every group starts folded (nothing saved yet = all folded). A person's
+// own folding is still remembered from there.
+const COLLAPSED_KEY = 'pj-admin-nav-collapsed-v2'
+
+const ALL_GROUPS = NAV.filter((entry) => entry.items).map((entry) => entry.label)
 
 function readCollapsed() {
   try {
     const raw = window.localStorage.getItem(COLLAPSED_KEY)
-    return new Set(raw ? JSON.parse(raw) : [])
+    return new Set(raw ? JSON.parse(raw) : ALL_GROUPS)
   } catch {
-    return new Set()
+    return new Set(ALL_GROUPS)
   }
 }
 
@@ -219,6 +224,9 @@ function NavItem({ to, label, icon: Icon, onNavigate, nested, showId, end }) {
       // real routes underneath them.
       end={end}
       onClick={onNavigate}
+      // Start fetching the screen's code the moment it is pointed at.
+      onMouseEnter={() => preloadAdminPage(href)}
+      onFocus={() => preloadAdminPage(href)}
       className={({ isActive }) =>
         classNames(
           'group relative flex h-10 w-full items-center justify-start gap-3 rounded-full pr-3.5 text-sm transition-colors duration-300',

@@ -49,3 +49,25 @@ export function preloadAdminPage(pathname) {
   const name = segment === '' ? 'DashboardPage' : segment === 'exhibitions' && /\/ops/.test(pathname) ? 'ExhibitionOpsPage' : SEGMENT_TO_PAGE[segment]
   if (name) adminPageLoaders[name]().catch(() => {})
 }
+
+let backgroundStarted = false
+
+/**
+ * Once the screen in front of you has settled, quietly fetch the code of every
+ * other screen, one at a time, whenever the browser is idle - so the next click
+ * opens at once without having slowed the first one down. The two big editors
+ * (Blog) go last.
+ */
+export function prefetchAdminPagesInBackground() {
+  if (backgroundStarted) return
+  backgroundStarted = true
+  const names = Object.keys(adminPageLoaders).sort((a, b) => (a === 'BlogPage') - (b === 'BlogPage'))
+  const idle = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 400))
+  const next = () => {
+    const name = names.shift()
+    if (!name) return
+    adminPageLoaders[name]().catch(() => {}).finally(() => idle(next, { timeout: 4000 }))
+  }
+  // Wait for the page's own requests to be done before starting.
+  window.setTimeout(() => idle(next, { timeout: 4000 }), 2500)
+}

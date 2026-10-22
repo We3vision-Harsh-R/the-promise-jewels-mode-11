@@ -62,41 +62,8 @@ class DashboardService {
      * reduces unnecessary waiting.
      */
 
-    const [
-      totalCollections,
-      collectionsThisMonth,
-
-      totalBrands,
-      inactiveBrands,
-
-      totalExhibitions,
-      upcomingExhibitions,
-
-      totalInquiries,
-      newInquiries,
-
-      recentInquiries,
-      inquiryTrend,
-    ] = await Promise.all([
-      dashboardRepository.countCollections(),
-
-      dashboardRepository.countCollectionsCreatedAfter(
-        monthStart,
-      ),
-
-      dashboardRepository.countBrands(),
-
-      dashboardRepository.countInactiveBrands(),
-
-      dashboardRepository.countExhibitions(),
-
-      dashboardRepository.countUpcomingExhibitions(
-        now,
-      ),
-
-      dashboardRepository.countInquiries(),
-
-      dashboardRepository.countNewInquiries(),
+    const [counts, recentInquiries, inquiryTrend] = await Promise.all([
+      dashboardRepository.countSummary(monthStart, now),
 
       dashboardRepository.findRecentInquiries(
         DASHBOARD_DEFAULTS.RECENT_INQUIRIES_LIMIT,
@@ -107,6 +74,15 @@ class DashboardService {
         trendEndDate,
       ),
     ]);
+
+    const totalCollections = Number(counts.collections);
+    const collectionsThisMonth = Number(counts.collectionsThisMonth);
+    const totalBrands = Number(counts.brands);
+    const inactiveBrands = Number(counts.inactiveBrands);
+    const totalExhibitions = Number(counts.exhibitions);
+    const upcomingExhibitions = Number(counts.upcomingExhibitions);
+    const totalInquiries = Number(counts.inquiries);
+    const newInquiries = Number(counts.newInquiries);
 
     /**
      * --------------------------------

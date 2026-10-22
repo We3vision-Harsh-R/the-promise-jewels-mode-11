@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import {
-  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from 'recharts'
 import * as dashboardService from '@/features/dashboard/dashboard.api.js'
 import { classNames } from '@/utils/helpers.js'
+
+const loadTrendChart = () => import('@/features/dashboard/components/TrendChart.jsx')
+const TrendChart = lazy(loadTrendChart)
 
 // Same shared glass tokens as StatCard/Sidebar/Topbar (see global.css) —
 // only the container gets glassed per the brief; chart colors, gold line,
@@ -118,42 +118,9 @@ export default function AnalyticsWidget() {
         {loading ? (
           <div className="h-full flex items-center justify-center text-xs text-ink-900/40">Loading…</div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="inquiryGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D8C287" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#D8C287" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.15)" />
-
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#b9d4d1', fontSize: 12 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b9d4d1', fontSize: 12 }} />
-
-              <Tooltip
-                contentStyle={{
-                  background: '#0E2B26',
-                  border: '1px solid rgba(216, 194, 135, 0.4)',
-                  borderRadius: '8px',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                }}
-                labelStyle={{ color: '#D8C287', fontWeight: 600, marginBottom: 4 }}
-                itemStyle={{ color: '#d7e6e2' }}
-              />
-
-              <Area
-                type="monotone"
-                dataKey="inquiries"
-                stroke="#D8C287"
-                strokeWidth={3}
-                fill="url(#inquiryGradient)"
-                dot={{ r: 4, fill: '#D8C287' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<div className="h-full flex items-center justify-center text-xs text-ink-900/40">Loading…</div>}>
+            <TrendChart data={data} />
+          </Suspense>
         )}
       </div>
     </article>

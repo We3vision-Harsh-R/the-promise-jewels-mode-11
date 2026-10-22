@@ -4,6 +4,33 @@ import { prisma } from "../../database/prisma.js";
 
 class DashboardRepository {
   /**
+   * The eight headline counts in ONE round trip. They used to be eight
+   * separate count queries; with the database a network hop away and a small
+   * connection pool, the dashboard spent most of its time queueing for a
+   * connection. Same filters as the individual counters below.
+   */
+  async countSummary(monthStart: Date, now: Date) {
+    const [row] = await prisma.$queryRaw<
+      Array<Record<
+        | "collections" | "collectionsThisMonth" | "brands" | "inactiveBrands"
+        | "exhibitions" | "upcomingExhibitions" | "inquiries" | "newInquiries",
+        bigint
+      >>
+    >(Prisma.sql`
+      SELECT
+        (SELECT COUNT(*) FROM "collections")::bigint AS "collections",
+        (SELECT COUNT(*) FROM "collections" WHERE "createdAt" >= ${monthStart})::bigint AS "collectionsThisMonth",
+        (SELECT COUNT(*) FROM "brands")::bigint AS "brands",
+        (SELECT COUNT(*) FROM "brands" WHERE "isActive" = false)::bigint AS "inactiveBrands",
+        (SELECT COUNT(*) FROM "exhibitions")::bigint AS "exhibitions",
+        (SELECT COUNT(*) FROM "exhibitions" WHERE "startDate" >= ${now})::bigint AS "upcomingExhibitions",
+        (SELECT COUNT(*) FROM "inquiries" WHERE "deletedAt" IS NULL)::bigint AS "inquiries",
+        (SELECT COUNT(*) FROM "inquiries" WHERE "deletedAt" IS NULL AND "status" = 'NEW')::bigint AS "newInquiries"
+    `);
+    return row;
+  }
+
+  /**
    * ============================
    * Collections
    * ============================
