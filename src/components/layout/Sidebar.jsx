@@ -224,9 +224,6 @@ function NavItem({ to, label, icon: Icon, onNavigate, nested, showId, end }) {
       // real routes underneath them.
       end={end}
       onClick={onNavigate}
-      // Start fetching the screen's code the moment it is pointed at.
-      onMouseEnter={() => preloadAdminPage(href)}
-      onFocus={() => preloadAdminPage(href)}
       className={({ isActive }) =>
         classNames(
           'group relative flex h-10 w-full items-center justify-start gap-3 rounded-full pr-3.5 text-sm transition-colors duration-300',
@@ -275,6 +272,14 @@ function NavItems({ onNavigate }) {
   // The updater form for the same reason: each toggle is applied to whatever
   // the previous one produced, not to what was on screen when it was clicked.
   function toggle(label) {
+    // Opening a group is the moment its screens' code is fetched - not before,
+    // and not for any group that stays shut.
+    if (collapsed.has(label)) {
+      const group = NAV.find((entry) => entry.label === label)
+      for (const item of group?.items ?? []) {
+        preloadAdminPage(typeof item.to === 'function' ? item.to(showId) : item.to)
+      }
+    }
     setCollapsed((current) => {
       const next = new Set(current)
       if (next.has(label)) next.delete(label)
