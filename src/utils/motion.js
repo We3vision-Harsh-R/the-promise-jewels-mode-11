@@ -14,19 +14,21 @@ export const EASE = "power3.out";
 
 // Entrance geometry, shared by the page transition and every section reveal.
 export const REVEAL = {
-  duration: 0.95,
-  y: 32,
-  blur: 12,
-  stagger: 0.09,
+  // Quick and soft: a short rise with only a hint of blur, so content arrives
+  // already readable instead of fading in out of a heavy haze.
+  duration: 0.6,
+  y: 18,
+  blur: 4,
+  stagger: 0.05,
   // Fire once the element's top passes this far down the viewport.
-  start: "top 88%",
+  start: "top 92%",
 };
 
 // Page transition on route change.
 export const PAGE_IN = {
-  duration: 0.85,
-  y: 18,
-  blur: 16,
+  duration: 0.5,
+  y: 10,
+  blur: 4,
 };
 
 /**
