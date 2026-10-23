@@ -8,11 +8,19 @@ import { listPublicBrands } from '@/features/brands/brand.api.js'
 // the admin panel therefore needs a reload to appear, which is the right
 // trade-off for a public marketing site (same call as usePublicSettings.js).
 let brandsPromise = null
+let brandsFetchedAt = 0
+
+// Shared for a short while only, so a brand saved in the admin panel shows up
+// on the next page visit instead of waiting for a full reload.
+const SHARE_FOR_MS = 30_000
 
 function fetchPublicBrands() {
   // The .catch lives inside the cached promise so a failed request resolves
   // to null for every consumer instead of becoming an unhandled rejection.
-  brandsPromise = brandsPromise || listPublicBrands().catch(() => null)
+  if (!brandsPromise || Date.now() - brandsFetchedAt > SHARE_FOR_MS) {
+    brandsFetchedAt = Date.now()
+    brandsPromise = listPublicBrands().catch(() => null)
+  }
   return brandsPromise
 }
 

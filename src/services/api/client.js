@@ -14,7 +14,14 @@
 // It now defaults to OFF. Mock mode is opt-in — set VITE_USE_MOCK=true in a
 // local .env when the backend is not running. Every flag below inherits this
 // default, so the whole tree fails closed.
-export const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'false') !== 'false'
+//
+// A production build ignores every mock flag outright: whatever .env says, the
+// live site and the admin panel always talk to the real server and database.
+// Otherwise one stray VITE_USE_MOCK=true would send everything typed into the
+// admin panel to an in-memory copy that is gone on reload and never reaches
+// the website.
+const MOCK_ALLOWED = !import.meta.env?.PROD
+export const USE_MOCK = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK ?? 'false') !== 'false'
 
 // Independent flag for the auth module specifically. Backend rollout
 // happens module-by-module — auth is live before dashboard/collections/
@@ -22,7 +29,7 @@ export const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'false') !== 'false'
 // every other *.service.js file keeps using mocks via USE_MOCK above.
 // Defaults to whatever USE_MOCK is unless explicitly overridden in .env,
 // so nothing breaks for anyone who hasn't set VITE_USE_MOCK_AUTH yet.
-export const USE_MOCK_AUTH = (import.meta.env?.VITE_USE_MOCK_AUTH ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_AUTH = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_AUTH ?? String(USE_MOCK)) !== 'false'
 
 // Per-module overrides, same pattern as USE_MOCK_AUTH above. The backend is
 // rolling out module-by-module and routes/index.ts on the server only
@@ -31,18 +38,18 @@ export const USE_MOCK_AUTH = (import.meta.env?.VITE_USE_MOCK_AUTH ?? String(USE_
 // but aren't registered on any route yet, so those three stay mocked until
 // a backend dev wires them up in routes/index.ts. Each flag defaults to
 // USE_MOCK unless explicitly set in .env.
-export const USE_MOCK_BRANDS = (import.meta.env?.VITE_USE_MOCK_BRANDS ?? String(USE_MOCK)) !== 'false'
-export const USE_MOCK_COLLECTIONS = (import.meta.env?.VITE_USE_MOCK_COLLECTIONS ?? String(USE_MOCK)) !== 'false'
-export const USE_MOCK_EXHIBITIONS = (import.meta.env?.VITE_USE_MOCK_EXHIBITIONS ?? String(USE_MOCK)) !== 'false'
-export const USE_MOCK_SEO = (import.meta.env?.VITE_USE_MOCK_SEO ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_BRANDS = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_BRANDS ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_COLLECTIONS = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_COLLECTIONS ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_EXHIBITIONS = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_EXHIBITIONS ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_SEO = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_SEO ?? String(USE_MOCK)) !== 'false'
 // SEO Settings (/seo-settings) is mounted alongside /seo in routes/index.ts
 // and rolls out on the same timeline, so it defaults to USE_MOCK_SEO rather
 // than the generic USE_MOCK — set VITE_USE_MOCK_SEO_SETTINGS explicitly if
 // it ever needs to diverge from the SEO pages endpoint.
-export const USE_MOCK_SEO_SETTINGS = (import.meta.env?.VITE_USE_MOCK_SEO_SETTINGS ?? String(USE_MOCK_SEO)) !== 'false'
-export const USE_MOCK_DASHBOARD = (import.meta.env?.VITE_USE_MOCK_DASHBOARD ?? String(USE_MOCK)) !== 'false'
-export const USE_MOCK_INQUIRIES = (import.meta.env?.VITE_USE_MOCK_INQUIRIES ?? String(USE_MOCK)) !== 'false'
-export const USE_MOCK_SETTINGS = (import.meta.env?.VITE_USE_MOCK_SETTINGS ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_SEO_SETTINGS = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_SEO_SETTINGS ?? String(USE_MOCK_SEO)) !== 'false'
+export const USE_MOCK_DASHBOARD = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_DASHBOARD ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_INQUIRIES = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_INQUIRIES ?? String(USE_MOCK)) !== 'false'
+export const USE_MOCK_SETTINGS = MOCK_ALLOWED && (import.meta.env?.VITE_USE_MOCK_SETTINGS ?? String(USE_MOCK)) !== 'false'
 
 // Exported (not just module-local) so seo.service.js's getPublicMetadata()
 // can hit /metadata/:slug directly with fetch() — that endpoint is public

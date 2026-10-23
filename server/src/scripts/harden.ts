@@ -123,6 +123,38 @@ async function enableRls() {
 }
 
 // ---------------------------------------------------------------------------
+// 2b. Browser-facing roles hold nothing
+// ---------------------------------------------------------------------------
+
+/**
+ * Takes every table privilege back from `anon` and `authenticated`.
+ *
+ * Those are the two roles Supabase exposes through the public API key. The
+ * application never uses them — it connects as `postgres` — so they have no
+ * reason to hold a privilege on any table, and Row Level Security should be the
+ * second lock rather than the only one. New tables created in the dashboard are
+ * granted to them by default, so the default is revoked as well.
+ */
+async function revokeBrowserRoleGrants() {
+  const before = await prisma.$queryRawUnsafe<Array<{ n: bigint }>>(`
+    SELECT COUNT(*)::bigint AS n
+    FROM information_schema.role_table_grants
+    WHERE table_schema = 'public' AND grantee IN ('anon','authenticated')
+  `);
+
+  await prisma.$executeRawUnsafe(`REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated`);
+  await prisma.$executeRawUnsafe(`REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated`);
+  await prisma.$executeRawUnsafe(`REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM anon, authenticated`);
+  await prisma.$executeRawUnsafe(
+    `ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated`,
+  );
+
+  const count = Number(before[0]?.n ?? 0);
+  changed += count;
+  say("browser-role privileges", count === 0 ? "none held" : `${count} taken back`);
+}
+
+// ---------------------------------------------------------------------------
 // 3. Stale refresh-token hashes
 // ---------------------------------------------------------------------------
 
@@ -175,6 +207,7 @@ async function main() {
   await encryptInquiries();
   await encryptLeads();
   await enableRls();
+  await revokeBrowserRoleGrants();
   await clearLegacyRefreshHashes();
 
   console.log(

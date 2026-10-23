@@ -11,11 +11,19 @@ import {
 // edited in the admin therefore needs a reload to appear, which is the right
 // trade-off for a public marketing site (same call as usePublicSettings.js).
 let listPromise = null
+let listFetchedAt = 0
+
+// Shared for a short while only, so a collection saved in the admin panel shows
+// up on the next page visit instead of waiting for a full reload.
+const SHARE_FOR_MS = 30_000
 
 function fetchPublicCollections() {
   // The .catch lives inside the cached promise so a failed request resolves to
   // null for every consumer rather than becoming an unhandled rejection.
-  listPromise = listPromise || listPublicCollections().catch(() => null)
+  if (!listPromise || Date.now() - listFetchedAt > SHARE_FOR_MS) {
+    listFetchedAt = Date.now()
+    listPromise = listPublicCollections().catch(() => null)
+  }
   return listPromise
 }
 
