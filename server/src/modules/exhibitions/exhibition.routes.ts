@@ -50,8 +50,9 @@ router.patch(
 // Delete Exhibition
 router.delete(
   "/:id",
-  requirePermission("exhibitions", "delete"), requireAdmin,
   requireAuth,
+  requirePermission("exhibitions", "delete"),
+  requireAdmin,
   validate(exhibitionIdSchema,"params"),
   asyncHandler(
     exhibitionController.remove,
@@ -120,8 +121,9 @@ router.get(
 
 router.delete(
   "/gallery/:imageId",
- requirePermission("exhibitions", "delete"), requireAdmin,
  requireAuth,
+ requirePermission("exhibitions", "delete"),
+ requireAdmin,
  asyncHandler(
    exhibitionController.deleteGalleryImage
  )
