@@ -22,6 +22,13 @@ export type FieldType =
   | "image"
   /** An icon. SVG only, so its colour can be driven from here. */
   | "svg"
+  /**
+   * Which people from Admin > Our Team a band shows. Stored as their ids,
+   * comma-separated; empty means everyone who is marked as shown.
+   */
+  | "team"
+  /** An on / off switch. Stored as "true" or "false". */
+  | "toggle"
   /** A plain number — a speed, a count, a percentage. */
   | "number"
   /** One of the brand's typefaces, applied to a single piece of copy. */
@@ -61,6 +68,12 @@ export interface ContentSection {
    * Editor shows a link through to the screen that actually owns them.
    */
   manage?: { label: string; path: string };
+  /**
+   * Set when the records behind this band are managed right inside the
+   * section's card in the Editor, instead of through a link to another screen.
+   * "team" shows the add / edit / delete list of people.
+   */
+  embed?: "team";
   /**
    * A band with no editable words of its own — a listing, a form, a grid of
    * records. It is declared anyway because it is part of the page, and the
@@ -1051,20 +1064,10 @@ const ABOUT_SECTIONS: ContentSection[] = [
   {
     key: "leaders",
     label: "Our leaders",
-    description: "The people shown on the About page, with their photographs.",
+    description:
+      "The people shown on the About page. Choose which of the people added under Our Team appear here — their photograph, name, role and line come from there.",
     fields: [
-      { key: "items.1.name", label: "Name", type: "text", default: "Bharat Jogani", group: "Person 1", max: MEDIUM },
-      { key: "items.1.title", label: "Role", type: "text", default: "Founder", group: "Person 1", max: MEDIUM },
-      { key: "items.1.description", label: "Description", type: "textarea", default: "Leading with vision, building trust, and crafting excellence in every creation.", group: "Person 1", max: LONG },
-      picture("items.1.image", "Photograph", "/images/OurLeaders/image_142.webp", "Person 1"),
-      { key: "items.2.name", label: "Name", type: "text", default: "Bharat Jogani", group: "Person 2", max: MEDIUM },
-      { key: "items.2.title", label: "Role", type: "text", default: "Founder", group: "Person 2", max: MEDIUM },
-      { key: "items.2.description", label: "Description", type: "textarea", default: "Leading with vision, building trust, and crafting excellence in every creation.", group: "Person 2", max: LONG },
-      picture("items.2.image", "Photograph", "/images/OurLeaders/image_143.webp", "Person 2"),
-      { key: "items.3.name", label: "Name", type: "text", default: "Bharat Jogani", group: "Person 3", max: MEDIUM },
-      { key: "items.3.title", label: "Role", type: "text", default: "Founder", group: "Person 3", max: MEDIUM },
-      { key: "items.3.description", label: "Description", type: "textarea", default: "Leading with vision, building trust, and crafting excellence in every creation.", group: "Person 3", max: LONG },
-      picture("items.3.image", "Photograph", "/images/OurLeaders/image_144.webp", "Person 3"),
+      { key: "memberIds", label: "People shown", type: "team", default: "", hint: "Tick the people to show. Leave all unticked to show everyone.", max: 2000 },
       { key: "heading", label: "Section heading", type: "text", default: "Our Leaders", max: MEDIUM },
       colour("headingColor", "Section heading", "#01383B"),
       colour("nameColor", "Names", "#01383B"),
@@ -1076,7 +1079,7 @@ const ABOUT_SECTIONS: ContentSection[] = [
     key: "gallery",
     label: "Gallery",
     description:
-      "The two rows of photographs that slide past on the About page. The bundled rows fix how many frames there are; a saved picture replaces one.",
+      "The two rows of photographs that slide past on the About page. Each row has four frames; a saved picture replaces one. Keep different models next to each other so the same face never sits side by side.",
     fields: [
       picture("row1.1", "Top row 1", "/images/jewellery/image_252.webp", "Top row"),
       { key: "row1.1.name", label: "Top row 1 — caption", type: "text", default: "Black Beaded Necklace", group: "Top row", max: MEDIUM },
@@ -1086,8 +1089,6 @@ const ABOUT_SECTIONS: ContentSection[] = [
       { key: "row1.3.name", label: "Top row 3 — caption", type: "text", default: "Diamond Cluster Cocktail Ring", group: "Top row", max: MEDIUM },
       picture("row1.4", "Top row 4", "/images/jewellery/image_247.webp", "Top row"),
       { key: "row1.4.name", label: "Top row 4 — caption", type: "text", default: "Layered Gold Chain Necklace", group: "Top row", max: MEDIUM },
-      picture("row1.5", "Top row 5", "/images/jewellery/image_253.webp", "Top row"),
-      { key: "row1.5.name", label: "Top row 5 — caption", type: "text", default: "Diamond Drop Earrings", group: "Top row", max: MEDIUM },
       picture("row2.1", "Bottom row 1", "/images/jewellery/image_248.webp", "Bottom row"),
       { key: "row2.1.name", label: "Bottom row 1 — caption", type: "text", default: "Emerald Statement Necklace", group: "Bottom row", max: MEDIUM },
       picture("row2.2", "Bottom row 2", "/images/jewellery/image_249.webp", "Bottom row"),
@@ -1096,8 +1097,7 @@ const ABOUT_SECTIONS: ContentSection[] = [
       { key: "row2.3.name", label: "Bottom row 3 — caption", type: "text", default: "Yellow Gold Band Ring", group: "Bottom row", max: MEDIUM },
       picture("row2.4", "Bottom row 4", "/images/jewellery/image_251.webp", "Bottom row"),
       { key: "row2.4.name", label: "Bottom row 4 — caption", type: "text", default: "Diamond Dangle Earrings", group: "Bottom row", max: MEDIUM },
-      picture("row2.5", "Bottom row 5", "/images/jewellery/image_254.webp", "Bottom row"),
-      { key: "row2.5.name", label: "Bottom row 5 — caption", type: "text", default: "Turquoise Pendant Necklace", group: "Bottom row", max: MEDIUM },
+      { key: "showCaptions", label: "Show names and shading on the photos", type: "toggle", default: "false", hint: "Off: the photographs show clean. On: each one carries its caption over a green shade at the bottom.", max: 5 },
       // "Gallery" is what the page has always rendered — the field said
       // "Our Work", but nothing read it, so the mismatch never showed.
       { key: "heading", label: "Section heading", type: "text", default: "Gallery", max: MEDIUM },
@@ -1359,8 +1359,9 @@ const ENQUIRY_SECTIONS: ContentSection[] = [
 
 // --- Our Team page ---------------------------------------------------------
 //
-// The people themselves — photographs, names and roles — are records managed
-// under Admin > Our Team. What is edited here is the page around them.
+// The people themselves — photographs, names and roles — are records, managed
+// from the "The team" card of this page in the Editor (the same list is also
+// reachable under Admin > Our Team). The rest of the page is edited as usual.
 
 const TEAM_SECTIONS: ContentSection[] = [
   {
@@ -1375,12 +1376,14 @@ const TEAM_SECTIONS: ContentSection[] = [
       ctaLabel: "Meet the Team",
     }),
   },
-  inquirySection(
-    "members",
-    "The team",
-    "Each person is a record with a photograph, a name and a role — managed under Our Team, not here. Only the heading above the photographs and the message shown when nobody is listed yet are edited here.",
-    { label: "Open Our Team", path: "/admin/team" },
-    [
+  {
+    key: "members",
+    label: "The team",
+    description:
+      "The heading above the photographs, and the people themselves — add, edit, hide, reorder or delete a person, with their photograph, name and role, right here.",
+    embed: "team",
+    fields: [
+      { key: "memberIds", label: "People shown", type: "team", default: "", hint: "Tick the people to show on this page. Leave all unticked to show everyone.", max: 2000 },
       ...typed({ key: "headingLight", label: "Heading — first word", type: "text", default: "Meet the", max: MEDIUM }),
       ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "Team", max: MEDIUM }),
       {
@@ -1391,7 +1394,7 @@ const TEAM_SECTIONS: ContentSection[] = [
         max: LONG,
       },
     ],
-  ),
+  },
   structural(
     "growth",
     "Let's Drive Growth",
@@ -1507,7 +1510,7 @@ const FOOTER_SECTIONS: ContentSection[] = [
       { key: "copyright", label: "Copyright line", type: "text", default: "", hint: "Shown under the tagline when filled in. Leave empty to show nothing.", max: MEDIUM },
       picture("logo", "Logo", "/images/PROMISE_LOGO.webp", "Branding"),
       colour("background", "Footer background", "#0E2B26", "Colours"),
-      colour("textColor", "Text", "#F7F3EA", "Colours"),
+      colour("textColor", "Text", "#0B5B5D", "Colours"),
       colour("linkColor", "Links", "#D4B45C", "Colours"),
     ],
   },

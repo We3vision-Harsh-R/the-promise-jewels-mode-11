@@ -85,6 +85,8 @@ export default function TeamPage() {
         .then((rows) => {
           setMembers(rows || [])
           setError('')
+          // Tells the "People shown" pickers in the Editor to refresh.
+          window.dispatchEvent(new Event('pj:team-changed'))
         })
         .catch((err) => setError(err.message || 'Could not load the team.'))
         .finally(() => setLoading(false)),

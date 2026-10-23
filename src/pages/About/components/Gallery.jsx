@@ -13,7 +13,6 @@ const ROW_1 = [
   { name: "Diamond Chandelier Earrings", image: "/images/jewellery/image_245.webp" },
   { name: "Diamond Cluster Cocktail Ring", image: "/images/jewellery/image_244.webp" },
   { name: "Layered Gold Chain Necklace", image: "/images/jewellery/image_247.webp" },
-  { name: "Diamond Drop Earrings", image: "/images/jewellery/image_253.webp" },
 ];
 
 // Row 2 — scrolls left→right.
@@ -22,7 +21,6 @@ const ROW_2 = [
   { name: "Diamond Statement Necklace", image: "/images/jewellery/image_249.webp" },
   { name: "Yellow Gold Band Ring", image: "/images/jewellery/image_250.webp" },
   { name: "Diamond Dangle Earrings", image: "/images/jewellery/image_251.webp" },
-  { name: "Turquoise Pendant Necklace", image: "/images/jewellery/image_254.webp" },
 ];
 
 // Bundled pictures — the fallback, and what fixes each row's length.
@@ -30,6 +28,7 @@ const GALLERY_TEXT = {
   heading: "Gallery",
   headingColor: "#01383B",
   captionColor: "#2F6B6B",
+  showCaptions: "false",
   ...Object.fromEntries(ROW_1.flatMap((it, i) => [[`row1.${i + 1}`, it.image], [`row1.${i + 1}.name`, it.name]])),
   ...Object.fromEntries(ROW_2.flatMap((it, i) => [[`row2.${i + 1}`, it.image], [`row2.${i + 1}.name`, it.name]])),
 };
@@ -38,7 +37,7 @@ const LOOP_SECONDS = 42;
 
 // Same card system as the Leaders / Brands / Collections cards: teal scrim,
 // gold hairline inset, gold rule above the label.
-function GalleryCard({ name, image, nameType }) {
+function GalleryCard({ name, image, nameType, showCaption }) {
   return (
     <div className="group relative h-[500px] w-[340px] shrink-0 overflow-hidden rounded-[28px] bg-[#01383B] shadow-[0_22px_46px_-14px_rgba(1,56,59,0.42)] [transition:box-shadow_0.55s_ease] hover:shadow-[0_32px_60px_-14px_rgba(1,56,59,0.55)] min-[768px]:max-[1024px]:h-[400px] min-[768px]:max-[1024px]:w-[270px] max-[767px]:h-[330px] max-[767px]:w-[224px] max-[767px]:rounded-[22px]">
       <img
@@ -48,21 +47,26 @@ function GalleryCard({ name, image, nameType }) {
         className="absolute inset-0 h-full w-full object-cover [transition:transform_0.9s_cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
       />
 
-      {/* Teal scrim — the old black one sat outside the palette */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#01383B] via-[#01383B]/58 to-transparent" />
-
       {/* Gold hairline inset */}
       <div className="pointer-events-none absolute inset-[13px] rounded-[18px] border-[1px] border-[#C9A15A]/35 max-[767px]:inset-[10px] max-[767px]:rounded-[14px]" />
 
-      <div className="absolute inset-x-0 bottom-0 p-[26px] max-[767px]:p-[18px]">
-        <span className="mb-[10px] block h-px w-[26px] bg-[#C9A15A] max-[767px]:mb-[7px] max-[767px]:w-[18px]" />
-        <p
-          style={nameType}
-          className="font-ticker text-[1rem] font-medium leading-[1.35] text-white max-[767px]:text-[0.82rem]"
-        >
-          {name}
-        </p>
-      </div>
+      {/* The caption and the teal shade under it are optional — switched on
+          or off under Content > About > Gallery. Off, the photograph shows
+          clean. */}
+      {showCaption ? (
+        <>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#01383B] via-[#01383B]/58 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-[26px] max-[767px]:p-[18px]">
+            <span className="mb-[10px] block h-px w-[26px] bg-[#C9A15A] max-[767px]:mb-[7px] max-[767px]:w-[18px]" />
+            <p
+              style={nameType}
+              className="font-ticker text-[1rem] font-medium leading-[1.35] text-white max-[767px]:text-[0.82rem]"
+            >
+              {name}
+            </p>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -71,24 +75,24 @@ function GalleryCard({ name, image, nameType }) {
 // loop below seamless (once it has shifted exactly one half, it snaps back to 0
 // with the second half sitting where the first started). Each half must also be
 // at least as wide as the screen, or a gap shows on the right once the strip
-// has moved. Five cards are about 1,700px, so a half repeats the set until it
+// has moved. Four cards are about 1,500px, so a half repeats the set until it
 // covers the viewport (with room to spare for a window that is then widened).
 function copiesToFill() {
   if (typeof window === "undefined") return 2;
   const card = window.innerWidth <= 767 ? 242 : window.innerWidth <= 1024 ? 304 : 374;
-  const setWidth = 5 * card;
+  const setWidth = ROW_1.length * card;
   return Math.max(2, Math.ceil((Math.max(window.innerWidth, 2560) * 1.1) / setWidth));
 }
 
 const COPIES = copiesToFill();
 
-const Row = forwardRef(function Row({ items }, ref) {
+const Row = forwardRef(function Row({ items, showCaption }, ref) {
   const half = Array.from({ length: COPIES }, () => items).flat();
   const doubled = [...half, ...half];
   return (
     <div ref={ref} className="flex w-max gap-[34px] max-[767px]:gap-[18px]">
       {doubled.map((item, index) => (
-        <GalleryCard key={`${item.name}-${index}`} {...item} />
+        <GalleryCard key={`${item.name}-${index}`} {...item} showCaption={showCaption} />
       ))}
     </div>
   );
@@ -117,6 +121,8 @@ export default function Gallery() {
       })),
     [text]
   );
+
+  const showCaption = text.showCaptions === "true";
 
   const sectionRef = useRef(null);
   const row1Ref = useRef(null);
@@ -193,10 +199,10 @@ export default function Gallery() {
       >
         <div className="flex flex-col gap-[34px] max-[767px]:gap-[18px]">
           <div data-reveal className="js-gallery-row">
-            <Row items={rowOne} ref={row1Ref} />
+            <Row items={rowOne} showCaption={showCaption} ref={row1Ref} />
           </div>
           <div data-reveal className="js-gallery-row">
-            <Row items={rowTwo} ref={row2Ref} />
+            <Row items={rowTwo} showCaption={showCaption} ref={row2Ref} />
           </div>
         </div>
 

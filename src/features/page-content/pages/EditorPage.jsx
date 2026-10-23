@@ -32,6 +32,8 @@ import {
 } from '@/components/forms/Field.jsx'
 import { uploadAsset } from '@/features/media/media.api.js'
 import { Can } from '@/features/rbac/usePermissions.jsx'
+import TeamManager from '@/features/team/pages/TeamPage.jsx'
+import TeamPicker from '@/features/team/components/TeamPicker.jsx'
 import { classNames } from '@/utils/helpers.js'
 
 // The Editor — text content for the public website.
@@ -604,6 +606,35 @@ function FieldControl({ section, field, value, palette, fonts, weights, limits, 
     )
   }
 
+  if (field.type === 'toggle') {
+    const on = value === 'true'
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        disabled={disabled}
+        onClick={() => set(on ? 'false' : 'true')}
+        className={classNames(
+          'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors disabled:opacity-50',
+          on ? 'border-brass-500 bg-brass-500' : 'border-ink-100 bg-ink-100'
+        )}
+      >
+        <span
+          className={classNames(
+            'inline-block h-4 w-4 rounded-full bg-white shadow transition-transform',
+            on ? 'translate-x-6' : 'translate-x-1'
+          )}
+        />
+        <span className="sr-only">{on ? 'On' : 'Off'}</span>
+      </button>
+    )
+  }
+
+  if (field.type === 'team') {
+    return <TeamPicker value={value} disabled={disabled} onChange={set} />
+  }
+
   if (field.type === 'color') {
     return <ColorInput value={value} palette={palette} disabled={disabled} onChange={set} />
   }
@@ -897,7 +928,7 @@ function FieldRun({ run, section, draft, controlProps }) {
                 key={block.field.key}
                 label={block.field.label}
                 hint={block.field.hint}
-                className={block.field.type === 'number' ? 'md:col-span-2' : undefined}
+                className={block.field.type === 'number' || block.field.type === 'team' ? 'md:col-span-2' : undefined}
               >
                 <FieldControl
                   section={section}
@@ -1002,6 +1033,15 @@ function SectionCard({ section, hidden = false, draft, palette, fonts, weights, 
               This band has no text of its own. It is listed here so it can be
               moved or hidden from the Arrangement panel above.
             </p>
+          )}
+
+          {/* The people on the Our Team page are managed here, in the card for
+              that band. Each change saves on its own and is live at once — the
+              page-level Save below only covers the words and pictures. */}
+          {section.embed === 'team' && (
+            <div className="mb-6 rounded-xl border border-ink-100 bg-white p-4">
+              <TeamManager />
+            </div>
           )}
 
           <div className="space-y-5">

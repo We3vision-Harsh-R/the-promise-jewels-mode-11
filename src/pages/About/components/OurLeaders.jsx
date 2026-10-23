@@ -2,6 +2,7 @@ import { useRef, useMemo } from "react";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
 import useReveal from "@/hooks/useReveal.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
+import useSelectedTeam from "@/features/team/hooks/useSelectedTeam.js";
 
 // Replace with the real leaders / photos — same name repeated 3x here as a
 // placeholder since that's what the reference screenshot showed.
@@ -36,14 +37,7 @@ const LEADERS_TEXT = {
   nameColor: "#01383B",
   roleColor: "#C9A15A",
   bodyColor: "#2F6B6B",
-  ...Object.fromEntries(
-    LEADERS.flatMap((l, i) => [
-      [`items.${i + 1}.name`, l.name],
-      [`items.${i + 1}.title`, l.title],
-      [`items.${i + 1}.description`, l.description],
-      [`items.${i + 1}.image`, l.image || ""],
-    ])
-  ),
+  memberIds: "",
 };
 
 // The cards used to start stacked and fanned (x/y offsets plus rotation) and
@@ -59,12 +53,21 @@ function LeaderCard({ leader }) {
       data-reveal
       className="group relative shrink-0 overflow-hidden rounded-[28px] bg-[#01383B] shadow-[0_26px_54px_-12px_rgba(1,56,59,0.45)] [transition:box-shadow_0.55s_ease] hover:shadow-[0_34px_66px_-12px_rgba(1,56,59,0.55)] h-[430px] w-[330px] min-[768px]:max-[1024px]:h-[360px] min-[768px]:max-[1024px]:w-[270px] max-[767px]:h-[440px] max-[767px]:w-full max-[767px]:max-w-[360px] max-[767px]:rounded-[24px]"
     >
-      <img
-        src={leader.image}
-        alt={leader.name}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover [transition:transform_0.9s_cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
-      />
+      {leader.image ? (
+        <img
+          src={leader.image}
+          alt={leader.name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover object-top [transition:transform_0.9s_cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,#2F6B6B_0%,#01484C_55%,#01383B_100%)] font-ticker text-[4.2rem] font-light text-[#E8CB92]/80"
+        >
+          {(leader.name || "•").slice(0, 1).toUpperCase()}
+        </span>
+      )}
 
       {/* Teal scrim instead of the old black one — the black read as a stock
           photo overlay and sat outside the palette. */}
@@ -91,12 +94,14 @@ function LeaderCard({ leader }) {
           {leader.name}
         </p>
 
-        <p
-          style={leader.descriptionType}
-          className="mt-[12px] font-ticker text-[0.85rem] leading-[1.6] text-white/75 max-[767px]:text-[0.82rem]"
-        >
-          {leader.description}
-        </p>
+        {leader.description ? (
+          <p
+            style={leader.descriptionType}
+            className="mt-[12px] font-ticker text-[0.85rem] leading-[1.6] text-white/75 max-[767px]:text-[0.82rem]"
+          >
+            {leader.description}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -108,22 +113,21 @@ export default function OurLeaders() {
   const [headingLead, ...headingTail] = (text.heading || "").split(" ");
   const headingRest = headingTail.join(" ");
 
-  const leaders = useMemo(
-    () =>
-      LEADERS.map((leader, index) => ({
-        ...leader,
-        name: text[`items.${index + 1}.name`] || leader.name,
-        title: text[`items.${index + 1}.title`] || leader.title,
-        description: text[`items.${index + 1}.description`] || leader.description,
-        image: text[`items.${index + 1}.image`] || leader.image,
-        // Name, role and blurb are three separately editable strings, so
-        // each carries the typeface, size, weight and spacing set for it.
-        nameType: typeStyle(text, `items.${index + 1}.name`),
-        titleType: typeStyle(text, `items.${index + 1}.title`),
-        descriptionType: typeStyle(text, `items.${index + 1}.description`),
-      })),
-    [text]
-  );
+  // The people come from Admin > Our Team, narrowed to the ones ticked under
+  // Content > About > Our leaders. The bundled three only stand in while the
+  // list loads or when nobody is listed at all.
+  const { members, loading } = useSelectedTeam(text.memberIds);
+
+  const leaders = useMemo(() => {
+    if (members.length === 0) return loading ? [] : LEADERS;
+
+    return members.map((member) => ({
+      name: member.name,
+      title: member.designation,
+      description: member.bio || "",
+      image: member.photoUrl || "",
+    }));
+  }, [members, loading]);
 
   const sectionRef = useRef(null);
 

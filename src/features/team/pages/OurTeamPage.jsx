@@ -8,7 +8,7 @@ import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { typeStyle } from '@/features/page-content/typeStyle.js'
 import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
 import { useSeoMeta } from '@/features/seo/hooks/useSeoMeta.js'
-import usePublicTeam from '@/features/team/hooks/usePublicTeam.js'
+import useSelectedTeam from '@/features/team/hooks/useSelectedTeam.js'
 import useReveal from '@/hooks/useReveal.js'
 import { settleToSection } from '@/utils/scroll.js'
 
@@ -28,6 +28,7 @@ const MEMBERS_TEXT = {
   headingLight: 'Meet the',
   headingBold: 'Team',
   emptyText: 'Our team will be introduced here soon.',
+  memberIds: '',
 }
 
 /** "Bharat Jogani" -> "BJ". Shown when a person has no photograph. */
@@ -102,7 +103,7 @@ function MemberCard({ member }) {
 
 function Members() {
   const text = useSectionContent('team', 'members', MEMBERS_TEXT)
-  const { members, loading } = usePublicTeam()
+  const { members, loading } = useSelectedTeam(text.memberIds)
   const sectionRef = useRef(null)
 
   // The site-wide entrance for the heading and the cards.
