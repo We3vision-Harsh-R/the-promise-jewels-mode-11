@@ -4,6 +4,7 @@ import multer from "multer";
 
 import { ApiError } from "../utils/ApiError.js";
 import { verifyUploads } from "./fileSecurity.middleware.js";
+import { optimiseUploads } from "./imageOptimize.middleware.js";
 
 // Files are held in memory and streamed straight to Supabase Storage, so
 // nothing is ever written to the server's filesystem — which is what makes
@@ -107,6 +108,7 @@ export const uploadImage: RequestHandler[] = [
   uploadLimiter,
   handleUploadErrors(upload.single("image")),
   verifyUploads,
+  optimiseUploads,
 ];
 
 // Team member: one photograph
@@ -114,6 +116,7 @@ export const uploadTeamPhoto: RequestHandler[] = [
   uploadLimiter,
   handleUploadErrors(upload.single("photo")),
   verifyUploads,
+  optimiseUploads,
 ];
 
 // Brand: logo (1), banner (1), gallery (up to 10)
@@ -127,6 +130,7 @@ export const uploadBrandImages: RequestHandler[] = [
     ]),
   ),
   verifyUploads,
+  optimiseUploads,
 ];
 
 // Collection: banner (1), gallery (up to 10)
@@ -139,4 +143,5 @@ export const uploadCollectionImages: RequestHandler[] = [
     ]),
   ),
   verifyUploads,
+  optimiseUploads,
 ];

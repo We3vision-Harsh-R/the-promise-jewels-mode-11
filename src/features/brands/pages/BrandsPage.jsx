@@ -302,8 +302,10 @@ export default function BrandsPage() {
     try {
       await brandService.deleteBrand(confirmId)
       notify('Brand deleted.')
+      // Taken off the list at once; the server has already confirmed it, so
+      // there is no need to fetch the whole list again over a slow link.
+      setRows((current) => current.filter((row) => row.id !== confirmId))
       setConfirmId(null)
-      load()
     } catch (err) {
       notify(err.message || 'Could not delete.', { tone: 'error' })
     } finally {

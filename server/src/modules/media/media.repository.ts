@@ -4,6 +4,7 @@ class MediaRepository {
   listAssets() {
     return prisma.media_assets.findMany({
       orderBy: { createdAt: "desc" },
+      take: 300,
     });
   }
 

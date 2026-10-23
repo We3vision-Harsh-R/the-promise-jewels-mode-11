@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Check, ExternalLink, FileText, MessageSquare, Pencil, Plus, Save, Trash2, X,
 } from 'lucide-react'
 
 import * as blogApi from '@/features/blog/blog.api.js'
 import { uploadAsset } from '@/features/media/media.api.js'
-import RichTextEditor from '@/features/blog/components/RichTextEditor.jsx'
+// The editor (TipTap) is most of this page's weight and is only needed once a
+// post is opened, so it downloads then rather than with the list.
+const RichTextEditor = lazy(() => import('@/features/blog/components/RichTextEditor.jsx'))
 import { useToast } from '@/components/feedback/Toast.jsx'
 import ConfirmDialog from '@/components/feedback/ConfirmDialog.jsx'
 import Card from '@/components/ui/Card.jsx'
@@ -572,11 +574,13 @@ function PostForm({ draft, set, disabled, previewSlug }) {
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brass-700">
           The post
         </p>
-        <RichTextEditor
-          value={draft.content}
-          disabled={disabled}
-          onChange={(html) => set('content', html)}
-        />
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-lg border border-ink-100 bg-ivory-100/60" />}>
+          <RichTextEditor
+            value={draft.content}
+            disabled={disabled}
+            onChange={(html) => set('content', html)}
+          />
+        </Suspense>
       </div>
 
       <div>

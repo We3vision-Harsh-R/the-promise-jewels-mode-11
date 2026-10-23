@@ -10,6 +10,8 @@ class BlogRepository {
       where,
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       include: { _count: { select: { comments: true } } },
+      // A ceiling, so the admin list can never grow into a slow, huge response.
+      take: 300,
     });
   }
 

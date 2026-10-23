@@ -367,8 +367,8 @@ export default function CollectionsPage() {
     try {
       await collectionService.deleteCollection(confirmId)
       notify('Collection deleted.')
+      setRows((current) => current.filter((row) => row.id !== confirmId))
       setConfirmId(null)
-      reload()
     } catch (err) {
       notify(err.message || 'Could not delete.', { tone: 'error' })
     } finally {

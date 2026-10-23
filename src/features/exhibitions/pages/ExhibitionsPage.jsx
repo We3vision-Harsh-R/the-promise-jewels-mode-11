@@ -363,8 +363,8 @@ export default function ExhibitionsPage() {
     try {
       await exhibitionService.deleteExhibition(confirmId)
       notify('Exhibition deleted.')
+      setRows((current) => current.filter((row) => row.id !== confirmId))
       setConfirmId(null)
-      load({ search, status: statusFilter })
     } catch (err) {
       notify(err.message || 'Could not delete.', { tone: 'error' })
     } finally {
