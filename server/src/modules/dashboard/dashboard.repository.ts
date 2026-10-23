@@ -4,6 +4,58 @@ import { prisma } from "../../database/prisma.js";
 
 class DashboardRepository {
   /**
+   * Everything the dashboard shows - the eight counts, the recent inquiries and
+   * the trend - in ONE query. It was three round trips; with the database a
+   * network hop away each one is the cost of the screen.
+   */
+  async overview(
+    monthStart: Date,
+    now: Date,
+    recentLimit: number,
+    trendStart: Date,
+    trendEnd: Date,
+  ) {
+    const [row] = await prisma.$queryRaw<
+      Array<{
+        counts: Record<string, number>;
+        recent: Array<{
+          id: string; name: string; email: string; phone: string;
+          company: string | null; message: string; status: InquiryStatus; createdAt: string;
+        }>;
+        trend: Array<{ date: string; count: number }>;
+      }>
+    >(Prisma.sql`
+      SELECT
+        json_build_object(
+          'collections', (SELECT COUNT(*) FROM "collections"),
+          'collectionsThisMonth', (SELECT COUNT(*) FROM "collections" WHERE "createdAt" >= ${monthStart}),
+          'brands', (SELECT COUNT(*) FROM "brands"),
+          'inactiveBrands', (SELECT COUNT(*) FROM "brands" WHERE "isActive" = false),
+          'exhibitions', (SELECT COUNT(*) FROM "exhibitions"),
+          'upcomingExhibitions', (SELECT COUNT(*) FROM "exhibitions" WHERE "startDate" >= ${now}),
+          'inquiries', (SELECT COUNT(*) FROM "inquiries" WHERE "deletedAt" IS NULL),
+          'newInquiries', (SELECT COUNT(*) FROM "inquiries" WHERE "deletedAt" IS NULL AND "status" = 'NEW')
+        ) AS "counts",
+        COALESCE((
+          SELECT json_agg(t) FROM (
+            SELECT "id", "name", "email", "phone", "company", "message", "status", "createdAt"
+            FROM "inquiries" WHERE "deletedAt" IS NULL
+            ORDER BY "createdAt" DESC LIMIT ${recentLimit}
+          ) t
+        ), '[]'::json) AS "recent",
+        COALESCE((
+          SELECT json_agg(x) FROM (
+            SELECT DATE_TRUNC('day', "createdAt") AS "date", COUNT(*)::int AS "count"
+            FROM "inquiries"
+            WHERE "deletedAt" IS NULL AND "createdAt" >= ${trendStart} AND "createdAt" < ${trendEnd}
+            GROUP BY DATE_TRUNC('day', "createdAt") ORDER BY "date" ASC
+          ) x
+        ), '[]'::json) AS "trend"
+    `);
+    return row;
+  }
+
+  /**
    * The eight headline counts in ONE round trip. They used to be eight
    * separate count queries; with the database a network hop away and a small
    * connection pool, the dashboard spent most of its time queueing for a

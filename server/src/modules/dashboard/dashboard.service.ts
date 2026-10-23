@@ -11,6 +11,18 @@ import type {
   RecentInquiry,
 } from "./dashboard.types.js";
 
+// The dashboard's answer, held for a short while. It is the same for everyone
+// who may open it, and it costs a trip to a distant database. Cleared the
+// moment anything is written through the API (see app.ts), so a count never
+// lags behind something you just did; the time limit only covers changes made
+// outside the API.
+const DASHBOARD_TTL_MS = 30_000;
+const dashboardCache = new Map<string, { data: DashboardData; expiresAt: number }>();
+
+export function clearDashboardCache(): void {
+  dashboardCache.clear();
+}
+
 class DashboardService {
   /**
    * ============================
@@ -20,6 +32,17 @@ class DashboardService {
 
   async getDashboard(
     period: DashboardPeriod = DASHBOARD_DEFAULTS.PERIOD,
+  ): Promise<DashboardData> {
+    const hit = dashboardCache.get(period);
+    if (hit && hit.expiresAt > Date.now()) return hit.data;
+
+    const data = await this.loadDashboard(period);
+    dashboardCache.set(period, { data, expiresAt: Date.now() + DASHBOARD_TTL_MS });
+    return data;
+  }
+
+  private async loadDashboard(
+    period: DashboardPeriod,
   ): Promise<DashboardData> {
     const now = new Date();
 
@@ -62,19 +85,15 @@ class DashboardService {
      * reduces unnecessary waiting.
      */
 
-    const [counts, recentInquiries, inquiryTrend] = await Promise.all([
-      dashboardRepository.countSummary(monthStart, now),
+    const overview = await dashboardRepository.overview(
+      monthStart,
+      now,
+      DASHBOARD_DEFAULTS.RECENT_INQUIRIES_LIMIT,
+      trendStartDate,
+      trendEndDate,
+    );
 
-      dashboardRepository.findRecentInquiries(
-        DASHBOARD_DEFAULTS.RECENT_INQUIRIES_LIMIT,
-      ),
-
-      dashboardRepository.getInquiryTrend(
-        trendStartDate,
-        trendEndDate,
-      ),
-    ]);
-
+    const counts = overview.counts;
     const totalCollections = Number(counts.collections);
     const collectionsThisMonth = Number(counts.collectionsThisMonth);
     const totalBrands = Number(counts.brands);
@@ -83,6 +102,10 @@ class DashboardService {
     const upcomingExhibitions = Number(counts.upcomingExhibitions);
     const totalInquiries = Number(counts.inquiries);
     const newInquiries = Number(counts.newInquiries);
+
+    // json_agg hands dates back as text; the formatting below wants Dates.
+    const recentInquiries = overview.recent.map((r) => ({ ...r, createdAt: new Date(r.createdAt + (r.createdAt.endsWith("Z") ? "" : "Z")) }));
+    const inquiryTrend = overview.trend.map((t) => ({ date: new Date(t.date + (t.date.endsWith("Z") ? "" : "Z")), count: t.count }));
 
     /**
      * --------------------------------

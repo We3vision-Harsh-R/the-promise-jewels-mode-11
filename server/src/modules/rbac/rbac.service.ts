@@ -1,5 +1,5 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../database/prisma.js";
-import { clearAuthUserCache } from "../../middleware/auth.middleware.js";
 import { ApiError } from "../../utils/ApiError.js";
 import {
   ALL_PERMISSIONS,
@@ -33,6 +33,90 @@ interface CachedPermissions {
 
 const cache = new Map<string, CachedPermissions>();
 
+// The signed-in account, held beside its permissions. A request used to cost
+// one database round trip for the account, then (for Prisma's nested select)
+// three more for role and permissions - each a network hop to a database that
+// is far from the server. Now ONE query reads all of it, and both caches are
+// filled from it. Cleared by clearPermissionCache(id), which user.service
+// calls whenever a role or the active flag changes.
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  isActive: boolean;
+  role: string;
+  lastLoginAt: Date | null;
+};
+const authUserCache = new Map<string, { user: AuthUser; expiresAt: number }>();
+const AUTH_USER_MAX = 200;
+
+export function clearAuthUserCache(userId?: string): void {
+  if (userId) authUserCache.delete(userId);
+  else authUserCache.clear();
+}
+
+async function loadBundle(userId: string): Promise<AuthUser | null> {
+  const rows = await prisma.$queryRaw<
+    Array<{
+      id: string;
+      name: string;
+      email: string;
+      isActive: boolean;
+      role: string;
+      lastLoginAt: Date | null;
+      roleName: string | null;
+      isSystem: boolean | null;
+      perms: Array<{ resource: string; action: string }>;
+    }>
+  >(Prisma.sql`
+    SELECT
+      u."id", u."name", u."email", u."isActive", u."role"::text AS "role", u."lastLoginAt",
+      r."name" AS "roleName", r."isSystem" AS "isSystem",
+      COALESCE(
+        json_agg(json_build_object('resource', p."resource", 'action', p."action"))
+          FILTER (WHERE p."id" IS NOT NULL),
+        '[]'::json
+      ) AS "perms"
+    FROM "users" u
+    LEFT JOIN "roles" r ON r."id" = u."roleId"
+    LEFT JOIN "role_permissions" p ON p."roleId" = r."id"
+    WHERE u."id" = ${userId}
+    GROUP BY u."id", r."id"
+  `);
+  const row = rows[0];
+  if (!row) return null;
+
+  const isMaster = Boolean(row.isSystem && row.roleName === MASTER_ROLE_NAME);
+  const now = Date.now();
+  cache.set(userId, {
+    permissions: new Set(
+      isMaster ? ALL_PERMISSIONS : row.perms.map((p) => permissionKey(p.resource, p.action as Action)),
+    ),
+    roleName: row.roleName,
+    isMaster,
+    expiresAt: now + CACHE_TTL_MS,
+  });
+
+  const user: AuthUser = {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    isActive: row.isActive,
+    role: row.role,
+    lastLoginAt: row.lastLoginAt,
+  };
+  if (authUserCache.size >= AUTH_USER_MAX) authUserCache.clear();
+  authUserCache.set(userId, { user, expiresAt: now + CACHE_TTL_MS });
+  return user;
+}
+
+/** The account for a request, from cache or one query. null = no such user. */
+export async function getAuthUser(userId: string): Promise<AuthUser | null> {
+  const hit = authUserCache.get(userId);
+  if (hit && hit.expiresAt > Date.now()) return hit.user;
+  return loadBundle(userId);
+}
+
 export function clearPermissionCache(userId?: string): void {
   clearAuthUserCache(userId);
   if (userId) cache.delete(userId);
@@ -54,41 +138,12 @@ export async function permissionsFor(userId: string): Promise<{
   const hit = cache.get(userId);
   if (hit && hit.expiresAt > Date.now()) return hit;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      roleRef: {
-        select: {
-          name: true,
-          isSystem: true,
-          permissions: { select: { resource: true, action: true } },
-        },
-      },
-    },
-  });
+  await loadBundle(userId);
+  const loaded = cache.get(userId);
+  if (loaded) return loaded;
 
-  const role = user?.roleRef ?? null;
-  const isMaster = Boolean(role?.isSystem && role.name === MASTER_ROLE_NAME);
-
-  // The master role is not stored with a row per permission. It holds
-  // everything by definition, so a resource added to the catalogue is
-  // available to it the moment it is added rather than the next time someone
-  // remembers to tick a new box.
-  const permissions = new Set(
-    isMaster
-      ? ALL_PERMISSIONS
-      : (role?.permissions ?? []).map((p) => permissionKey(p.resource, p.action as Action)),
-  );
-
-  const entry: CachedPermissions = {
-    permissions,
-    roleName: role?.name ?? null,
-    isMaster,
-    expiresAt: Date.now() + CACHE_TTL_MS,
-  };
-
-  cache.set(userId, entry);
-  return entry;
+  // No such account: nothing is granted.
+  return { permissions: new Set<string>(), roleName: null, isMaster: false };
 }
 
 export async function userCan(

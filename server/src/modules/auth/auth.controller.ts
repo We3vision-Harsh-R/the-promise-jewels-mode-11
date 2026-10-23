@@ -1,4 +1,4 @@
-import { accessProfileFor } from "../rbac/rbac.service.js";
+import { accessProfileFor, getAuthUser } from "../rbac/rbac.service.js";
 import { Request, Response } from "express";
 import authService from "./auth.service.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
@@ -84,10 +84,20 @@ class AuthController {
   });
 
   session = asyncHandler(async (req: Request, res: Response) => {
-    const [user, access] = await Promise.all([
-      authService.me(req.user!.id),
+    // The account and its permissions were both read, in one query, by the
+    // sign-in check that got us here; these two calls are cache reads.
+    const [account, access] = await Promise.all([
+      getAuthUser(req.user!.id),
       accessProfileFor(req.user!.id),
     ]);
+    if (!account) throw new ApiError(404, AUTH_MESSAGES.USER_NOT_FOUND);
+    const user = {
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      isActive: account.isActive,
+      lastLoginAt: account.lastLoginAt,
+    };
 
     res
       .status(200)

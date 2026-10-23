@@ -1,3 +1,4 @@
+import { clearDashboardCache } from "./modules/dashboard/dashboard.service.js";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
@@ -222,6 +223,18 @@ app.use("/api", normaliseQuery);
 // came from. Mounted after cookieParser (it reads nothing from cookies, but
 // order keeps the chain readable) and before the routes.
 app.use("/api", csrfProtection);
+
+// Any successful write through the API drops the dashboard's held answer, so
+// its counts are never behind something that was just saved. (Visitor pings
+// are writes too, but they do not change anything the dashboard shows.)
+app.use("/api", (req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS" && !req.path.startsWith("/v1/visitors")) {
+    res.on("finish", () => {
+      if (res.statusCode < 400) clearDashboardCache();
+    });
+  }
+  next();
+});
 
 // Answers the website's read-only calls from memory and empties that memory
 // whenever the admin panel saves something — see publicCache.middleware.ts.
