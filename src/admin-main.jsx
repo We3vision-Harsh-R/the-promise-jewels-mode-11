@@ -7,6 +7,7 @@ import AdminRoutes from '@/app/routes/AdminRoutes.jsx'
 import '@/assets/styles/globals.css'
 import { preloadAdminPage } from '@/app/routes/adminPageLoaders.js'
 import { getSession } from '@/features/auth/auth.api.js'
+import { prefetchDashboard } from '@/features/dashboard/dashboard.api.js'
 
 // Do not wait for the sign-in check to find out what is needed next: fetch the
 // code of the screen being opened and the session (who is signed in and what they may do, one request) now,
@@ -14,6 +15,9 @@ import { getSession } from '@/features/auth/auth.api.js'
 if (!window.location.pathname.startsWith('/admin/login')) {
   preloadAdminPage(window.location.pathname)
   getSession()
+  // The dashboard's numbers do not depend on the sign-in answer to be asked for,
+  // so ask for both at once instead of one after the other.
+  if (/^\/admin\/?(dashboard\/?)?$/.test(window.location.pathname)) prefetchDashboard()
 }
 
 // The admin panel's own entry (admin.html). The public website's entry

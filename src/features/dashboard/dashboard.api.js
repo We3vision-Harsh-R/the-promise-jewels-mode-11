@@ -21,14 +21,27 @@ function formatChartDay(isoDate) {
 // getRecentInquiries() back-to-back for the same period — which
 // DashboardPage.jsx does via Promise.all — only hits the network once.
 const inFlight = new Map()
+// How long a settled answer is reused. Normally none; admin-main.jsx sets a few
+// seconds when it starts the request early, so the page that opens a moment
+// later takes the same answer instead of asking again.
+let holdMs = 0
+
+/** Starts the dashboard request now, before the screen that shows it exists. */
+export function prefetchDashboard() {
+  if (USE_MOCK) return
+  holdMs = 8000
+  fetchDashboard('week')?.catch(() => {})
+  setTimeout(() => { holdMs = 0 }, 0)
+}
 
 function fetchDashboard(period = 'week') {
   if (USE_MOCK) return null // callers branch on USE_MOCK themselves below
   if (!inFlight.has(period)) {
+    const hold = holdMs // read now: it is reset before the request settles
     const promise = request('/dashboard', { params: { period } }).finally(() => {
       // Drop the cache entry once settled so a later call (e.g. switching
       // period, or a fresh page load) re-fetches instead of reusing stale data.
-      setTimeout(() => inFlight.delete(period), 0)
+      setTimeout(() => inFlight.delete(period), hold)
     })
     inFlight.set(period, promise)
   }
