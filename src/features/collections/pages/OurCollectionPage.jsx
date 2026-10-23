@@ -8,6 +8,7 @@ import Footer from "@/components/common/Footer.jsx";
 import usePublicSettings from "@/features/settings/hooks/usePublicSettings.js";
 import usePublicBrands from "@/features/brands/hooks/usePublicBrands.js";
 import usePublicCollections from "@/features/collections/hooks/usePublicCollections.js";
+import BRAND_GALLERIES from "@/services/mock/brandGalleries.js";
 import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
@@ -78,25 +79,43 @@ export default function OurCollectionPage() {
 
   // Grid tiles. `id` is what CollectionCategories keys and sorts on, `slug` is
   // what the details route needs; `addedAt` drives its "Latest" sort.
-  const tiles = useMemo(
-    () =>
-      collections
-        .filter((c) => !activeBrandId || c.brandId === activeBrandId)
+  //
+  // When no brand has been added in Admin > Brands, the tabs are the bundled
+  // trio and their keys are the keys of BRAND_GALLERIES. Choosing one then
+  // shows that brand's bundled photographs — as the page always did — instead
+  // of the same four default tiles whichever brand was picked.
+  const bundledBrands = brands.length === 0;
+
+  const tiles = useMemo(() => {
+    if (bundledBrands && activeBrandId && BRAND_GALLERIES[activeBrandId]) {
+      const gallery = BRAND_GALLERIES[activeBrandId];
+      return gallery.images.map((image, index) => ({
+        id: `${gallery.key}-${index}`,
+        // The details page answers to a bundled brand key as its slug.
+        slug: gallery.key,
+        name: `${gallery.label} ${index + 1}`,
+        image,
+        addedAt: new Date(2026, 0, 1 + (gallery.images.length - index)).toISOString(),
+      }));
+    }
+
+    return collections
+      .filter((c) => !activeBrandId || c.brandId === activeBrandId)
         .map((c) => ({
           id: c.id,
           slug: c.slug,
           name: c.name,
           image: c.coverUrl,
           addedAt: c.created_at,
-        })),
-    [collections, activeBrandId]
-  );
+        }));
+  }, [collections, activeBrandId, bundledBrands]);
 
   // While a tab is hovered the grid swaps to that brand's own photos. Built
   // from the same live collections rather than a bundled photo set, so a
   // brand added today previews with today's collections.
   const previewBrand = useMemo(() => {
     if (!hoveredBrandId) return null;
+    if (bundledBrands) return BRAND_GALLERIES[hoveredBrandId] ?? null;
     const images = collections
       .filter((c) => c.brandId === hoveredBrandId)
       .map((c) => c.coverUrl)
@@ -107,9 +126,11 @@ export default function OurCollectionPage() {
       label: brands.find((b) => b.id === hoveredBrandId)?.name ?? "",
       images,
     };
-  }, [hoveredBrandId, brands, collections]);
+  }, [hoveredBrandId, brands, collections, bundledBrands]);
 
-  const activeBrandName = brands.find((b) => b.id === activeBrandId)?.name;
+  const activeBrandName =
+    brands.find((b) => b.id === activeBrandId)?.name ??
+    (bundledBrands ? BRAND_GALLERIES[activeBrandId]?.label : undefined);
 
   const hero = useSectionContent('collections', 'hero', HERO)
 
