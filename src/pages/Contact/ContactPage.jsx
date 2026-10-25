@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import PageHeroCircle from "@/components/layout/PageHeroCircle.jsx";
 import InquiryForm from "@/features/inquiries/components/InquiryForm.jsx";
 import Footer from "@/components/common/Footer.jsx";
@@ -6,7 +5,7 @@ import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
 import { scrollToTarget } from "@/utils/scroll.js";
 import PageSections from '@/features/page-content/PageSections.jsx'
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 
 // What this page opens with. The shades and the eighteen turning frames
 // come from HERO_BASE so every hero on the site starts from the same place;
@@ -37,8 +36,6 @@ export default function ContactPage() {
 
   const hero = useSectionContent('contact', 'hero', HERO)
 
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
-
   // The page's bands, keyed as Admin > Content knows them. The order written
   // here is what the site ships with; the panel can rearrange it, hide any of
   // them, or slot a designed section in between — without a deploy.
@@ -50,7 +47,7 @@ export default function ContactPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="contact"
         onCtaClick={scrollToForm}/>
     ),
     details: () => <InquiryForm id="inquiry" />,

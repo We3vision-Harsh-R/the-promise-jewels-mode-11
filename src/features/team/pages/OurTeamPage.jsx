@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Footer from '@/components/common/Footer.jsx'
 import SectionHeading from '@/components/common/SectionHeading.jsx'
 import PageHeroCircle from '@/components/layout/PageHeroCircle.jsx'
@@ -6,7 +6,7 @@ import GrowthSection from '@/pages/Home/components/GrowthSection.jsx'
 import PageSections from '@/features/page-content/PageSections.jsx'
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { typeStyle } from '@/features/page-content/typeStyle.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 import { useSeoMeta } from '@/features/seo/hooks/useSeoMeta.js'
 import useSelectedTeam from '@/features/team/hooks/useSelectedTeam.js'
 import useReveal from '@/hooks/useReveal.js'
@@ -153,7 +153,6 @@ export default function OurTeamPage() {
   useSeoMeta('our-team')
 
   const hero = useSectionContent('team', 'hero', HERO)
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
 
   // The page's bands, keyed as Admin > Content knows them, so they can be
   // rearranged or hidden from there without a deploy.
@@ -165,7 +164,7 @@ export default function OurTeamPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="team"
         // Through the smooth-scroll helper: the browser's own scrollIntoView does
         // nothing while the site's smooth scrolling is running.
         onCtaClick={() => settleToSection('team')}

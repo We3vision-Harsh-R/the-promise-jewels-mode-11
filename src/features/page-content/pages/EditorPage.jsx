@@ -34,6 +34,7 @@ import { uploadAsset } from '@/features/media/media.api.js'
 import { Can } from '@/features/rbac/usePermissions.jsx'
 import TeamManager from '@/features/team/pages/TeamPage.jsx'
 import TeamPicker from '@/features/team/components/TeamPicker.jsx'
+import { ChoiceInput, FramesPicker, RingFrameControl } from '@/features/rings/components/RingControls.jsx'
 import { classNames } from '@/utils/helpers.js'
 
 // The Editor — text content for the public website.
@@ -591,8 +592,20 @@ function IconButton({ label, icon: Icon, onClick, disabled, active = false }) {
  * The schema decides the control, not this component — adding a field type in
  * page-content.constants.ts means adding one branch here and nothing else.
  */
-function FieldControl({ section, field, value, palette, fonts, weights, limits, disabled, onChange, onUpload }) {
+function FieldControl({ section, field, value, draft, palette, fonts, weights, limits, disabled, onChange, onUpload }) {
   const set = (next) => onChange(section.key, field.key, next)
+
+  if (field.type === 'ringframe') {
+    return <RingFrameControl section={section} field={field} draft={draft} disabled={disabled} onChange={onChange} onUpload={onUpload} />
+  }
+
+  if (field.type === 'frames') {
+    return <FramesPicker value={value} draft={draft} disabled={disabled} onChange={set} />
+  }
+
+  if (field.type === 'choice') {
+    return <ChoiceInput field={field} value={value} disabled={disabled} onChange={set} />
+  }
 
   if (field.type === 'textarea') {
     return (
@@ -743,6 +756,8 @@ function buildBlocks(fields) {
   for (let i = 0; i < fields.length; i += 1) {
     const field = fields[i]
 
+    if (field.hidden) continue
+
     if (field.type !== 'text' && field.type !== 'textarea') {
       blocks.push({ kind: 'plain', field, group: field.group })
       continue
@@ -783,7 +798,7 @@ function groupBlocks(blocks) {
 /** How a section describes itself before you open it. */
 function summarise(fields) {
   const copy = fields.filter((f) => f.type === 'text' || f.type === 'textarea').length
-  const pictures = fields.filter((f) => f.type === 'image' || f.type === 'svg').length
+  const pictures = fields.filter((f) => f.type === 'image' || f.type === 'svg' || f.type === 'ringframe').length
 
   return [
     copy ? `${copy} ${copy === 1 ? 'text' : 'texts'}` : null,
@@ -928,12 +943,13 @@ function FieldRun({ run, section, draft, controlProps }) {
                 key={block.field.key}
                 label={block.field.label}
                 hint={block.field.hint}
-                className={block.field.type === 'number' || block.field.type === 'team' ? 'md:col-span-2' : undefined}
+                className={['number', 'team', 'ringframe', 'frames', 'choice'].includes(block.field.type) ? 'md:col-span-2' : undefined}
               >
                 <FieldControl
                   section={section}
                   field={block.field}
                   value={draft[`${section.key}.${block.field.key}`] ?? ''}
+                  draft={draft}
                   {...controlProps}
                 />
               </Field>

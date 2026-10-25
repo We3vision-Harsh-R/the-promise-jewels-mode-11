@@ -24,6 +24,7 @@
     "vault:check": "tsx server/src/modules/secure-notes/secure-notes.selftest.ts",
     "error:check": "tsx server/src/middleware/error.middleware.selftest.ts",
     "ops:check": "node server/src/modules/exhibition-ops/exhibition-ops.e2e.mjs",
+    "rings:migrate": "tsx server/src/scripts/migrateRings.ts",
     "security:harden": "tsx server/src/scripts/harden.ts",
     "security:check": "tsx server/src/scripts/securityCheck.ts",
     "smoke:check": "tsx server/src/scripts/smokeCheck.ts"

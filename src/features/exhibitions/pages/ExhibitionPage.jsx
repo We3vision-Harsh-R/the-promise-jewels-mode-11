@@ -12,7 +12,7 @@ import ExhibitionSchema from "@/features/exhibitions/components/ExhibitionSchema
 import { EXHIBITIONS, sortForDisplay } from "@/features/exhibitions/data/exhibitions.js";
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { typeStyle } from '@/features/page-content/typeStyle.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 import PageSections from "@/features/page-content/PageSections.jsx";
 
 // What this page opens with. The shades and the eighteen turning frames
@@ -99,7 +99,6 @@ export default function ExhibitionPage() {
   // Admin > Editor. HERO above is the fallback, so nothing saved renders
   // exactly what the page shipped with.
   const hero = useSectionContent('exhibitions', 'hero', HERO)
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
   const cta = useSectionContent('exhibitions', 'cta', CTA)
   const faqText = useSectionContent('exhibitions', 'faq', FAQ_TEXT)
   const faqs = useMemo(
@@ -148,7 +147,7 @@ export default function ExhibitionPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="exhibitions"
         onCtaClick={() => settleToSection("schedule")}/>
     ),
     schedule: () => <ExhibitionSchedule exhibitions={ordered} />,

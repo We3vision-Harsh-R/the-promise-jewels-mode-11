@@ -3,7 +3,7 @@ import { gsap } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
-import { imagesFrom } from "@/components/layout/heroContent.js";
+import useRingPhotos from "@/features/rings/useRings.js";
 
 
 /**
@@ -58,50 +58,10 @@ const INNER_ITEMS = [
 // the hero looks exactly as it did before the admin feature existed.
 
 
-const OUTER_IMAGES = [
-  "/images/jewellery/image_20_1.webp", // frame 1
-  "/images/jewellery/image_22.webp", // frame 2
-  "/images/jewellery/image_56.webp", // frame 3
-  "/images/jewellery/image_77.webp", // frame 4
-  "/images/jewellery/image_78.webp", // frame 5
-  "/images/jewellery/image_79.webp", // frame 6
-  "/images/jewellery/image_80.webp", // frame 7
-  "/images/jewellery/image_81.webp", // frame 8
-  "/images/jewellery/image_82.webp", // frame 9
-  "/images/jewellery/image_83.webp", // frame 10
-  "/images/jewellery/image_84.webp", // frame 11
-  "/images/jewellery/image_86.webp", // frame 12
-  "/images/jewellery/image_89.webp", // frame 13
-  "/images/jewellery/image_90.webp", // frame 14
-  "/images/jewellery/image_91.webp", // frame 15
-  "/images/jewellery/image_92.webp", // frame 16
-  "/images/jewellery/image_93.webp", // frame 17
-  "/images/jewellery/image_94.webp", // frame 18
-];
-
-
-const INNER_IMAGES = [
-  "/images/jewellery/image_95.webp", // frame 1
-  "/images/jewellery/image_96.webp", // frame 2
-  "/images/jewellery/image_97.webp", // frame 3
-  "/images/jewellery/image_98.webp", // frame 4
-  "/images/jewellery/image_99.webp", // frame 5
-  "/images/jewellery/image_100.webp", // frame 6
-  "/images/jewellery/image_101.webp", // frame 7
-  "/images/jewellery/image_102.webp", // frame 8
-  "/images/jewellery/image_82.webp", // frame 9
-  "/images/jewellery/image_83.webp", // frame 10
-  "/images/jewellery/image_84.webp", // frame 11
-  "/images/jewellery/image_86.webp", // frame 12
-];
-
-
 // Copy bundled with the site. Admin > Editor > Home page overrides these at
 // runtime; anything not overridden — or a failed request — keeps exactly what
 // is written here, so the hero never renders blank.
 const HERO_TEXT = {
-  ...Object.fromEntries(OUTER_IMAGES.map((src, i) => [`outer.${i + 1}`, src])),
-  ...Object.fromEntries(INNER_IMAGES.map((src, i) => [`inner.${i + 1}`, src])),
   titleTop: "Promise",
   titleBottom: "JEWELS",
   "ticker.1": "Claricuts",
@@ -139,8 +99,8 @@ export default function HeroCircle() {
   // which meant the photographs lived somewhere other than the words beside
   // them. The bundled arrays still fix the frame COUNT — a saved value
   // replaces a frame, it can never add or drop one.
-  const outerImages = imagesFrom(text, OUTER_IMAGES, "outer");
-  const innerImages = imagesFrom(text, INNER_IMAGES, "inner");
+  const outerImages = useRingPhotos("home");
+  const innerImages = useRingPhotos("home", "inner");
 
 
   // Each name keeps its own pair of shades. The design paints them top to
@@ -319,13 +279,14 @@ export default function HeroCircle() {
                         zIndex: item.z,
                       }}
                     >
-                      <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto]">
+                      <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto] overflow-hidden rounded-[10px]">
                         <img
-                          src={outerImages[i]}
+                          src={outerImages[i % outerImages.length].src}
+                          style={outerImages[i % outerImages.length].style}
                           alt=""
                           data-frame={i + 1}
                           loading="lazy"
-                          className="block w-full h-full object-cover rounded-[10px]"
+                          className="block w-full h-full object-cover"
                         />
                       </div>
                     </div>
@@ -348,13 +309,14 @@ export default function HeroCircle() {
                         zIndex: item.z,
                       }}
                     >
-                      <div className="absolute w-[var(--inner-card-w)] h-[var(--inner-card-h)] [inset:-100%_auto_auto]">
+                      <div className="absolute w-[var(--inner-card-w)] h-[var(--inner-card-h)] [inset:-100%_auto_auto] overflow-hidden rounded-[8px]">
                         <img
-                          src={innerImages[i]}
+                          src={innerImages[i % innerImages.length].src}
+                          style={innerImages[i % innerImages.length].style}
                           alt=""
                           data-frame={i + 1}
                           loading="lazy"
-                          className="block w-full h-full object-cover rounded-[8px]"
+                          className="block w-full h-full object-cover"
                         />
                       </div>
                     </div>

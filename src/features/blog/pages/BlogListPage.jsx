@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import PageHeroCircle from '@/components/layout/PageHeroCircle.jsx'
@@ -6,7 +6,7 @@ import Footer from '@/components/common/Footer.jsx'
 import GrowthSection from '@/pages/Home/components/GrowthSection.jsx'
 import useReveal from '@/hooks/useReveal.js'
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 import PageSections from '@/features/page-content/PageSections.jsx'
 import { listPublicPosts } from '@/features/blog/blog.api.js'
 import { settleToSection } from '@/utils/scroll.js'
@@ -86,7 +86,6 @@ export default function BlogListPage() {
   const [loading, setLoading] = useState(true)
 
   const hero = useSectionContent('blog', 'hero', HERO)
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
 
   useReveal(sectionRef)
 
@@ -121,7 +120,7 @@ export default function BlogListPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="blog"
         onCtaClick={() => settleToSection('posts')}/>
     ),
     posts: () => (

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import useRingPhotos from "@/features/rings/useRings.js";
 import { gsap } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
@@ -30,28 +31,6 @@ const OUTER_ITEMS = [
   { deg: 340, z: undefined },
 ];
 
-// Swap these for your own product photography — keep 18 entries for the ring
-// (repeats are fine, the reference site repeats too).
-const OUTER_IMAGES = [
-  "/images/jewellery/image_20_1.webp",
-  "/images/jewellery/image_22.webp",
-  "/images/jewellery/image_56.webp",
-  "/images/jewellery/image_77.webp",
-  "/images/jewellery/image_78.webp",
-  "/images/jewellery/image_79.webp",
-  "/images/jewellery/image_80.webp",
-  "/images/jewellery/image_81.webp",
-  "/images/jewellery/image_82.webp",
-  "/images/jewellery/image_83.webp",
-  "/images/jewellery/image_84.webp",
-  "/images/jewellery/image_86.webp",
-  "/images/jewellery/image_89.webp",
-  "/images/jewellery/image_90.webp",
-  "/images/jewellery/image_91.webp",
-  "/images/jewellery/image_92.webp",
-  "/images/jewellery/image_93.webp",
-  "/images/jewellery/image_94.webp",
-];
 
 // Default copy — the homepage/about/brands pages render this section with no
 // props at all and get exactly this. The collection pages reuse the same
@@ -67,7 +46,6 @@ const DEFAULT_SUBTITLE =
 const DEFAULT_CTA_TEXT = "Get Started";
 
 const GROWTH_TEXT = {
-  ...Object.fromEntries(OUTER_IMAGES.map((src, i) => [`img.${i + 1}`, src])),
   eyebrow: DEFAULT_EYEBROW,
   title: DEFAULT_TITLE,
   highlight: DEFAULT_HIGHLIGHT,
@@ -119,6 +97,8 @@ const CIRCLE_COMPONENT_VARS =
 // copy (their Editor tabs say so); About keeps its own and passes page="about".
 export default function GrowthSection({ page = "home" } = {}) {
   const text = useSectionContent(page, "growth", GROWTH_TEXT);
+  // The band's ring turns the shared ring photographs (Admin > Rings).
+  const ringPhotos = useRingPhotos("growth");
   const navigate = useNavigate();
   const sectionRef = useRef(null);
   const outerRef = useRef(null);
@@ -235,12 +215,13 @@ export default function GrowthSection({ page = "home" } = {}) {
                       zIndex: item.z,
                     }}
                   >
-                    <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto]">
+                    <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto] overflow-hidden rounded-[10px]">
                       <img
-                        src={text[`img.${i + 1}`] || OUTER_IMAGES[i]}
+                        src={ringPhotos[i % ringPhotos.length].src}
+                        style={ringPhotos[i % ringPhotos.length].style}
                         alt=""
                         loading="lazy"
-                        className="block w-full h-full object-cover rounded-[10px]"
+                        className="block w-full h-full object-cover"
                       />
                     </div>
                   </div>

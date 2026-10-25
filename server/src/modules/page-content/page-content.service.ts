@@ -30,7 +30,11 @@ import {
  *
  * Returns null when the value is fine, or the reason it is not.
  */
-function styleValueProblem(type: string, value: string): string | null {
+function styleValueProblem(
+  type: string,
+  value: string,
+  field?: { options?: { value: string }[] },
+): string | null {
   // Empty always means "no override, use the design's own styling", and the
   // caller deletes the row rather than storing it.
   if (value === "") return null;
@@ -61,6 +65,24 @@ function styleValueProblem(type: string, value: string): string | null {
     return n >= LETTER_SPACING_MIN && n <= LETTER_SPACING_MAX
       ? null
       : `must be between ${LETTER_SPACING_MIN} and ${LETTER_SPACING_MAX} em`;
+  }
+
+  if (type === "choice") {
+    return field?.options?.some((option) => option.value === value)
+      ? null
+      : "not one of the offered choices";
+  }
+
+  if (type === "toggle") {
+    return value === "true" || value === "false" ? null : "must be on or off";
+  }
+
+  if (type === "frames") {
+    return /^\d{1,2}(,\d{1,2}){0,29}$/.test(value) ? null : "must be photo numbers separated by commas";
+  }
+
+  if (type === "number") {
+    return Number.isFinite(Number(value)) ? null : "must be a number";
   }
 
   if (type === "color") {
@@ -200,7 +222,7 @@ class PageContentService {
 
         const value = rawValue.trim();
 
-        const problem = styleValueProblem(field.type, value);
+        const problem = styleValueProblem(field.type, value, field);
 
         if (problem) {
           throw new ApiError(

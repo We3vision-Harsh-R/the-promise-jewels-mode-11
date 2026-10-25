@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Gem, Building2, CalendarDays, MessagesSquare, Search, Settings, X, LogOut, PenLine, PanelTop, PanelBottom, Newspaper, Moon, Sun,   Users, ShieldCheck, KeyRound, ChevronRight, UserPlus, IndianRupee, Package,
+  LayoutDashboard, Gem, Building2, CalendarDays, MessagesSquare, Search, Settings, X, LogOut, PenLine, PanelTop, PanelBottom, CircleDot, Newspaper, Moon, Sun,   Users, ShieldCheck, KeyRound, ChevronRight, UserPlus, IndianRupee, Package,
   UsersRound, ListChecks, CalendarClock, FolderOpen, NotebookPen, SlidersHorizontal, Radio }
   from 'lucide-react'
 import { classNames, initials } from '@/utils/helpers.js'
@@ -100,6 +100,7 @@ const NAV = [
       { to: '/admin/editor', label: 'Content', icon: PenLine, resource: 'content' },
       { to: '/admin/header', label: 'Header', icon: PanelTop, resource: 'header' },
       { to: '/admin/footer', label: 'Footer', icon: PanelBottom, resource: 'footer' },
+      { to: '/admin/rings', label: 'Rings', icon: CircleDot, resource: 'rings' },
     ],
   },
   {

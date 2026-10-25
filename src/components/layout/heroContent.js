@@ -43,19 +43,7 @@ export const HERO_BASE = {
   titleColorTo: "#286F6F",
   subtitleColor: "#2F6B6B",
   ctaTextColor: "#FFFFFF",
-  ...Object.fromEntries(HERO_RING.map((src, index) => [`ring.${index + 1}`, src])),
 };
-
-/**
- * The ring for one hero, frame by frame, from that hero's saved content.
- *
- * Callers wrap this in a useMemo keyed on the content object — the hook hands
- * back a stable identity while nothing has changed, so the ring is rebuilt
- * only when a frame actually differs.
- */
-export function ringFrom(content) {
-  return HERO_RING.map((_bundled, index) => content[`ring.${index + 1}`]);
-}
 
 /**
  * One list of pictures, with anything saved in the Editor laid over it.

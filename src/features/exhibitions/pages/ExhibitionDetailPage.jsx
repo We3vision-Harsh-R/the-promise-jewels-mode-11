@@ -132,6 +132,7 @@ export default function ExhibitionDetailPage() {
   return (
     <>
       <PageHeroCircle
+        ringPage="exhibitions"
         eyebrow={exhibition.edition || t.eyebrowFallback}
         title={exhibition.name}
         subtitle={exhibition.about}

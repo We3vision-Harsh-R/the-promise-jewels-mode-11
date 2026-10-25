@@ -11,7 +11,7 @@ import usePublicCollections from "@/features/collections/hooks/usePublicCollecti
 import BRAND_GALLERIES from "@/services/mock/brandGalleries.js";
 import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 import PageSections from '@/features/page-content/PageSections.jsx'
 
 // What this page opens with. The shades and the eighteen turning frames
@@ -134,8 +134,6 @@ export default function OurCollectionPage() {
 
   const hero = useSectionContent('collections', 'hero', HERO)
 
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
-
   // The page's bands, keyed as Admin > Content knows them. The order written
   // here is what the site ships with; the panel can rearrange it, hide any of
   // them, or slot a designed section in between — without a deploy.
@@ -151,7 +149,7 @@ export default function OurCollectionPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="collections"
         logoUrl="/images/PROMISE_LOGO.webp"
         onCtaClick={() => navigate("/contact")}
         socialLinks={social}
@@ -203,6 +201,7 @@ export default function OurCollectionPage() {
     inquiry: () => <InquiryForm id="inquiry" />,
     cta: () => (
       <PageHeroCircle
+        ringPage="growth"
         eyebrow={cta.eyebrow}
         title={cta.title}
         subtitle={cta.subtitle}

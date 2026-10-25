@@ -116,6 +116,14 @@ export const RESOURCES: ResourceDefinition[] = [
     actions: ["view", "edit"],
   },
   {
+    key: "rings",
+    label: "Rings",
+    path: "/admin/rings",
+    group: "Editor",
+    description: "The spinning photographs shown on every page, and which of them each page uses.",
+    actions: ["view", "edit"],
+  },
+  {
     key: "footer",
     label: "Footer",
     path: "/admin/footer",

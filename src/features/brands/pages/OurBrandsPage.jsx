@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import Footer from "@/components/common/Footer.jsx";
 import { useNavigate } from "react-router-dom";
 import PageHeroCircle from "@/components/layout/PageHeroCircle.jsx";
@@ -6,7 +5,7 @@ import GrowthSection from "@/pages/Home/components/GrowthSection.jsx";
 import OurBrands from "@/pages/Home/components/OurBrands.jsx";
 import { useSeoMeta } from "@/features/seo/hooks/useSeoMeta.js";
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
-import { HERO_BASE, ringFrom } from '@/components/layout/heroContent.js'
+import { HERO_BASE } from '@/components/layout/heroContent.js'
 import PageSections from '@/features/page-content/PageSections.jsx'
 
 // What this page opens with. The shades and the eighteen turning frames
@@ -30,8 +29,6 @@ export default function OurBrandsPage() {
 
   const hero = useSectionContent('brands', 'hero', HERO)
 
-  const heroRing = useMemo(() => ringFrom(hero), [hero])
-
   // The page's bands, keyed as Admin > Content knows them. The order written
   // here is what the site ships with; the panel can rearrange it, hide any of
   // them, or slot a designed section in between — without a deploy.
@@ -43,7 +40,7 @@ export default function OurBrandsPage() {
         title={hero.title}
         subtitle={hero.subtitle}
         ctaText={hero.ctaLabel}
-        outerImages={heroRing}
+        ringPage="brands"
         onCtaClick={() => navigate("/our-collection")}/>
     ),
     listing: () => (

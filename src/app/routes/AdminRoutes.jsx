@@ -19,6 +19,7 @@ const VaultPage = lazy(adminPageLoaders.VaultPage)
 const ExhibitionOpsPage = lazy(adminPageLoaders.ExhibitionOpsPage)
 const HeaderPage = lazy(adminPageLoaders.HeaderPage)
 const FooterPage = lazy(adminPageLoaders.FooterPage)
+const RingsPage = lazy(adminPageLoaders.RingsPage)
 const BlogPage = lazy(adminPageLoaders.BlogPage)
 const UsersPage = lazy(adminPageLoaders.UsersPage)
 const RolesPage = lazy(adminPageLoaders.RolesPage)
@@ -141,6 +142,14 @@ export default function AdminRoutes() {
           element={
           <RequirePermission resource="header">
             <Suspense fallback={null}><HeaderPage /></Suspense>
+          </RequirePermission>
+          }
+        />
+        <Route
+          path="rings"
+          element={
+          <RequirePermission resource="rings">
+            <Suspense fallback={null}><RingsPage /></Suspense>
           </RequirePermission>
           }
         />

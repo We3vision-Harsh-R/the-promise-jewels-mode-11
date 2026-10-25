@@ -31,6 +31,7 @@ function AboutHero() {
 
   return (
     <PageHeroCircle
+      ringPage="about"
       content={hero}
       eyebrow={hero.eyebrow}
       title={hero.title}

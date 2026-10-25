@@ -4,6 +4,7 @@ import { gsap } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import { SocialLinks } from "@/components/common/SocialIcons.jsx";
 import { classNames } from "@/utils/helpers.js";
+import useRingPhotos from "@/features/rings/useRings.js";
 
 /**
  * Outer circle: 18 cards, 20deg apart.
@@ -31,28 +32,6 @@ const OUTER_ITEMS = [
   { deg: 340, z: undefined },
 ];
 
-// Swap these for your own product photography — keep 18 entries for the ring
-// (repeats are fine).
-const DEFAULT_OUTER_IMAGES = [
-  "/images/jewellery/image_20_1.webp",
-  "/images/jewellery/image_22.webp",
-  "/images/jewellery/image_56.webp",
-  "/images/jewellery/image_77.webp",
-  "/images/jewellery/image_78.webp",
-  "/images/jewellery/image_79.webp",
-  "/images/jewellery/image_80.webp",
-  "/images/jewellery/image_81.webp",
-  "/images/jewellery/image_82.webp",
-  "/images/jewellery/image_83.webp",
-  "/images/jewellery/image_84.webp",
-  "/images/jewellery/image_86.webp",
-  "/images/jewellery/image_89.webp",
-  "/images/jewellery/image_90.webp",
-  "/images/jewellery/image_91.webp",
-  "/images/jewellery/image_92.webp",
-  "/images/jewellery/image_93.webp",
-  "/images/jewellery/image_94.webp",
-];
 
 const DEFAULT_TICKER_ITEMS = ["Claricuts", "Luxifine", "Netram"];
 
@@ -122,7 +101,9 @@ export default function PageHeroCircle({
   onSecondaryCtaClick,
   logoUrl,
   socialLinks,
-  outerImages = DEFAULT_OUTER_IMAGES,
+  // Which place's ring photographs to turn (Admin > Rings decides what each
+  // place shows). The photographs themselves are shared by every page.
+  ringPage = "home",
   tickerItems = DEFAULT_TICKER_ITEMS,
   showOuterRing = true,
   showTicker = true,
@@ -146,6 +127,7 @@ export default function PageHeroCircle({
 
   const outerRef = useRef(null);
   const tickerRef = useRef(null);
+  const ringPhotos = useRingPhotos(ringPage);
 
   // Just a plain infinite rotation — no scroll listener, no speed changes,
   // no scale changes. The circle spins at a constant rate and otherwise
@@ -239,12 +221,13 @@ export default function PageHeroCircle({
                         zIndex: item.z,
                       }}
                     >
-                      <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto]">
+                      <div className="absolute w-[var(--outer-card-w)] h-[var(--outer-card-h)] [inset:-125%_auto_auto] overflow-hidden rounded-[10px]">
                         <img
-                          src={outerImages[i % outerImages.length]}
+                          src={ringPhotos[i % ringPhotos.length].src}
+                          style={ringPhotos[i % ringPhotos.length].style}
                           alt=""
                           loading="lazy"
-                          className="block w-full h-full object-cover rounded-[10px]"
+                          className="block w-full h-full object-cover"
                         />
                       </div>
                     </div>

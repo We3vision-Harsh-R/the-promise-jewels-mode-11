@@ -249,7 +249,7 @@ const WARM_PATHS = [
   "/collections",
   "/exhibitions",
   "/blog/public",
-  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
+  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "rings", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
     (page) => [`/page-content/public/${page}`, `/page-content/public/${page}/layout`],
   ),
 ];

@@ -152,7 +152,7 @@ const PUBLIC_API = [
   "/api/v1/collections",
   "/api/v1/exhibitions",
   "/api/v1/blog/public",
-  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
+  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "rings", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
     (page) => [`/api/v1/page-content/public/${page}`, `/api/v1/page-content/public/${page}/layout`],
   ),
 ];

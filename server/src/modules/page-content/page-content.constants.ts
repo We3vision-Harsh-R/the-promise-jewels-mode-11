@@ -29,6 +29,16 @@ export type FieldType =
   | "team"
   /** An on / off switch. Stored as "true" or "false". */
   | "toggle"
+  /** One of a short list of named choices, shown as radio buttons. */
+  | "choice"
+  /**
+   * One ring photograph: the picture, with its brightness, contrast, colour,
+   * hue and crop controls and a live preview. The picture is this field's
+   * value; the adjustments are the hidden fields that sit beside it.
+   */
+  | "ringframe"
+  /** Which of the ring photographs a page shows: frame numbers, comma-separated. */
+  | "frames"
   /** A plain number — a speed, a count, a percentage. */
   | "number"
   /** One of the brand's typefaces, applied to a single piece of copy. */
@@ -50,6 +60,10 @@ export interface ContentField {
   group?: string;
   hint?: string;
   max: number;
+  /** Kept in the schema (so it is saved and validated) but not drawn as its own control. */
+  hidden?: boolean;
+  /** choice only: the allowed values. */
+  options?: { value: string; label: string }[];
   /** number only: the range the slider covers and what the value is measured in. */
   min?: number;
   step?: number;
@@ -405,6 +419,9 @@ const SHORT = 60;
 const MEDIUM = 120;
 const LONG = 400;
 
+/** Where the spinning photographs of every page are edited. */
+const RINGS_LINK = { label: "Edit the ring photographs", path: "/admin/rings" };
+
 
 /**
  * One piece of copy with its own font, size, weight and spacing controls.
@@ -466,7 +483,8 @@ const HOME_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero — spinning rings",
     description:
-      "The first screen: the brand name at the centre of the two rotating rings, and the names that scroll past underneath.",
+      "The first screen: the brand name at the centre of the two rotating rings, and the names that scroll past underneath. The ring photographs are edited on the Rings screen.",
+    manage: RINGS_LINK,
     fields: [
       {
         key: "titleTop",
@@ -512,36 +530,6 @@ const HOME_SECTIONS: ContentSection[] = [
         max: SHORT,
       },
       ...fade("ticker.3", "Third name", "#01383B", "#3E9C86", "Scrolling names"),
-      picture("outer.1", "Frame 1", "/images/jewellery/image_20_1.webp", "Outer ring photographs", "Square images look best — they are masked into rounded tiles."),
-      picture("outer.2", "Frame 2", "/images/jewellery/image_22.webp", "Outer ring photographs"),
-      picture("outer.3", "Frame 3", "/images/jewellery/image_56.webp", "Outer ring photographs"),
-      picture("outer.4", "Frame 4", "/images/jewellery/image_77.webp", "Outer ring photographs"),
-      picture("outer.5", "Frame 5", "/images/jewellery/image_78.webp", "Outer ring photographs"),
-      picture("outer.6", "Frame 6", "/images/jewellery/image_79.webp", "Outer ring photographs"),
-      picture("outer.7", "Frame 7", "/images/jewellery/image_80.webp", "Outer ring photographs"),
-      picture("outer.8", "Frame 8", "/images/jewellery/image_81.webp", "Outer ring photographs"),
-      picture("outer.9", "Frame 9", "/images/jewellery/image_82.webp", "Outer ring photographs"),
-      picture("outer.10", "Frame 10", "/images/jewellery/image_83.webp", "Outer ring photographs"),
-      picture("outer.11", "Frame 11", "/images/jewellery/image_84.webp", "Outer ring photographs"),
-      picture("outer.12", "Frame 12", "/images/jewellery/image_86.webp", "Outer ring photographs"),
-      picture("outer.13", "Frame 13", "/images/jewellery/image_89.webp", "Outer ring photographs"),
-      picture("outer.14", "Frame 14", "/images/jewellery/image_90.webp", "Outer ring photographs"),
-      picture("outer.15", "Frame 15", "/images/jewellery/image_91.webp", "Outer ring photographs"),
-      picture("outer.16", "Frame 16", "/images/jewellery/image_92.webp", "Outer ring photographs"),
-      picture("outer.17", "Frame 17", "/images/jewellery/image_93.webp", "Outer ring photographs"),
-      picture("outer.18", "Frame 18", "/images/jewellery/image_94.webp", "Outer ring photographs"),
-      picture("inner.1", "Tile 1", "/images/jewellery/image_95.webp", "Inner ring photographs", "Square images look best — they are masked into rounded tiles."),
-      picture("inner.2", "Tile 2", "/images/jewellery/image_96.webp", "Inner ring photographs"),
-      picture("inner.3", "Tile 3", "/images/jewellery/image_97.webp", "Inner ring photographs"),
-      picture("inner.4", "Tile 4", "/images/jewellery/image_98.webp", "Inner ring photographs"),
-      picture("inner.5", "Tile 5", "/images/jewellery/image_99.webp", "Inner ring photographs"),
-      picture("inner.6", "Tile 6", "/images/jewellery/image_100.webp", "Inner ring photographs"),
-      picture("inner.7", "Tile 7", "/images/jewellery/image_101.webp", "Inner ring photographs"),
-      picture("inner.8", "Tile 8", "/images/jewellery/image_102.webp", "Inner ring photographs"),
-      picture("inner.9", "Tile 9", "/images/jewellery/image_82.webp", "Inner ring photographs"),
-      picture("inner.10", "Tile 10", "/images/jewellery/image_83.webp", "Inner ring photographs"),
-      picture("inner.11", "Tile 11", "/images/jewellery/image_84.webp", "Inner ring photographs"),
-      picture("inner.12", "Tile 12", "/images/jewellery/image_86.webp", "Inner ring photographs"),
 
     ],
   },
@@ -848,7 +836,8 @@ const HOME_SECTIONS: ContentSection[] = [
     key: "growth",
     label: "Let's Drive Growth",
     description:
-      "The closing call to action inside the second spinning ring, above the footer.",
+      "The closing call to action inside the second spinning ring, above the footer. Its ring photographs are edited on the Rings screen.",
+    manage: RINGS_LINK,
     fields: [
       {
         key: "eyebrow",
@@ -895,24 +884,6 @@ const HOME_SECTIONS: ContentSection[] = [
       },
       tint("ctaLabel", "Button text", "#FFFFFF", "Button"),
       ...fade("ctaBg", "Button background", "#01383B", "#3E9C86", "Button"),
-      picture("img.1", "Frame 1", "/images/jewellery/image_20_1.webp", "Rotating photographs", "Square images look best — they are masked into rounded tiles."),
-      picture("img.2", "Frame 2", "/images/jewellery/image_22.webp", "Rotating photographs"),
-      picture("img.3", "Frame 3", "/images/jewellery/image_56.webp", "Rotating photographs"),
-      picture("img.4", "Frame 4", "/images/jewellery/image_77.webp", "Rotating photographs"),
-      picture("img.5", "Frame 5", "/images/jewellery/image_78.webp", "Rotating photographs"),
-      picture("img.6", "Frame 6", "/images/jewellery/image_79.webp", "Rotating photographs"),
-      picture("img.7", "Frame 7", "/images/jewellery/image_80.webp", "Rotating photographs"),
-      picture("img.8", "Frame 8", "/images/jewellery/image_81.webp", "Rotating photographs"),
-      picture("img.9", "Frame 9", "/images/jewellery/image_82.webp", "Rotating photographs"),
-      picture("img.10", "Frame 10", "/images/jewellery/image_83.webp", "Rotating photographs"),
-      picture("img.11", "Frame 11", "/images/jewellery/image_84.webp", "Rotating photographs"),
-      picture("img.12", "Frame 12", "/images/jewellery/image_86.webp", "Rotating photographs"),
-      picture("img.13", "Frame 13", "/images/jewellery/image_89.webp", "Rotating photographs"),
-      picture("img.14", "Frame 14", "/images/jewellery/image_90.webp", "Rotating photographs"),
-      picture("img.15", "Frame 15", "/images/jewellery/image_91.webp", "Rotating photographs"),
-      picture("img.16", "Frame 16", "/images/jewellery/image_92.webp", "Rotating photographs"),
-      picture("img.17", "Frame 17", "/images/jewellery/image_93.webp", "Rotating photographs"),
-      picture("img.18", "Frame 18", "/images/jewellery/image_94.webp", "Rotating photographs"),
 
     ],
   },
@@ -950,21 +921,6 @@ const HERO_RING_DEFAULTS = [
   "/images/jewellery/image_94.webp",
 ];
 
-/** The eighteen turning frames, as editable image fields. */
-function ring(): ContentField[] {
-  return HERO_RING_DEFAULTS.map((src, index) =>
-    picture(
-      `ring.${index + 1}`,
-      `Frame ${index + 1}`,
-      src,
-      "Rotating photographs",
-      index === 0
-        ? "Square images look best — they are masked into rounded tiles."
-        : undefined,
-    ),
-  );
-}
-
 /**
  * One page's hero: its own words, the shared shades, the shared ring.
  *
@@ -994,7 +950,6 @@ function heroFields(copy: {
     { key: "ctaLabel", label: "Button label", type: "text", default: copy.ctaLabel, max: SHORT },
     tint("ctaLabel", "Button label", "#FFFFFF"),
 
-    ...ring(),
   ];
 
 }
@@ -1027,6 +982,7 @@ const ABOUT_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen, and the photographs turning behind it.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "About Us",
       title: "Crafting Trust, One Piece at a Time",
@@ -1124,6 +1080,7 @@ const BLOG_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The journal's opening screen. Posts themselves live under Marketing > Blog.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Journal",
       title: "Notes from the Workshop",
@@ -1153,6 +1110,7 @@ const COLLECTIONS_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen of the collections page.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Our Collections",
       title: "Designed to Be Worn, Built to Be Sold",
@@ -1203,6 +1161,7 @@ const BRANDS_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen of the brands page.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Our Brands",
       title: "The Names We Build For",
@@ -1230,6 +1189,7 @@ const EXHIBITIONS_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen of the exhibitions page.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Exhibitions",
       title: "Where You Can Find Us",
@@ -1298,6 +1258,7 @@ const CONTACT_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen of the contact page.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Contact Us",
       title: "Let's Talk About Your Next Collection",
@@ -1368,6 +1329,7 @@ const TEAM_SECTIONS: ContentSection[] = [
     key: "hero",
     label: "Hero",
     description: "The opening screen of the Our Team page.",
+    manage: RINGS_LINK,
     fields: heroFields({
       eyebrow: "Our Team",
       title: "The People Behind the Promise",
@@ -1472,6 +1434,118 @@ const EXHIBITION_DETAIL_SECTIONS: ContentSection[] = [
   },
 ];
 
+
+// --- Rings (the spinning photographs, shared by every page) -----------------
+//
+// Every hero on the site turns the same ring of photographs, and the closing
+// band above the footer turns another. They used to be uploaded again on each
+// page, so the same pictures were edited in eight places. They are now kept
+// once, here: Home's two rings are the library, and each page chooses which of
+// those photographs it shows and in what order.
+
+const RING_INNER_DEFAULTS = [
+  "/images/jewellery/image_95.webp",
+  "/images/jewellery/image_96.webp",
+  "/images/jewellery/image_97.webp",
+  "/images/jewellery/image_98.webp",
+  "/images/jewellery/image_99.webp",
+  "/images/jewellery/image_100.webp",
+  "/images/jewellery/image_101.webp",
+  "/images/jewellery/image_102.webp",
+  "/images/jewellery/image_82.webp",
+  "/images/jewellery/image_83.webp",
+  "/images/jewellery/image_84.webp",
+  "/images/jewellery/image_86.webp",
+];
+
+/** Every place a ring turns. `growth` is the band above the footer. */
+const RING_PLACES: { key: string; label: string }[] = [
+  { key: "home", label: "Home page" },
+  { key: "about", label: "About page" },
+  { key: "team", label: "Our Team page" },
+  { key: "collections", label: "Collections page" },
+  { key: "brands", label: "Brands page" },
+  { key: "exhibitions", label: "Exhibitions page" },
+  { key: "contact", label: "Contact page" },
+  { key: "blog", label: "Blog" },
+  { key: "growth", label: "Closing band above the footer" },
+];
+
+/**
+ * One photograph per frame, with the adjustments that match it to its
+ * neighbours: brightness, contrast, colour (saturation), hue, and a crop
+ * (zoom plus where the picture is centred). Values are percentages around 100
+ * so "100" always means "as uploaded".
+ */
+function ringFrames(prefix: string, defaults: string[]): ContentField[] {
+  const fields: ContentField[] = [];
+
+  defaults.forEach((src, index) => {
+    const n = index + 1;
+    const group = `${prefix === "outer" ? "Outer ring" : "Inner ring"} — photo ${n}`;
+    const number = (suffix: string, label: string, def: string, min: number, max: number, step: number, unit: string): ContentField => ({
+      key: `${n}.${suffix}`, label, type: "number", default: def, group, hidden: true, min, max, step, unit,
+    });
+
+    fields.push({ key: `${n}`, label: `Photo ${n}`, type: "ringframe", default: src, group, max: 600 });
+    fields.push({ key: `${n}.enabled`, label: "Used on the website", type: "toggle", default: "true", group, hidden: true, max: 5 });
+    fields.push(number("brightness", "Brightness", "100", 40, 160, 1, "%"));
+    fields.push(number("contrast", "Contrast", "100", 40, 160, 1, "%"));
+    fields.push(number("saturation", "Colour strength", "100", 0, 220, 1, "%"));
+    fields.push(number("hue", "Hue", "0", -180, 180, 1, "°"));
+    fields.push(number("zoom", "Zoom", "100", 100, 300, 1, "%"));
+    fields.push(number("x", "Crop — left / right", "50", 0, 100, 1, "%"));
+    fields.push(number("y", "Crop — up / down", "50", 0, 100, 1, "%"));
+  });
+
+  return fields;
+}
+
+const RINGS_SECTIONS: ContentSection[] = [
+  {
+    key: "settings",
+    label: "Which photographs each page shows",
+    description:
+      "Every page turns the same library of ring photographs. Choose here how they are ordered, and which photographs each page uses. Leave a page with nothing ticked and it shows them all.",
+    fields: [
+      {
+        key: "order",
+        label: "Order of the photographs",
+        type: "choice",
+        default: "same",
+        group: "Order",
+        hint: "Same: every page shows them in the order below. Random: each page shows them in its own different order.",
+        options: [
+          { value: "same", label: "Same on every page" },
+          { value: "random", label: "Random order on each page" },
+        ],
+        max: 10,
+      },
+      ...RING_PLACES.map((place): ContentField => ({
+        key: `show.${place.key}`,
+        label: place.label,
+        type: "frames",
+        default: "",
+        group: "Photographs shown",
+        max: 200,
+      })),
+    ],
+  },
+  {
+    key: "outer",
+    label: "Outer ring photographs (18)",
+    description:
+      "The big ring. These are the photographs behind every page's heading and in the band above the footer. Replace a picture, switch one off, and match its brightness, colour and crop to the others.",
+    fields: ringFrames("outer", HERO_RING_DEFAULTS),
+  },
+  {
+    key: "inner",
+    label: "Inner ring photographs (12)",
+    description: "The smaller ring inside it, on the Home page only.",
+    fields: ringFrames("inner", RING_INNER_DEFAULTS),
+  },
+];
+
 // --- Header and Footer ----------------------------------------------------
 //
 // These are not pages. They are the two bands that appear on EVERY page, so
@@ -1570,6 +1644,7 @@ export const CONTENT_PAGES: ContentPage[] = [
   { key: "collectionDetail", label: "Collection page", path: "/our-collection", sections: COLLECTION_DETAIL_SECTIONS },
   { key: "exhibitionDetail", label: "Exhibition page", path: "/Exhibition", sections: EXHIBITION_DETAIL_SECTIONS },
   // Not pages — the two bands that wrap every page. See the note above.
+  { key: "rings", label: "Rings", path: "/", sections: RINGS_SECTIONS, standalone: true },
   { key: "header", label: "Header", path: "/", sections: HEADER_SECTIONS, standalone: true },
   { key: "footer", label: "Footer", path: "/", sections: FOOTER_SECTIONS, standalone: true },
 ];

@@ -78,28 +78,6 @@ const CATEGORY_DETAILS = {
   },
 };
 
-// Same 18-image ring used on the "Our Collection" hero — kept identical so
-// the rotating circle looks continuous with the page the user arrived from.
-const HERO_RING_IMAGES = [
-  "/images/jewellery/image_20_1.webp",
-  "/images/jewellery/image_22.webp",
-  "/images/jewellery/image_56.webp",
-  "/images/jewellery/image_77.webp",
-  "/images/jewellery/image_78.webp",
-  "/images/jewellery/image_79.webp",
-  "/images/jewellery/image_80.webp",
-  "/images/jewellery/image_81.webp",
-  "/images/jewellery/image_82.webp",
-  "/images/jewellery/image_83.webp",
-  "/images/jewellery/image_84.webp",
-  "/images/jewellery/image_86.webp",
-  "/images/jewellery/image_89.webp",
-  "/images/jewellery/image_90.webp",
-  "/images/jewellery/image_91.webp",
-  "/images/jewellery/image_92.webp",
-  "/images/jewellery/image_93.webp",
-  "/images/jewellery/image_94.webp",
-];
 
 /* ---- Feature-card icons (Collection Description section) ----
    Sized up from the original 30px to sit comfortably inside the larger
@@ -243,7 +221,7 @@ export default function CollectionDetailsPage() {
         secondaryCtaText={t.heroSecondaryButton}
         onSecondaryCtaClick={() => navigate("/our-collection")}
         socialLinks={social}
-        outerImages={HERO_RING_IMAGES}
+        ringPage="collections"
         showTicker={false}
       />
 
@@ -354,6 +332,7 @@ export default function CollectionDetailsPage() {
       <InquiryForm id="inquiry" />
 
       <PageHeroCircle
+        ringPage="growth"
         eyebrow={t.closeEyebrow}
         title={t.closeTitle}
         subtitle={t.closeSubtitle}

@@ -29,13 +29,18 @@ const GUARDS: Record<string, Record<string, ReturnType<typeof requirePermission>
     view: requirePermission("footer", "view"),
     edit: requirePermission("footer", "edit"),
   },
+  rings: {
+    view: requirePermission("rings", "view"),
+    edit: requirePermission("rings", "edit"),
+  },
   content: {
     view: requirePermission("content", "view"),
     edit: requirePermission("content", "edit"),
   },
 };
 
-function resourceFor(page: unknown): "header" | "footer" | "content" {
+function resourceFor(page: unknown): "header" | "footer" | "rings" | "content" {
+  if (page === "rings") return "rings";
   if (page === "header") return "header";
   if (page === "footer") return "footer";
   return "content";
