@@ -39,6 +39,8 @@ export type FieldType =
   | "ringframe"
   /** Which of the ring photographs a page shows: frame numbers, comma-separated. */
   | "frames"
+  /** Which team members stand behind each brand: JSON of { brandId: "id,id" }. */
+  | "brandteams"
   /** A plain number — a speed, a count, a percentage. */
   | "number"
   /** One of the brand's typefaces, applied to a single piece of copy. */
@@ -1365,6 +1367,52 @@ const TEAM_SECTIONS: ContentSection[] = [
   ),
 ];
 
+// --- Brand page ------------------------------------------------------------
+//
+// The page a visitor lands on from a brand: /our-brand/<slug>. The brand's own
+// name, description, overview, pictures and button are edited under Brands; the
+// words AROUND them and the choice of team members are edited here.
+
+const BRAND_DETAIL_SECTIONS: ContentSection[] = [
+  {
+    key: "page",
+    label: "Brand page",
+    description:
+      "The headings, buttons and messages around a single brand. A brand's own name, description, overview, pictures and call to action are edited under Brands.",
+    manage: { label: "Edit the brands themselves", path: "/admin/brands" },
+    fields: [
+      { key: "eyebrow", label: "Small line above the brand name", type: "text", default: "Our Brand", group: "Top of the page", max: MEDIUM },
+      { key: "heroButton", label: "Main button", type: "text", default: "About the brand", group: "Top of the page", max: MEDIUM },
+      ...typed({ key: "aboutLight", label: "About heading — first word", type: "text", default: "About", group: "About", max: MEDIUM }),
+      ...typed({ key: "aboutBold", label: "About heading — bold words", type: "text", default: "the brand", group: "About", max: MEDIUM }),
+      { key: "ctaFallbackTitle", label: "Enquiry line (when the brand sets none)", type: "text", default: "Interested in this brand?", group: "About", max: MEDIUM },
+      { key: "ctaFallbackButton", label: "Enquiry button (when the brand sets none)", type: "text", default: "Enquire now", group: "About", max: MEDIUM },
+      ...typed({ key: "galleryLight", label: "Gallery heading — first word", type: "text", default: "Brand", group: "Gallery", max: MEDIUM }),
+      ...typed({ key: "galleryBold", label: "Gallery heading — bold word", type: "text", default: "Gallery", group: "Gallery", max: MEDIUM }),
+      ...typed({ key: "collectionsLight", label: "Collections heading — first word", type: "text", default: "Brand", group: "Collections", max: MEDIUM }),
+      ...typed({ key: "collectionsBold", label: "Collections heading — bold word", type: "text", default: "Collections", group: "Collections", max: MEDIUM }),
+      { key: "collectionsEmpty", label: "Message when the brand has no collections yet", type: "textarea", default: "The collections for this brand will be listed here soon.", group: "Collections", max: LONG },
+      ...typed({ key: "teamLight", label: "Team heading — first words", type: "text", default: "Meet the", group: "Team", max: MEDIUM }),
+      ...typed({ key: "teamBold", label: "Team heading — bold word", type: "text", default: "Team", group: "Team", max: MEDIUM }),
+      { key: "teamIntro", label: "Line under the team heading", type: "textarea", default: "The people who stand behind this brand.", group: "Team", max: LONG },
+      { key: "notFoundLight", label: "Missing brand — heading", type: "text", default: "Brand", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundBold", label: "Missing brand — bold word", type: "text", default: "not found", group: "When a link is wrong", max: MEDIUM },
+      { key: "notFoundText", label: "Missing brand — message", type: "textarea", default: "This brand is no longer listed, or the link is wrong.", group: "When a link is wrong", max: LONG },
+      { key: "notFoundButton", label: "Missing brand — button", type: "text", default: "See all brands", group: "When a link is wrong", max: MEDIUM },
+    ],
+  },
+  {
+    key: "team",
+    label: "Team on each brand's page",
+    description:
+      "For each brand, tick the people from Our Team who appear on its page. A brand with nobody ticked shows no team section.",
+    manage: { label: "Add or edit team members", path: "/admin/editor" },
+    fields: [
+      { key: "byBrand", label: "People shown on each brand's page", type: "brandteams", default: "{}", max: 4000 },
+    ],
+  },
+];
+
 // --- Collection and exhibition detail pages --------------------------------
 //
 // The pages a visitor lands on from a tile: /our-collection/<name> and
@@ -1641,6 +1689,7 @@ export const CONTENT_PAGES: ContentPage[] = [
   { key: "contact", label: "Contact page", path: "/contact", sections: CONTACT_SECTIONS, arrangeable: true },
   { key: "blog", label: "Blog", path: "/blog", sections: BLOG_SECTIONS, arrangeable: true },
   { key: "enquiry", label: "Enquiry form", path: "/contact", sections: ENQUIRY_SECTIONS },
+  { key: "brandDetail", label: "Brand page", path: "/our-brand", sections: BRAND_DETAIL_SECTIONS },
   { key: "collectionDetail", label: "Collection page", path: "/our-collection", sections: COLLECTION_DETAIL_SECTIONS },
   { key: "exhibitionDetail", label: "Exhibition page", path: "/Exhibition", sections: EXHIBITION_DETAIL_SECTIONS },
   // Not pages — the two bands that wrap every page. See the note above.

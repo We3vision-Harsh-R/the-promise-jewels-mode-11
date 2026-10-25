@@ -81,6 +81,20 @@ function styleValueProblem(
     return /^\d{1,2}(,\d{1,2}){0,29}$/.test(value) ? null : "must be photo numbers separated by commas";
   }
 
+  if (type === "brandteams") {
+    try {
+      const parsed = JSON.parse(value);
+      const ok =
+        parsed &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed) &&
+        Object.values(parsed).every((ids) => typeof ids === "string" && /^[A-Za-z0-9,-]{0,600}$/.test(ids));
+      return ok ? null : "is not a valid list of people";
+    } catch {
+      return "is not a valid list of people";
+    }
+  }
+
   if (type === "number") {
     return Number.isFinite(Number(value)) ? null : "must be a number";
   }

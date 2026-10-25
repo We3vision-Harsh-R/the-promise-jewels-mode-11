@@ -14,6 +14,7 @@ import { lazy } from 'react'
 const loaders = {
   AboutPage: () => import('@/pages/About/AboutPage.jsx'),
   OurBrandsPage: () => import('@/features/brands/pages/OurBrandsPage.jsx'),
+  BrandDetailPage: () => import('@/features/brands/pages/BrandDetailPage.jsx'),
   OurCollectionPage: () => import('@/features/collections/pages/OurCollectionPage.jsx'),
   CollectionDetailsPage: () => import('@/features/collections/pages/CollectionDetailsPage.jsx'),
   ContactPage: () => import('@/pages/Contact/ContactPage.jsx'),
@@ -27,6 +28,7 @@ const loaders = {
 
 export const AboutPage = lazy(loaders.AboutPage)
 export const OurBrandsPage = lazy(loaders.OurBrandsPage)
+export const BrandDetailPage = lazy(loaders.BrandDetailPage)
 export const OurCollectionPage = lazy(loaders.OurCollectionPage)
 export const CollectionDetailsPage = lazy(loaders.CollectionDetailsPage)
 export const ContactPage = lazy(loaders.ContactPage)

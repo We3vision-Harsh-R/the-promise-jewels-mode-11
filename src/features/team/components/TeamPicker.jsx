@@ -28,7 +28,7 @@ function Thumb({ member }) {
   )
 }
 
-export default function TeamPicker({ value, disabled, onChange }) {
+export default function TeamPicker({ value, disabled, onChange, emptyMeans = 'everyone' }) {
   const [members, setMembers] = useState(null)
   const [error, setError] = useState('')
 
@@ -70,7 +70,9 @@ export default function TeamPicker({ value, disabled, onChange }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="m-0 text-xs text-ink-500">
           {everyone
-            ? 'Showing everyone who is marked as shown.'
+            ? emptyMeans === 'nobody'
+              ? 'Nobody chosen — no team section is shown.'
+              : 'Showing everyone who is marked as shown.'
             : `Showing ${selected.length} chosen ${selected.length === 1 ? 'person' : 'people'}.`}
         </p>
         {!everyone && (
@@ -80,7 +82,7 @@ export default function TeamPicker({ value, disabled, onChange }) {
             onClick={() => onChange('')}
             className="text-xs font-medium text-brass-700 hover:underline disabled:opacity-50"
           >
-            Show everyone
+            {emptyMeans === 'nobody' ? 'Clear' : 'Show everyone'}
           </button>
         )}
       </div>

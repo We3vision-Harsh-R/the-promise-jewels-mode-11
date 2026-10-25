@@ -34,6 +34,7 @@ import { uploadAsset } from '@/features/media/media.api.js'
 import { Can } from '@/features/rbac/usePermissions.jsx'
 import TeamManager from '@/features/team/pages/TeamPage.jsx'
 import TeamPicker from '@/features/team/components/TeamPicker.jsx'
+import BrandTeamsControl from '@/features/brands/components/BrandTeamsControl.jsx'
 import { ChoiceInput, FramesPicker, RingFrameControl } from '@/features/rings/components/RingControls.jsx'
 import { classNames } from '@/utils/helpers.js'
 
@@ -599,6 +600,10 @@ function FieldControl({ section, field, value, draft, palette, fonts, weights, l
     return <RingFrameControl section={section} field={field} draft={draft} disabled={disabled} onChange={onChange} onUpload={onUpload} />
   }
 
+  if (field.type === 'brandteams') {
+    return <BrandTeamsControl value={value} disabled={disabled} onChange={set} />
+  }
+
   if (field.type === 'frames') {
     return <FramesPicker value={value} draft={draft} disabled={disabled} onChange={set} />
   }
@@ -943,7 +948,7 @@ function FieldRun({ run, section, draft, controlProps }) {
                 key={block.field.key}
                 label={block.field.label}
                 hint={block.field.hint}
-                className={['number', 'team', 'ringframe', 'frames', 'choice'].includes(block.field.type) ? 'md:col-span-2' : undefined}
+                className={['number', 'team', 'ringframe', 'frames', 'choice', 'brandteams'].includes(block.field.type) ? 'md:col-span-2' : undefined}
               >
                 <FieldControl
                   section={section}

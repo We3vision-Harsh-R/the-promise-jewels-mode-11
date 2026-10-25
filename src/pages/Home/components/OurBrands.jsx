@@ -177,6 +177,18 @@ function BrandFrame({ brand, index }) {
               </p>
             )}
 
+            {brand.slug && (
+              <div data-reveal className="js-brand-copy mt-[18px]">
+                <Link
+                  to={`/our-brand/${brand.slug}`}
+                  className="inline-flex items-center gap-[8px] text-[0.92rem] font-medium text-[var(--pj-heading)] underline decoration-[var(--pj-accent)] underline-offset-[6px] transition-colors duration-300 hover:text-[var(--pj-accent)]"
+                >
+                  View {brand.name}
+                  <span aria-hidden="true">&#8594;</span>
+                </Link>
+              </div>
+            )}
+
             {galleryStrip.length > 0 && (
               <div
                 data-reveal

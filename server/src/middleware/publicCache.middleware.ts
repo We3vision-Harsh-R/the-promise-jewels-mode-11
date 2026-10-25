@@ -52,7 +52,7 @@ const REFRESH_HEADER = "x-pj-cache-refresh";
  * Paths are relative to /api/v1.
  */
 const PUBLIC_GET: RegExp[] = [
-  /^\/page-content\/public\/[a-z-]+(\/layout)?$/,
+  /^\/page-content\/public\/[A-Za-z-]+(\/layout)?$/,
   /^\/settings\/public$/,
   /^\/blog\/public(\/[^/]+)?$/,
   /^\/brands(\/[^/]+)?$/,
@@ -249,7 +249,7 @@ const WARM_PATHS = [
   "/collections",
   "/exhibitions",
   "/blog/public",
-  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "rings", "enquiry", "collectionDetail", "exhibitionDetail"].flatMap(
+  ...["home", "about", "team", "collections", "brands", "exhibitions", "contact", "blog", "header", "footer", "rings", "enquiry", "brandDetail", "collectionDetail", "exhibitionDetail"].flatMap(
     (page) => [`/page-content/public/${page}`, `/page-content/public/${page}/layout`],
   ),
 ];

@@ -5,6 +5,7 @@ import Home from '@/pages/Home/Home.jsx'
 import {
   AboutPage,
   OurBrandsPage,
+  BrandDetailPage,
   OurCollectionPage,
   CollectionDetailsPage,
   ContactPage,
@@ -34,6 +35,8 @@ export default function AppRoutes() {
         <Route path="AboutPage" element={<AboutPage />} />
         <Route path="our-team" element={<OurTeamPage />} />
         <Route path="our-brand" element={<OurBrandsPage />} />
+        {/* One page per brand, from the slug on the brand record in Admin > Brands. */}
+        <Route path="our-brand/:slug" element={<BrandDetailPage />} />
         <Route path="our-collection" element={<OurCollectionPage />} />
         <Route path="our-collection/:categoryId" element={<CollectionDetailsPage />} />
         <Route path="contact" element={<ContactPage />} />
