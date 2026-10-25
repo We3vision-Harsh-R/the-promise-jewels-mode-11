@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import Footer from '@/components/common/Footer.jsx'
 import SectionHeading from '@/components/common/SectionHeading.jsx'
 import PageHeroCircle from '@/components/layout/PageHeroCircle.jsx'
@@ -9,7 +9,9 @@ import { typeStyle } from '@/features/page-content/typeStyle.js'
 import { HERO_BASE } from '@/components/layout/heroContent.js'
 import { useSeoMeta } from '@/features/seo/hooks/useSeoMeta.js'
 import MemberCard from '@/features/team/components/MemberCard.jsx'
-import useSelectedTeam from '@/features/team/hooks/useSelectedTeam.js'
+import usePublicTeam from '@/features/team/hooks/usePublicTeam.js'
+import CategoryTabs from '@/features/team/components/CategoryTabs.jsx'
+import { DEFAULT_CATEGORY } from '@/features/team/categories.js'
 import useReveal from '@/hooks/useReveal.js'
 import { settleToSection } from '@/utils/scroll.js'
 
@@ -29,12 +31,14 @@ const MEMBERS_TEXT = {
   headingLight: 'Meet the',
   headingBold: 'Team',
   emptyText: 'Our team will be introduced here soon.',
-  memberIds: '',
 }
 
 function Members() {
   const text = useSectionContent('team', 'members', MEMBERS_TEXT)
-  const { members, loading } = useSelectedTeam(text.memberIds)
+  const { members: everyone, loading } = usePublicTeam()
+  const [category, setCategory] = useState(DEFAULT_CATEGORY)
+  // Promise Jewels / Netram: each tab lists the people filed under it.
+  const members = useMemo(() => everyone.filter((member) => member.category === category), [everyone, category])
   const sectionRef = useRef(null)
 
   // The site-wide entrance for the heading and the cards.
@@ -56,7 +60,11 @@ function Members() {
         />
       </div>
 
-      <div className="mx-auto mt-[44px] w-full max-w-[1200px]">
+      <div className="mt-[34px]">
+        <CategoryTabs value={category} onChange={setCategory} label="Team by company" />
+      </div>
+
+      <div key={category} className="mx-auto w-full max-w-[1200px] [animation:pj-tab-in_0.45s_ease_both]">
         {loading ? (
           <div className="flex flex-wrap justify-center gap-[26px] max-[991px]:gap-[20px] max-[479px]:gap-[12px]" aria-hidden="true">
             {Array.from({ length: 4 }).map((_, index) => (

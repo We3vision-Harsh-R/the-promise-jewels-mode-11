@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { TEAM_CATEGORIES, TEAM_KINDS } from "./team.constants.js";
+
 // A multipart form sends everything as a string, so the booleans and numbers
 // are read back from text.
 const boolFromString = z
@@ -17,6 +19,8 @@ export const createTeamSchema = z.object({
   bio: z.string().trim().max(600, "The short line is limited to 600 characters").optional(),
   displayOrder: z.coerce.number().int().min(0).max(10_000).optional(),
   isActive: boolFromString,
+  kind: z.enum(TEAM_KINDS).optional(),
+  category: z.enum(TEAM_CATEGORIES).optional(),
 });
 
 export const updateTeamSchema = createTeamSchema.partial().extend({

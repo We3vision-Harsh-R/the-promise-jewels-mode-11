@@ -1,8 +1,10 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
 import useReveal from "@/hooks/useReveal.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
-import useSelectedTeam from "@/features/team/hooks/useSelectedTeam.js";
+import usePublicTeam from "@/features/team/hooks/usePublicTeam.js";
+import CategoryTabs from "@/features/team/components/CategoryTabs.jsx";
+import { DEFAULT_CATEGORY } from "@/features/team/categories.js";
 
 // Replace with the real leaders / photos — same name repeated 3x here as a
 // placeholder since that's what the reference screenshot showed.
@@ -37,7 +39,7 @@ const LEADERS_TEXT = {
   nameColor: "#01383B",
   roleColor: "#C9A15A",
   bodyColor: "#2F6B6B",
-  memberIds: "",
+  emptyText: "Our leaders will be introduced here soon.",
 };
 
 // The cards used to start stacked and fanned (x/y offsets plus rotation) and
@@ -116,18 +118,28 @@ export default function OurLeaders() {
   // The people come from Admin > Our Team, narrowed to the ones ticked under
   // Content > About > Our leaders. The bundled three only stand in while the
   // list loads or when nobody is listed at all.
-  const { members, loading } = useSelectedTeam(text.memberIds);
+  const { members, loading } = usePublicTeam();
+
+  // Promise Jewels / Netram. Each tab shows only the leaders filed under it
+  // (Admin > Our Team), in the order set there.
+  const [category, setCategory] = useState(DEFAULT_CATEGORY);
+
+  // The bundled three only stand in while nobody has been added at all.
+  const nobodyYet = !loading && members.length === 0;
 
   const leaders = useMemo(() => {
-    if (members.length === 0) return loading ? [] : LEADERS;
+    if (nobodyYet) return LEADERS;
 
-    return members.map((member) => ({
-      name: member.name,
-      title: member.designation,
-      description: member.bio || "",
-      image: member.photoUrl || "",
-    }));
-  }, [members, loading]);
+    return members
+      .filter((member) => member.kind === "leader" && member.category === category)
+      .map((member) => ({
+        id: member.id,
+        name: member.name,
+        title: member.designation,
+        description: member.bio || "",
+        image: member.photoUrl || "",
+      }));
+  }, [members, nobodyYet, category]);
 
   const sectionRef = useRef(null);
 
@@ -157,10 +169,20 @@ export default function OurLeaders() {
         {headingRest ? <span className="font-semibold font-ticker"> {headingRest}</span> : null}
       </h2>
 
-      <div className="flex items-center justify-center gap-[30px] px-[6%] max-[1024px]:gap-[20px] max-[767px]:flex-col max-[767px]:gap-[22px] max-[767px]:px-[8%]">
-        {leaders.map((leader, index) => (
-          <LeaderCard key={`${leader.name}-${index}`} leader={leader} />
-        ))}
+      {!nobodyYet && <CategoryTabs value={category} onChange={setCategory} label="Leaders by company" />}
+
+      {/* Keyed by tab so a switch replays the fade-in. */}
+      <div
+        key={category}
+        className="flex flex-wrap items-center justify-center gap-[30px] px-[6%] [animation:pj-tab-in_0.45s_ease_both] max-[1024px]:gap-[20px] max-[767px]:flex-col max-[767px]:gap-[22px] max-[767px]:px-[8%]"
+      >
+        {leaders.length === 0 && !loading ? (
+          <p className="m-0 py-[30px] text-center font-ticker text-[1.05rem] text-[#2F6B6B]">{text.emptyText}</p>
+        ) : (
+          leaders.map((leader, index) => (
+            <LeaderCard key={leader.id ?? `${leader.name}-${index}`} leader={leader} />
+          ))
+        )}
       </div>
     </section>
   );

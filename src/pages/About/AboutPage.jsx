@@ -5,6 +5,7 @@ import Ours from "@/pages/About/components/Ours.jsx";
 import GrowthSection from "@/pages/Home/components/GrowthSection.jsx";
 import Gallery from "@/pages/About/components/Gallery.jsx";
 import OurLeaders from "@/pages/About/components/OurLeaders.jsx";
+import MeetOurTeam from "@/pages/About/components/MeetOurTeam.jsx";
 import PageSections from "@/features/page-content/PageSections.jsx";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 
@@ -54,6 +55,7 @@ const SECTIONS = {
   hero: () => <AboutHero />,
   values: () => <Ours />,
   leaders: () => <OurLeaders />,
+  team: () => <MeetOurTeam />,
   gallery: () => <Gallery />,
   growth: () => <GrowthSection page="about" />,
 };

@@ -65,10 +65,22 @@ class AuthController {
       );
   });
 
-  resetPassword = asyncHandler(async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+  // Step 2 of a reset. The emailed code is checked here, on the server; the
+  // answer is a short-lived reset token the next step requires.
+  verifyResetOtp = asyncHandler(async (req: Request, res: Response) => {
+    const { email, otp } = req.body;
 
-    await authService.resetPassword(email, otp, newPassword);
+    const result = await authService.verifyResetOtp(email, otp);
+
+    res
+      .status(200)
+      .json(new ApiResponse(true, AUTH_MESSAGES.RESET_VERIFIED, result));
+  });
+
+  resetPassword = asyncHandler(async (req, res) => {
+    const { email, resetToken, newPassword } = req.body;
+
+    await authService.resetPassword(email, resetToken, newPassword);
 
     res
       .status(200)

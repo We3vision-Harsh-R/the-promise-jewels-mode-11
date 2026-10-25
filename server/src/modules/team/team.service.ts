@@ -23,6 +23,8 @@ export interface TeamInput {
   bio?: string;
   displayOrder?: number;
   isActive?: boolean;
+  kind?: string;
+  category?: string;
   /** True when the admin pressed "remove photo" without choosing a new one. */
   removePhoto?: boolean;
 }
@@ -34,6 +36,8 @@ function toPublic(row: {
   designation: string;
   bio: string | null;
   photoUrl: string | null;
+  kind: string;
+  category: string;
 }) {
   return {
     id: row.id,
@@ -41,6 +45,8 @@ function toPublic(row: {
     designation: row.designation,
     bio: row.bio,
     photoUrl: row.photoUrl,
+    kind: row.kind,
+    category: row.category,
   };
 }
 
@@ -107,6 +113,8 @@ class TeamService {
           photoUrl,
           displayOrder,
           isActive: input.isActive ?? true,
+          kind: input.kind ?? "leader",
+          category: input.category ?? "promise-jewels",
           updatedAt: new Date(),
         },
       });
@@ -133,6 +141,8 @@ class TeamService {
           ...(input.bio !== undefined ? { bio: input.bio || null } : {}),
           ...(input.displayOrder !== undefined ? { displayOrder: input.displayOrder } : {}),
           ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+          ...(input.kind !== undefined ? { kind: input.kind } : {}),
+          ...(input.category !== undefined ? { category: input.category } : {}),
           ...(photoUrl !== undefined ? { photoUrl } : {}),
           updatedAt: new Date(),
         },

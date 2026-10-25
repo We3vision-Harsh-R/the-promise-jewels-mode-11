@@ -76,6 +76,12 @@
   --shadow-card: 0 1px 2px rgba(14,43,38,0.05), 0 8px 24px -12px rgba(14,43,38,0.14);
 }
 
+/* A list that was just filtered (Promise Jewels / Netram tabs) fades in. */
+@keyframes pj-tab-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @font-face {
   font-family: "Ringtte";
   src: url("/fonts/Ringtte.woff2") format("woff2"),

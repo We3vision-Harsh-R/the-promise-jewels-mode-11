@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { gsap } from 'gsap'
 import { Eye, EyeOff, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck, KeyRound, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
-import { forgotPassword, resetPassword } from '@/features/auth/auth.api.js'
+import { forgotPassword, resetPassword, verifyResetOtp } from '@/features/auth/auth.api.js'
 import { Field, Input } from '@/components/forms/Field.jsx'
 import Button from '@/components/ui/Button.jsx'
 import Card from '@/components/ui/Card.jsx'
@@ -180,6 +180,9 @@ export default function LoginPage() {
 
   const [resetEmail, setResetEmail] = useState('')
   const [otp, setOtp] = useState('')
+  // Issued by the server once the emailed code is accepted. The New Password
+  // step cannot be completed without it, so it is never faked on the client.
+  const [resetToken, setResetToken] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -276,10 +279,22 @@ export default function LoginPage() {
   async function handleForgotSubmit(e) {
     e.preventDefault()
     setStepError('')
+
+    const address = resetEmail.trim().toLowerCase()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(address)) {
+      setStepError('Enter a valid email address.')
+      return
+    }
+
     setStepLoading(true)
     try {
-      await forgotPassword(resetEmail)
+      // The code screen opens only after the server has accepted the request.
+      // For privacy it answers the same way whether or not the address is
+      // registered, so an unknown address simply never receives a code.
+      await forgotPassword(address)
+      setResetEmail(address)
       setOtp('')
+      setResetToken('')
       goTo('otp')
     } catch (err) {
       setStepError(err.message || 'Could not send reset instructions.')
@@ -288,19 +303,29 @@ export default function LoginPage() {
     }
   }
 
-  // The backend has no standalone way to pre-validate a forgot-password
-  // OTP (its /verify-otp is login-only — see auth.service.js). So this
-  // step only checks the code is 6 digits locally and advances; the OTP
-  // is actually verified server-side inside handleResetSubmit's call to
-  // resetPassword(), which fails with a clear error there if it's wrong.
-  function handleOtpSubmit(e) {
+  // Checks the code on the server. The New Password step opens only when the
+  // server accepts it and returns the reset token; a wrong, expired or already
+  // used code stays on this step with the server's message.
+  async function handleOtpSubmit(e) {
     e.preventDefault()
     setStepError('')
     if (otp.length !== OTP_LENGTH) {
       setStepError('Enter the 6-digit code.')
       return
     }
-    goTo('reset')
+
+    setStepLoading(true)
+    try {
+      const { resetToken: token } = await verifyResetOtp({ email: resetEmail, otp })
+      setResetToken(token)
+      setOtp('')
+      goTo('reset')
+    } catch (err) {
+      setOtp('')
+      setStepError(err.message || 'That code could not be verified.')
+    } finally {
+      setStepLoading(false)
+    }
   }
 
   async function handleResendOtp() {
@@ -324,7 +349,7 @@ export default function LoginPage() {
     }
     setStepLoading(true)
     try {
-      await resetPassword({ email: resetEmail, otp, newPassword })
+      await resetPassword({ email: resetEmail, resetToken, newPassword })
       goTo('done')
     } catch (err) {
       setStepError(err.message || 'Could not reset password.')
@@ -597,7 +622,7 @@ export default function LoginPage() {
                 <>
                   <StepHeading title="New password" subtitle="Choose a new password for your account" />
                   <form onSubmit={handleResetSubmit} className="space-y-4">
-                    <Field label="New password" className={GOLD_LABEL_CLASS} hint="At least 8 characters.">
+                    <Field label="New password" className={GOLD_LABEL_CLASS} hint="At least 8 characters, with a letter and a number.">
                       <div className="relative">
                         <PillInput
                           icon={KeyRound}

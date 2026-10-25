@@ -1023,14 +1023,26 @@ const ABOUT_SECTIONS: ContentSection[] = [
     key: "leaders",
     label: "Our leaders",
     description:
-      "The people shown on the About page. Choose which of the people added under Our Team appear here — their photograph, name, role and line come from there.",
+      "The leaders shown on the About page, with a Promise Jewels / Netram switch. People, photographs, order and visibility are managed under Our Team (set a person's group to \"Leader\" and choose their company).",
     fields: [
-      { key: "memberIds", label: "People shown", type: "team", default: "", hint: "Tick the people to show. Leave all unticked to show everyone.", max: 2000 },
+      { key: "emptyText", label: "Message when a company has no leaders yet", type: "textarea", default: "Our leaders will be introduced here soon.", max: LONG },
       { key: "heading", label: "Section heading", type: "text", default: "Our Leaders", max: MEDIUM },
       colour("headingColor", "Section heading", "#01383B"),
       colour("nameColor", "Names", "#01383B"),
       colour("roleColor", "Roles", "#C9A15A"),
       colour("bodyColor", "Descriptions", "#2F6B6B"),
+    ],
+  },
+  {
+    key: "team",
+    label: "Meet our team",
+    description:
+      "The team members shown on the About page, with a Promise Jewels / Netram switch. People, photographs, order and visibility are managed under Our Team (set a person's group to \"Team member\" and choose their company).",
+    manage: { label: "Manage people under Our Team", path: "/admin/team" },
+    fields: [
+      { key: "heading", label: "Section heading", type: "text", default: "Meet Our Team", max: MEDIUM },
+      colour("headingColor", "Section heading", "#01383B"),
+      { key: "emptyText", label: "Message when a company has no team members yet", type: "textarea", default: "Our team will be introduced here soon.", max: LONG },
     ],
   },
   {
@@ -1344,10 +1356,9 @@ const TEAM_SECTIONS: ContentSection[] = [
     key: "members",
     label: "The team",
     description:
-      "The heading above the photographs, and the people themselves — add, edit, hide, reorder or delete a person, with their photograph, name and role, right here.",
+      "The heading above the photographs, and the people themselves — add, edit, hide, reorder or delete a person, with their photograph, name, role, company (Promise Jewels / Netram) and group (leader or team member), right here.",
     embed: "team",
     fields: [
-      { key: "memberIds", label: "People shown", type: "team", default: "", hint: "Tick the people to show on this page. Leave all unticked to show everyone.", max: 2000 },
       ...typed({ key: "headingLight", label: "Heading — first word", type: "text", default: "Meet the", max: MEDIUM }),
       ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "Team", max: MEDIUM }),
       {

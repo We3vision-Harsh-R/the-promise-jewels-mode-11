@@ -23,6 +23,13 @@ export const AUTH_MESSAGES = {
 
   OTP_EXPIRED: "OTP has expired.",
 
+  OTP_TOO_MANY_ATTEMPTS: "Too many incorrect codes. Request a new code.",
+
+  RESET_VERIFIED: "Code verified. You can now choose a new password.",
+
+  RESET_SESSION_INVALID:
+    "This reset request is invalid or has expired. Start again from Forgot password.",
+
   USER_NOT_FOUND: "User not found.",
 
   TOKEN_REFRESHED: "Session refreshed successfully.",

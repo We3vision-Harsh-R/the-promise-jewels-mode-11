@@ -19,6 +19,7 @@
     "rbac:coverage": "tsx server/src/modules/rbac/rbac.coverage.ts",
     "rbac:e2e": "tsx server/src/modules/rbac/rbac.e2e.ts",
     "otp:check": "tsx server/src/modules/auth/otp-policy.selftest.ts",
+    "auth:reset:check": "tsx server/src/modules/auth/reset-flow.selftest.ts",
     "db:studio": "prisma studio",
     "dev:preview": "cross-env PJ_NO_WATCH=1 tsx server/src/server.ts",
     "vault:check": "tsx server/src/modules/secure-notes/secure-notes.selftest.ts",

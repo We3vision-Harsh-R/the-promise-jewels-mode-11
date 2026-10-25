@@ -11,6 +11,7 @@ import Switch from '@/components/ui/Switch.jsx'
 import ConfirmDialog from '@/components/feedback/ConfirmDialog.jsx'
 import EmptyState from '@/components/feedback/EmptyState.jsx'
 import { Field, Input, Textarea } from '@/components/forms/Field.jsx'
+import { DEFAULT_CATEGORY, TEAM_CATEGORIES } from '@/features/team/categories.js'
 
 // The people on the website's Our Team page. Everything on a card here is what
 // a visitor sees: the photograph, the name and the role. Saving puts the change
@@ -24,6 +25,8 @@ const EMPTY = {
   designation: '',
   bio: '',
   isActive: true,
+  kind: 'leader',
+  category: DEFAULT_CATEGORY,
   // The picture already saved, the file picked in this session, and whether
   // "remove photo" was pressed. At most one of the last two matters.
   photoUrl: '',
@@ -72,6 +75,10 @@ export default function TeamPage() {
   const [saving, setSaving] = useState(false)
   const [previewUrl, setPreviewUrl] = useState('')
 
+  // Which company's people the list shows. 'all' lists everyone, which is also
+  // the order the reorder arrows work on.
+  const [filter, setFilter] = useState('all')
+
   const [confirmId, setConfirmId] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const fileRef = useRef(null)
@@ -116,6 +123,8 @@ export default function TeamPage() {
       designation: member.designation,
       bio: member.bio || '',
       isActive: member.isActive,
+      kind: member.kind || 'leader',
+      category: member.category || DEFAULT_CATEGORY,
       photoUrl: member.photoUrl || '',
       photoFile: null,
       removePhoto: false,
@@ -174,6 +183,8 @@ export default function TeamPage() {
         designation: form.designation.trim(),
         bio: form.bio.trim(),
         isActive: form.isActive,
+        kind: form.kind,
+        category: form.category,
         photo: form.photoFile || undefined,
       }
 
@@ -257,6 +268,30 @@ export default function TeamPage() {
         )}
       </div>
 
+      {!loading && members.length > 0 && (
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Show people from">
+          {[{ key: 'all', label: 'Everyone' }, ...TEAM_CATEGORIES].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={filter === tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                filter === tab.key
+                  ? 'border-brass-500 bg-brass-500/10 text-brass-700'
+                  : 'border-ink-100 text-ink-500 hover:border-brass-500/50'
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1.5 text-ink-400">
+                {tab.key === 'all' ? members.length : members.filter((m) => m.category === tab.key).length}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -274,7 +309,7 @@ export default function TeamPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-          {members.map((member, index) => (
+          {members.map((member, index) => (filter !== 'all' && member.category !== filter ? null : (
             <Card key={member.id} className="flex flex-col overflow-hidden p-0">
               <div className="relative aspect-[3/4] w-full overflow-hidden bg-ivory-100">
                 <Avatar
@@ -296,6 +331,10 @@ export default function TeamPage() {
                 <div className="min-w-0">
                   <p className="m-0 truncate text-sm font-medium text-ink-900">{member.name}</p>
                   <p className="m-0 truncate text-xs text-ink-400">{member.designation}</p>
+                  <p className="m-0 mt-1 flex flex-wrap gap-1">
+                    <Badge tone="brass">{TEAM_CATEGORIES.find((c) => c.key === member.category)?.label ?? member.category}</Badge>
+                    <Badge tone="ink">{member.kind === 'team' ? 'Team member' : 'Leader'}</Badge>
+                  </p>
                 </div>
 
                 <div className="mt-auto flex items-center justify-between gap-1">
@@ -360,7 +399,7 @@ export default function TeamPage() {
                 </div>
               </div>
             </Card>
-          ))}
+          )))}
         </div>
       )}
 
@@ -417,6 +456,42 @@ export default function TeamPage() {
               placeholder="e.g. Founder"
             />
           </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Company" hint="Which tab on the website shows them.">
+              <div className="flex flex-wrap gap-4 pt-1" role="radiogroup" aria-label="Company">
+                {TEAM_CATEGORIES.map((category) => (
+                  <label key={category.key} className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
+                    <input
+                      type="radio"
+                      name="team-category"
+                      checked={form.category === category.key}
+                      onChange={() => setForm({ ...form, category: category.key })}
+                      className="h-4 w-4 accent-brass-600"
+                    />
+                    {category.label}
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Shown under" hint="Our Leaders or Meet Our Team on the About page.">
+              <div className="flex flex-wrap gap-4 pt-1" role="radiogroup" aria-label="Shown under">
+                {[{ key: 'leader', label: 'Leader' }, { key: 'team', label: 'Team member' }].map((kind) => (
+                  <label key={kind.key} className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
+                    <input
+                      type="radio"
+                      name="team-kind"
+                      checked={form.kind === kind.key}
+                      onChange={() => setForm({ ...form, kind: kind.key })}
+                      className="h-4 w-4 accent-brass-600"
+                    />
+                    {kind.label}
+                  </label>
+                ))}
+              </div>
+            </Field>
+          </div>
 
           <Field label="A line about them" hint="Optional. Shown under the name on larger screens." error={errors.bio}>
             <Textarea

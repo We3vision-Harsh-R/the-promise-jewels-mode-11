@@ -264,6 +264,10 @@ model team_members {
   photoUrl     String?
   displayOrder Int      @default(0)
   isActive     Boolean  @default(true)
+  /// "leader" (Our Leaders) or "team" (Meet Our Team) on the About page.
+  kind         String   @default("leader")
+  /// Which company the person belongs to: "promise-jewels" or "netram".
+  category     String   @default("promise-jewels")
   createdAt    DateTime @default(now())
   updatedAt    DateTime
 }

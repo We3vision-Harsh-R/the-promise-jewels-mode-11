@@ -136,32 +136,29 @@ export async function forgotPassword(email) {
   })
 }
 
-// NOTE on the real backend: there is no standalone endpoint to
-// pre-validate a forgot-password OTP. /auth/verify-otp is hardcoded
-// server-side to only check LOGIN-purpose codes — calling it here with a
-// FORGOT_PASSWORD code will always fail. The backend instead checks the
-// OTP as part of resetPassword() itself. This function is therefore
-// mock-only (LoginPage's forgot-password "enter code" step no longer
-// calls it in real mode — see LoginPage.jsx); kept here so mock behavior
-// is unchanged and so it's obvious *why* it's mock-only if someone reaches
-// for it later.
-export async function verifyOtp({ email, otp }) {
+// Step 2 of a password reset. The emailed code is checked on the SERVER
+// (POST /auth/verify-reset-otp); only a correct, unexpired, unused code returns
+// the short-lived `resetToken` that step 3 needs. The client never decides
+// whether a code is right.
+export async function verifyResetOtp({ email, otp }) {
   if (USE_MOCK) {
-    if (!otp || otp.length !== 6) {
+    if (!/^\d{6}$/.test(otp || '')) {
       throw new Error('Invalid OTP.')
     }
 
-    console.log('Mock: verify OTP', email, otp)
-
-    return mockDelay({
-      success: true,
-    })
+    return mockDelay({ resetToken: 'mock-reset-token-mock-reset-token-mock-1' })
   }
 
-  throw new Error('Not supported by the backend — OTP is validated during resetPassword() instead.')
+  const data = await request('/auth/verify-reset-otp', {
+    method: 'POST',
+    body: { email, otp },
+  })
+
+  return data
 }
 
-export async function resetPassword({ email, otp, newPassword }) {
+// Step 3. Needs the reset token from step 2 — the emailed code is not accepted.
+export async function resetPassword({ email, resetToken, newPassword }) {
   if (USE_MOCK) {
     if (!newPassword || newPassword.length < 8) {
       throw new Error('Password must be at least 8 characters.')
@@ -179,7 +176,7 @@ export async function resetPassword({ email, otp, newPassword }) {
     method: 'POST',
     body: {
       email,
-      otp,
+      resetToken,
       newPassword,
     },
   })
