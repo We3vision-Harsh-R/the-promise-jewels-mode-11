@@ -4,11 +4,12 @@ import { Check, ImagePlus, RotateCcw } from 'lucide-react'
 import { frameStyle } from '@/features/rings/useRings.js'
 import { classNames } from '@/utils/helpers.js'
 
-// The three controls the Rings screen adds to the Editor's form:
+// The controls the Rings screen adds to the Editor's form:
 //
-//   RingFrameControl  one photograph — preview, replace, on/off, and the
-//                     brightness / contrast / colour / hue / crop that match it
-//                     to the photographs around it
+//   RingFrameControl  one photograph — a small row to scan, and an editor that
+//                     opens under it: preview, replace, and the brightness /
+//                     contrast / colour / hue / crop that match it to the
+//                     photographs around it, with a side-by-side comparison
 //   FramesPicker      which of the photographs one page turns
 //   ChoiceInput       a short list of named choices as radio buttons
 
@@ -21,8 +22,8 @@ const ADJUSTMENTS = [
 
 const CROP = [
   { key: 'zoom', label: 'Zoom', min: 100, max: 300, step: 1, unit: '%', rest: 100 },
-  { key: 'x', label: 'Move left / right', min: 0, max: 100, step: 1, unit: '%', rest: 50 },
-  { key: 'y', label: 'Move up / down', min: 0, max: 100, step: 1, unit: '%', rest: 50 },
+  { key: 'x', label: 'Left / right', min: 0, max: 100, step: 1, unit: '%', rest: 50 },
+  { key: 'y', label: 'Up / down', min: 0, max: 100, step: 1, unit: '%', rest: 50 },
 ]
 
 /** The values a frame's sliders hold, read from the editor's draft. */
@@ -35,10 +36,11 @@ function readFrame(draft, sectionKey, n) {
   return values
 }
 
+/** A slider with its value typed beside it, short enough to take in at a glance. */
 function Slider({ item, value, disabled, onChange }) {
   return (
-    <label className="grid grid-cols-[104px_1fr_46px] items-center gap-2 text-xs text-ink-500">
-      <span>{item.label}</span>
+    <div className="grid grid-cols-[96px_minmax(0,170px)_62px] items-center gap-2 text-xs text-ink-500">
+      <span className="truncate">{item.label}</span>
       <input
         type="range"
         min={item.min}
@@ -46,14 +48,47 @@ function Slider({ item, value, disabled, onChange }) {
         step={item.step}
         value={value}
         disabled={disabled}
+        aria-label={item.label}
         onChange={(event) => onChange(event.target.value)}
         className="h-1.5 w-full cursor-pointer accent-brass-600"
       />
-      <span className="text-right tabular-nums text-ink-400">
-        {value}
-        {item.unit}
+      <span className="relative">
+        <input
+          type="number"
+          min={item.min}
+          max={item.max}
+          step={item.step}
+          value={value}
+          disabled={disabled}
+          aria-label={`${item.label} value`}
+          onChange={(event) => {
+            const next = Number(event.target.value)
+            if (Number.isFinite(next)) onChange(String(Math.min(item.max, Math.max(item.min, next))))
+          }}
+          className="w-full rounded-md border border-ink-100 bg-white py-0.5 pl-1.5 pr-4 text-right text-[11px] tabular-nums text-ink-700 focus:border-brass-500 focus:outline-none"
+        />
+        <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-ink-400">
+          {item.unit}
+        </span>
       </span>
-    </label>
+    </div>
+  )
+}
+
+/** One photograph exactly as the website shows it. */
+function Preview({ src, style, caption, badge }) {
+  return (
+    <figure className="m-0 space-y-1.5">
+      <div className="relative h-[200px] w-[160px] overflow-hidden rounded-[10px] bg-ivory-100 shadow-sm">
+        <img src={src} alt="" className="block h-full w-full object-cover" style={style} />
+        {badge && (
+          <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[10px] font-medium text-white">
+            {badge}
+          </span>
+        )}
+      </div>
+      <figcaption className="text-center text-[11px] text-ink-400">{caption}</figcaption>
+    </figure>
   )
 }
 
@@ -61,14 +96,24 @@ export function RingFrameControl({ section, field, draft, disabled, onChange, on
   const n = field.key
   const fileRef = useRef(null)
   const [busy, setBusy] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [original, setOriginal] = useState(false)
+  const [compareWith, setCompareWith] = useState('')
+
   const src = draft[`${section.key}.${n}`] || field.default
   const enabled = draft[`${section.key}.${n}.enabled`] !== 'false'
   const values = readFrame(draft, section.key, n)
   const style = frameStyle(values, n)
+  const all = [...ADJUSTMENTS, ...CROP]
+  const changed = all.some(({ key, rest }) => Number(values[`${n}.${key}`]) !== rest)
+
+  // The other photographs of this ring, for the side-by-side view.
+  const others = section.fields.filter((item) => item.type === 'ringframe' && item.key !== n)
+  const other = others.find((item) => item.key === compareWith)
+  const otherSrc = other ? draft[`${section.key}.${other.key}`] || other.default : ''
+  const otherStyle = other ? frameStyle(readFrame(draft, section.key, other.key), other.key) : undefined
 
   const set = (suffix, value) => onChange(section.key, `${n}.${suffix}`, String(value))
-
-  const changed = [...ADJUSTMENTS, ...CROP].some(({ key, rest }) => Number(values[`${n}.${key}`]) !== rest)
 
   async function pick(event) {
     const file = event.target.files?.[0]
@@ -84,37 +129,22 @@ export function RingFrameControl({ section, field, draft, disabled, onChange, on
   }
 
   return (
-    <div className={classNames('grid gap-4 rounded-xl border border-ink-100 bg-white p-3 sm:grid-cols-[132px_1fr]', !enabled && 'opacity-60')}>
-      <div className="space-y-2">
-        <div className="relative h-[165px] w-[132px] overflow-hidden rounded-[10px] bg-ivory-100">
-          {/* The same filter and crop the website applies, so what is matched
-              here is what visitors see. */}
+    <div className={classNames('rounded-xl border border-ink-100 bg-white', !enabled && 'opacity-70')}>
+      {/* Closed: a small row, so eighteen photographs stay easy to scan. */}
+      <div className="flex items-center gap-3 p-2.5">
+        <div className="h-[52px] w-[42px] shrink-0 overflow-hidden rounded-md bg-ivory-100">
           <img src={src} alt="" className="block h-full w-full object-cover" style={style} />
-          {!enabled && (
-            <span className="absolute inset-x-0 bottom-0 bg-black/55 py-1 text-center text-[10px] font-medium text-white">
-              Not used
-            </span>
-          )}
         </div>
 
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={pick} className="hidden" />
-        <button
-          type="button"
-          disabled={disabled || busy}
-          onClick={() => fileRef.current?.click()}
-          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-ink-100 px-2 py-1.5 text-xs font-medium text-ink-700 hover:border-brass-500 disabled:opacity-50"
-        >
-          <ImagePlus size={13} aria-hidden />
-          {busy ? 'Uploading…' : 'Replace photo'}
-        </button>
-      </div>
+        <div className="min-w-0 flex-1">
+          <p className="m-0 text-sm font-medium text-ink-900">Photo {n}</p>
+          <p className="m-0 flex flex-wrap gap-1.5 text-[11px] text-ink-400">
+            <span>{enabled ? 'Used on the website' : 'Not used'}</span>
+            {changed && <span className="text-brass-700">· colour / crop adjusted</span>}
+          </p>
+        </div>
 
-      <div className="space-y-2.5">
-        <label className="flex cursor-pointer items-center justify-between gap-3 text-xs font-medium text-ink-700">
-          <span>
-            Use this photo on the website
-            <span className="block font-normal text-ink-400">Switch off to take it out of every ring.</span>
-          </span>
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-ink-500">
           <input
             type="checkbox"
             checked={enabled}
@@ -122,30 +152,114 @@ export function RingFrameControl({ section, field, draft, disabled, onChange, on
             onChange={(event) => onChange(section.key, `${n}.enabled`, event.target.checked ? 'true' : 'false')}
             className="h-4 w-4 accent-brass-600"
           />
+          Use
         </label>
 
-        <p className="m-0 pt-1 text-[11px] font-semibold uppercase tracking-wide text-brass-700">Match its colour</p>
-        {ADJUSTMENTS.map((item) => (
-          <Slider key={item.key} item={item} value={values[`${n}.${item.key}`]} disabled={disabled} onChange={(v) => set(item.key, v)} />
-        ))}
-
-        <p className="m-0 pt-1 text-[11px] font-semibold uppercase tracking-wide text-brass-700">Crop</p>
-        {CROP.map((item) => (
-          <Slider key={item.key} item={item} value={values[`${n}.${item.key}`]} disabled={disabled} onChange={(v) => set(item.key, v)} />
-        ))}
-
-        {changed && (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => [...ADJUSTMENTS, ...CROP].forEach(({ key, rest }) => set(key, rest))}
-            className="inline-flex items-center gap-1 text-xs font-medium text-brass-700 hover:underline disabled:opacity-50"
-          >
-            <RotateCcw size={12} aria-hidden />
-            Reset colour and crop
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          className="rounded-lg border border-ink-100 px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-brass-500"
+        >
+          {open ? 'Close' : 'Edit'}
+        </button>
       </div>
+
+      {open && (
+        <div className="grid gap-5 border-t border-ink-100 p-4 lg:grid-cols-[auto_1fr]">
+          {/* What it looks like — and next to another photograph to match against. */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-start gap-3">
+              <Preview
+                src={src}
+                style={original ? undefined : style}
+                caption={original ? 'Original' : `Photo ${n} — as shown`}
+                badge={!enabled ? 'Not used' : undefined}
+              />
+              {other && <Preview src={otherSrc} style={otherStyle} caption={`Photo ${other.key} — to match`} />}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onMouseDown={() => setOriginal(true)}
+                onMouseUp={() => setOriginal(false)}
+                onMouseLeave={() => setOriginal(false)}
+                onTouchStart={() => setOriginal(true)}
+                onTouchEnd={() => setOriginal(false)}
+                className="rounded-lg border border-ink-100 px-2.5 py-1.5 text-xs text-ink-600 hover:border-brass-500"
+              >
+                Hold to see the original
+              </button>
+
+              <select
+                value={compareWith}
+                onChange={(event) => setCompareWith(event.target.value)}
+                aria-label="Compare with another photograph"
+                className="rounded-lg border border-ink-100 bg-white px-2 py-1.5 text-xs text-ink-700 focus:border-brass-500 focus:outline-none"
+              >
+                <option value="">Compare with…</option>
+                {others.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    Photo {item.key}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={pick} className="hidden" />
+            <button
+              type="button"
+              disabled={disabled || busy}
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-100 px-2.5 py-1.5 text-xs font-medium text-ink-700 hover:border-brass-500 disabled:opacity-50"
+            >
+              <ImagePlus size={13} aria-hidden />
+              {busy ? 'Uploading…' : 'Replace photo'}
+            </button>
+          </div>
+
+          <div className="grid content-start gap-x-8 gap-y-4 xl:grid-cols-2">
+            <div className="space-y-2">
+              <p className="m-0 text-[11px] font-semibold uppercase tracking-wide text-brass-700">Match its colour</p>
+              {ADJUSTMENTS.map((item) => (
+                <Slider
+                  key={item.key}
+                  item={item}
+                  value={values[`${n}.${item.key}`]}
+                  disabled={disabled}
+                  onChange={(v) => set(item.key, v)}
+                />
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <p className="m-0 text-[11px] font-semibold uppercase tracking-wide text-brass-700">Crop</p>
+              {CROP.map((item) => (
+                <Slider
+                  key={item.key}
+                  item={item}
+                  value={values[`${n}.${item.key}`]}
+                  disabled={disabled}
+                  onChange={(v) => set(item.key, v)}
+                />
+              ))}
+
+              {changed && (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => all.forEach(({ key, rest }) => set(key, rest))}
+                  className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brass-700 hover:underline disabled:opacity-50"
+                >
+                  <RotateCcw size={12} aria-hidden />
+                  Reset colour and crop
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -171,7 +285,11 @@ export function FramesPicker({ value, draft, disabled, onChange }) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-500">
-        <span>{everything ? 'Showing every photograph that is switched on.' : `Showing ${selected.length} chosen photograph${selected.length === 1 ? '' : 's'}.`}</span>
+        <span>
+          {everything
+            ? 'Showing every photograph that is switched on.'
+            : `Showing ${selected.length} chosen photograph${selected.length === 1 ? '' : 's'}.`}
+        </span>
         {!everything && (
           <button type="button" disabled={disabled} onClick={() => onChange('')} className="font-medium text-brass-700 hover:underline disabled:opacity-50">
             Show all

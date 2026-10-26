@@ -1541,7 +1541,7 @@ function ringFrames(prefix: string, defaults: string[]): ContentField[] {
 
   defaults.forEach((src, index) => {
     const n = index + 1;
-    const group = `${prefix === "outer" ? "Outer ring" : "Inner ring"} — photo ${n}`;
+    const group = prefix === "outer" ? "Outer ring" : "Inner ring";
     const number = (suffix: string, label: string, def: string, min: number, max: number, step: number, unit: string): ContentField => ({
       key: `${n}.${suffix}`, label, type: "number", default: def, group, hidden: true, min, max, step, unit,
     });

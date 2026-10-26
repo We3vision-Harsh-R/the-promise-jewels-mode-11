@@ -943,6 +943,18 @@ function FieldRun({ run, section, draft, controlProps }) {
                   controlProps={controlProps}
                 />
               </div>
+            ) : block.field.type === 'ringframe' ? (
+              // A <label> around buttons and sliders would pass clicks to its
+              // first control, so each photograph is drawn without one.
+              <div key={block.field.key} className="md:col-span-2">
+                <FieldControl
+                  section={section}
+                  field={block.field}
+                  value={draft[`${section.key}.${block.field.key}`] ?? ''}
+                  draft={draft}
+                  {...controlProps}
+                />
+              </div>
             ) : (
               <Field
                 key={block.field.key}
