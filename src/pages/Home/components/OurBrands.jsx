@@ -148,7 +148,14 @@ function BrandFrame({ brand, index }) {
               data-reveal
               className="js-brand-copy m-0 text-[2rem] font-medium font-ticker leading-[1.2] text-[var(--b-name)] max-[1024px]:text-[1.7rem] max-[430px]:text-[1.35rem]"
             >
-              {brand.name}
+              {/* The name opens the brand's own page. */}
+              {brand.slug ? (
+                <Link to={`/our-brand/${brand.slug}`} className="text-inherit no-underline transition-colors duration-300 hover:text-[var(--pj-accent)]">
+                  {brand.name}
+                </Link>
+              ) : (
+                brand.name
+              )}
             </h3>
 
             <span

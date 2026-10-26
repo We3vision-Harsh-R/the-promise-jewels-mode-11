@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import PageHeroCircle from "@/components/layout/PageHeroCircle.jsx";
 import BrandTabs from "@/components/common/BrandTabs.jsx";
@@ -128,6 +128,9 @@ export default function OurCollectionPage() {
     };
   }, [hoveredBrandId, brands, collections, bundledBrands]);
 
+  // The brand's own page, when the brand comes from Admin > Brands.
+  const activeBrandSlug = brands.find((b) => b.id === activeBrandId)?.slug;
+
   const activeBrandName =
     brands.find((b) => b.id === activeBrandId)?.name ??
     (bundledBrands ? BRAND_GALLERIES[activeBrandId]?.label : undefined);
@@ -180,6 +183,14 @@ export default function OurCollectionPage() {
             >
               Showing {activeBrandName} only — show all collections
             </button>
+            {activeBrandSlug && (
+              <Link
+                to={`/our-brand/${activeBrandSlug}`}
+                className="ml-[18px] font-ticker text-[0.9rem] text-[#0B5B5D] underline underline-offset-4 transition-colors hover:text-[#C9A15A] max-[479px]:ml-0 max-[479px]:mt-[8px] max-[479px]:block"
+              >
+                View {activeBrandName} page &rarr;
+              </Link>
+            )}
           </div>
         )}
       </>

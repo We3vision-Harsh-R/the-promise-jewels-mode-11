@@ -14,6 +14,7 @@ import usePublicTeam from '@/features/team/hooks/usePublicTeam.js'
 import usePublicSettings from '@/features/settings/hooks/usePublicSettings.js'
 import useReveal from '@/hooks/useReveal.js'
 import { settleToSection } from '@/utils/scroll.js'
+import { useSeoMeta } from '@/features/seo/hooks/useSeoMeta.js'
 
 // The words around a brand: headings, buttons and the fallback messages. The
 // brand's own name, description, overview, pictures and call to action are
@@ -75,6 +76,9 @@ function Band({ id, children, className = '' }) {
 
 export default function BrandDetailPage() {
   const { slug } = useParams()
+  // Applies an SEO record for this brand if one was added under Admin > SEO
+  // with the slug "our-brand/<brand slug>"; does nothing otherwise.
+  useSeoMeta(slug ? `our-brand/${slug}` : '')
   const navigate = useNavigate()
   const text = useSectionContent('brandDetail', 'page', PAGE_TEXT)
   const teamText = useSectionContent('brandDetail', 'team', { byBrand: '{}' })
