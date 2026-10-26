@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { listPublicBrands } from '@/features/brands/brand.api.js'
+import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // GET /brands is the same payload for every visitor and the brand section
 // mounts on both the homepage and /our-brand, so the in-flight promise is
@@ -9,6 +10,10 @@ import { listPublicBrands } from '@/features/brands/brand.api.js'
 // trade-off for a public marketing site (same call as usePublicSettings.js).
 let brandsPromise = null
 let brandsFetchedAt = 0
+
+registerCacheClearer(() => {
+  brandsPromise = null
+})
 
 // Shared for a short while only, so a brand saved in the admin panel shows up
 // on the next page visit instead of waiting for a full reload.
@@ -72,6 +77,7 @@ function toBrandFrame(row) {
 export default function usePublicBrands() {
   const [brands, setBrands] = useState([])
   const [loading, setLoading] = useState(true)
+  const tick = useContentTick()
 
   useEffect(() => {
     let cancelled = false
@@ -85,7 +91,7 @@ export default function usePublicBrands() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [tick])
 
   return { brands, loading }
 }

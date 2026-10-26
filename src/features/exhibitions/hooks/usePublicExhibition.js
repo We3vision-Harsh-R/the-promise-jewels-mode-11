@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPublicExhibition } from '@/features/exhibitions/exhibition.api.js'
+import { useContentTick } from '@/services/contentSync.js'
 
 /**
  * One exhibition by slug, for its own page.
@@ -19,6 +20,7 @@ export default function usePublicExhibition(slug) {
   // reset there would be a setState in an effect body, and would let the
   // previous show render for a frame under the new slug's heading.
   const [state, setState] = useState({ slug: null, exhibition: null })
+  const tick = useContentTick()
 
   useEffect(() => {
     if (!slug) return undefined
@@ -34,7 +36,7 @@ export default function usePublicExhibition(slug) {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, tick])
 
   const settled = !slug || state.slug === slug
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import request from '@/services/api/client.js'
+import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Fallbacks are exported so a component can reference a single value (e.g.
 // just the logo) without pulling in the hook and its request.
@@ -31,6 +32,10 @@ export const DEFAULT_SOCIAL_LINKS = {
 // a reload to show up, which is the right trade-off for a public site.
 let settingsPromise = null
 
+registerCacheClearer(() => {
+  settingsPromise = null
+})
+
 function fetchPublicSettings() {
   // The .catch lives inside the cached promise so a failed fetch resolves to
   // null for every consumer rather than becoming an unhandled rejection.
@@ -52,6 +57,8 @@ export function usePublicSettings() {
     contact: DEFAULT_CONTACT,
     social: DEFAULT_SOCIAL_LINKS,
   })
+
+  const tick = useContentTick()
 
   useEffect(() => {
     let cancelled = false
@@ -82,7 +89,7 @@ export function usePublicSettings() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [tick])
 
   return settings
 }

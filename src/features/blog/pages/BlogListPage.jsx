@@ -9,6 +9,7 @@ import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { HERO_BASE } from '@/components/layout/heroContent.js'
 import PageSections from '@/features/page-content/PageSections.jsx'
 import { listPublicPosts } from '@/features/blog/blog.api.js'
+import { useContentTick } from '@/services/contentSync.js'
 import { settleToSection } from '@/utils/scroll.js'
 import { useRef } from 'react'
 
@@ -89,6 +90,8 @@ export default function BlogListPage() {
 
   useReveal(sectionRef)
 
+  const tick = useContentTick()
+
   useEffect(() => {
     let cancelled = false
 
@@ -107,7 +110,7 @@ export default function BlogListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [tick])
 
   // The page's bands, keyed as Admin > Content knows them. The order written
   // here is what the site ships with; the panel can rearrange it, hide any of

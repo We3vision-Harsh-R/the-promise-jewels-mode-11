@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card.jsx'
 import Button from '@/components/ui/Button.jsx'
 import { Field, Input, Textarea } from '@/components/forms/Field.jsx'
 import AdminAccessCard from '@/features/settings/components/AdminAccessCard.jsx'
+import ClearCacheCard from '@/features/settings/components/ClearCacheCard.jsx'
 
 
 // Same frosted-glass tokens as every other glass surface in the admin (see
@@ -323,6 +324,7 @@ export default function SettingsPage() {
         </Card>
 
           <AdminAccessCard />
+          <ClearCacheCard />
         </div>
       </div>
     </div>

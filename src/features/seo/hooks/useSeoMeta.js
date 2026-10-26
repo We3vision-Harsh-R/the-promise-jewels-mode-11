@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { getPublicMetadata } from '@/features/seo/seo.api.js'
+import { useContentTick } from '@/services/contentSync.js'
 
 // Sets/updates a <meta> tag by name or property, creating it if it
 // doesn't exist yet. Tagged with data-seo-managed so cleanup can find
@@ -45,6 +46,8 @@ function setLink(rel, href) {
 // (e.g. static pages that haven't been given an SEO record), so it never
 // blocks the page from rendering.
 export function useSeoMeta(slug) {
+  const tick = useContentTick()
+
   useEffect(() => {
     if (!slug) return
     let cancelled = false
@@ -102,7 +105,7 @@ export function useSeoMeta(slug) {
       })
 
     return () => { cancelled = true }
-  }, [slug])
+  }, [slug, tick])
 }
 
 export default useSeoMeta

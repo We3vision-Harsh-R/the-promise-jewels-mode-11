@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useContentTick } from '@/services/contentSync.js'
 import { Link, useParams } from 'react-router-dom'
 
 import Footer from '@/components/common/Footer.jsx'
@@ -107,10 +108,13 @@ export default function BlogPostPage() {
   const [post, setPost] = useState(null)
   const [state, setState] = useState('loading') // loading | ready | missing
 
+  const tick = useContentTick()
+
   useEffect(() => {
     let cancelled = false
 
-    setState('loading')
+    // A refresh after a save updates the post in place instead of blanking it.
+    if (tick === 0) setState('loading')
 
     getPublicPost(slug)
       .then((data) => {
@@ -125,7 +129,7 @@ export default function BlogPostPage() {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, tick])
 
   // Every route change starts at the top of the article, not wherever the
   // previous page was scrolled to.

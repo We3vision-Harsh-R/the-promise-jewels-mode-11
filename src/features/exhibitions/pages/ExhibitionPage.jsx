@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useContentTick } from "@/services/contentSync.js";
 import { Link } from "react-router-dom";
 import { listExhibitions } from "@/features/exhibitions/exhibition.api.js";
 import PageHeroCircle from "@/components/layout/PageHeroCircle.jsx";
@@ -115,6 +116,8 @@ export default function ExhibitionPage() {
   // must never render empty just because an API call did not come back.
   const [records, setRecords] = useState(EXHIBITIONS);
 
+  const tick = useContentTick();
+
   useEffect(() => {
     let cancelled = false;
 
@@ -130,7 +133,7 @@ export default function ExhibitionPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   // Upcoming shows first, concluded ones last, so the page stays useful as
   // the season moves without anyone editing the order by hand.

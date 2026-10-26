@@ -10,6 +10,7 @@ import { scrollToTop, settleToSection } from "@/utils/scroll.js";
 import { prefetchPages } from "@/app/routes/lazyPages.js";
 import { pingVisit } from "@/features/visitors/tracker.js";
 import { ScrollTrigger } from "@/lib/gsap.js";
+import { startContentSync, useContentTick } from "@/services/contentSync.js";
 
 /**
  * Rendered next to the page, inside the same Suspense boundary, so it mounts
@@ -32,6 +33,22 @@ function RemeasureWhenPageMounts() {
 
 export default function ClientLayout() {
   const { pathname, hash } = useLocation();
+
+  // Pages that are already open pick up a save made in the admin panel: every
+  // few seconds (and when the tab comes back into view) the site asks the
+  // server whether anything changed, and refetches what it shows if it did.
+  const contentTick = useContentTick();
+  useEffect(() => {
+    startContentSync();
+  }, []);
+
+  // New text or pictures change a section's height; re-measure the pinned and
+  // scroll-linked sections once the update has landed.
+  useEffect(() => {
+    if (contentTick === 0) return undefined;
+    const timer = window.setTimeout(() => ScrollTrigger.refresh(), 700);
+    return () => window.clearTimeout(timer);
+  }, [contentTick]);
 
   // Section links that live on another page — "Our Team" in the navbar and
   // footer points at the leaders section of /AboutPage — navigate with a

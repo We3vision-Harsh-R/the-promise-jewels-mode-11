@@ -94,7 +94,22 @@ let selfPort = 0;
 const toRewarm = new Set<string>();
 let rewarmTimer: NodeJS.Timeout | null = null;
 
+/**
+ * Changes whenever the cache is emptied, which is whenever the admin panel
+ * saves something. The website asks for it (GET /content-version) every few
+ * seconds and, when it differs from the one it last saw, drops what it holds
+ * and fetches again — so a save shows on pages that are already open, without
+ * anyone refreshing them.
+ */
+let contentVersion = Date.now();
+
+export function getContentVersion(): number {
+  return contentVersion;
+}
+
 export function clearPublicCache(): void {
+  contentVersion = Date.now();
+
   for (const [key, entry] of store) {
     if (entry.hits > 0) toRewarm.add(key);
   }
@@ -213,7 +228,7 @@ export function publicCache(req: Request, res: Response, next: NextFunction): vo
     if (age > REFRESH_AFTER_MS && !hit.refreshing) void refresh(key);
 
     res.set("X-Cache", age > REFRESH_AFTER_MS ? "STALE" : "HIT");
-    res.set("Cache-Control", "public, max-age=0, must-revalidate");
+    res.set("Cache-Control", "public, max-age=0, s-maxage=0, must-revalidate");
     res.status(hit.status).type(hit.contentType).send(hit.body);
     return;
   }
@@ -237,7 +252,7 @@ export function publicCache(req: Request, res: Response, next: NextFunction): vo
   }) as Response["send"];
 
   res.set("X-Cache", "MISS");
-  res.set("Cache-Control", "public, max-age=0, must-revalidate");
+  res.set("Cache-Control", "public, max-age=0, s-maxage=0, must-revalidate");
   next();
 }
 

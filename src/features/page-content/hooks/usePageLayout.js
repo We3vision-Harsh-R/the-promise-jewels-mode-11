@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPublicLayout } from '@/features/page-content/page-content.api.js'
+import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Which sections a page shows, and in what order.
 //
@@ -14,6 +15,11 @@ import { getPublicLayout } from '@/features/page-content/page-content.api.js'
 // starting value, never an empty list.
 const cache = new Map()
 const inFlight = new Map()
+
+registerCacheClearer(() => {
+  cache.clear()
+  inFlight.clear()
+})
 
 function loadLayout(page) {
   if (cache.has(page)) return Promise.resolve(cache.get(page))
@@ -57,6 +63,7 @@ const EMPTY = []
 export default function usePageLayout(page, defaultOrder) {
   const [order, setOrder] = useState(defaultOrder)
   const [custom, setCustom] = useState(EMPTY)
+  const tick = useContentTick()
 
   useEffect(() => {
     let cancelled = false
@@ -81,6 +88,7 @@ export default function usePageLayout(page, defaultOrder) {
       // every section and replay its entrance animation on every load.
       setOrder((current) => (sameOrder(current, known) ? current : known))
       if (data.custom?.length) setCustom(data.custom)
+      else if (tick > 0) setCustom(EMPTY)
     })
 
     return () => {
@@ -88,7 +96,7 @@ export default function usePageLayout(page, defaultOrder) {
     }
     // `defaultOrder` is a module-level constant at every call site.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+  }, [page, tick])
 
   return { order, custom }
 }

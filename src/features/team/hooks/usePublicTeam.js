@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { listPublicTeam } from '@/features/team/team.api.js'
+import { useContentTick } from '@/services/contentSync.js'
 
 /**
  * The people for the Our Team page.
@@ -16,6 +17,7 @@ import { listPublicTeam } from '@/features/team/team.api.js'
  */
 export default function usePublicTeam() {
   const [state, setState] = useState({ members: [], loading: true })
+  const tick = useContentTick()
 
   useEffect(() => {
     let alive = true
@@ -27,7 +29,7 @@ export default function usePublicTeam() {
     return () => {
       alive = false
     }
-  }, [])
+  }, [tick])
 
   return state
 }

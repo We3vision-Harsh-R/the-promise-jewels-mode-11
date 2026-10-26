@@ -1,3 +1,5 @@
+import { announceContentChange } from '@/services/contentSync.js'
+
 // Base API client.
 //
 // Matches the contract in the planning doc:
@@ -72,6 +74,9 @@ const NO_REFRESH_RETRY = ['/auth/login', '/auth/verify-otp', '/auth/refresh', '/
 // call instead of each firing their own.
 let refreshPromise = null
 
+// Writes that cannot change what the website shows.
+const SILENT_WRITES = [/^\/auth\//, /^\/visitors\//, /^\/inquiries\/contact$/, /\/comments$/]
+
 async function request(path, { method = 'GET', body, params, _isRetry = false } = {}) {
   let url = `${BASE_URL}${path}`
   if (params) {
@@ -136,6 +141,10 @@ async function request(path, { method = 'GET', body, params, _isRetry = false } 
     err.fields = fieldErrors || null
     throw err
   }
+  // A save went through: every open page of the website drops what it holds and
+  // fetches again, so the change shows without a refresh.
+  if (method !== 'GET' && !SILENT_WRITES.some((pattern) => pattern.test(path))) announceContentChange()
+
   return envelope.data
 }
 

@@ -4,6 +4,7 @@ import {
   getPublicCollection,
   listPublicCollections,
 } from '@/features/collections/collection.api.js'
+import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // GET /collections returns the same payload for every visitor and the grid
 // mounts on more than one route, so the in-flight promise is cached at module
@@ -12,6 +13,10 @@ import {
 // trade-off for a public marketing site (same call as usePublicSettings.js).
 let listPromise = null
 let listFetchedAt = 0
+
+registerCacheClearer(() => {
+  listPromise = null
+})
 
 // Shared for a short while only, so a collection saved in the admin panel shows
 // up on the next page visit instead of waiting for a full reload.
@@ -37,6 +42,7 @@ function fetchPublicCollections() {
 export default function usePublicCollections() {
   const [collections, setCollections] = useState([])
   const [loading, setLoading] = useState(true)
+  const tick = useContentTick()
 
   useEffect(() => {
     let cancelled = false
@@ -50,7 +56,7 @@ export default function usePublicCollections() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [tick])
 
   return { collections, loading }
 }
@@ -70,6 +76,7 @@ export function usePublicCollection(slug) {
   // one thing that would let the previous collection show for a frame under
   // the new slug's heading.
   const [state, setState] = useState({ slug: null, collection: null })
+  const tick = useContentTick()
 
   useEffect(() => {
     if (!slug) return undefined
@@ -85,7 +92,7 @@ export function usePublicCollection(slug) {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, tick])
 
   const settled = !slug || state.slug === slug
 

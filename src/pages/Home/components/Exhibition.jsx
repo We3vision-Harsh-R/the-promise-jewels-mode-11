@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useContentTick } from "@/services/contentSync.js";
 import { gsap } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useReveal from "@/hooks/useReveal.js";
@@ -230,6 +231,8 @@ export default function Exhibition() {
   // real ones arrive, and stay for good if the request fails.
   const [records, setRecords] = useState(BUNDLED_EXHIBITIONS);
 
+  const tick = useContentTick();
+
   useEffect(() => {
     let cancelled = false;
 
@@ -245,7 +248,7 @@ export default function Exhibition() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   // Midnight today, computed once — every countdown below is derived from
   // this so the whole section agrees on "now".

@@ -21,6 +21,8 @@ import userRoutes from "../modules/users/user.routes.js";
 import visitorRoutes from "../modules/visitors/visitor.routes.js";
 import teamRoutes, { teamAdminRoutes } from "../modules/team/team.routes.js";
 import adminNetworkRoutes from "../modules/admin-network/admin-network.routes.js";
+import cacheRoutes from "../modules/cache/cache.routes.js";
+import { getContentVersion } from "../middleware/publicCache.middleware.js";
 
 const router = Router();
 //public routes
@@ -30,6 +32,12 @@ router.get("/", (_req, res) => {
     success: true,
     message: "Promise Jewels API",
   });
+});
+// A number that changes whenever the admin panel saves anything. Open pages of
+// the website poll it to know when to fetch fresh data. No database, no auth.
+router.get("/content-version", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({ version: getContentVersion() });
 });
 //protected routes
 router.use("/auth", authRoutes);
@@ -42,6 +50,8 @@ router.use("/team", teamRoutes);
 router.use("/admin/team", teamAdminRoutes);
 // Which addresses may open the admin panel (Settings > Admin access).
 router.use("/admin/network", adminNetworkRoutes);
+// Empty every server cache on demand.
+router.use("/admin/cache", cacheRoutes);
 router.use("/admin/brands", brandAdminRoutes);
 router.use("/collections", collectionRoutes);
 router.use("/admin/collections", collectionAdminRoutes);

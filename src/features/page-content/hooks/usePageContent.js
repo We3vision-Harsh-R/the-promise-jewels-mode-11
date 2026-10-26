@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPublicPage } from '@/features/page-content/page-content.api.js'
+import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Editable copy for the public website.
 //
@@ -10,6 +11,16 @@ import { getPublicPage } from '@/features/page-content/page-content.api.js'
 // own section, and they must not fire seven requests.
 const cache = new Map()
 const inFlight = new Map()
+
+registerCacheClearer(() => {
+  cache.clear()
+  inFlight.clear()
+})
+
+function sameContent(a, b) {
+  const keys = Object.keys(b)
+  return Object.keys(a).length === keys.length && keys.every((key) => a[key] === b[key])
+}
 
 function loadPage(page) {
   if (cache.has(page)) return Promise.resolve(cache.get(page))
@@ -47,6 +58,8 @@ function loadPage(page) {
  */
 export default function useSectionContent(page, section, fallback) {
   const [content, setContent] = useState(fallback)
+  // Goes up when the admin panel saves, so the copy is fetched again.
+  const tick = useContentTick()
 
   useEffect(() => {
     let cancelled = false
@@ -97,7 +110,10 @@ export default function useSectionContent(page, section, fallback) {
       // object in that case matters: callers derive GSAP timelines from this
       // value, and handing them a new identity for unchanged copy would tear
       // down and replay an entrance animation on every page load.
-      if (changed) setContent(merged)
+      // After a save the answer may differ from what is on screen even when it
+      // matches the bundled copy (a field was cleared), so compare with what is
+      // shown instead of with the fallback. An unchanged answer keeps its identity.
+      if (changed || tick > 0) setContent((current) => (sameContent(current, merged) ? current : merged))
     })
 
     return () => {
@@ -106,7 +122,7 @@ export default function useSectionContent(page, section, fallback) {
     // `fallback` is a module-level constant at every call site; listing it
     // here would only re-run this effect if someone starts building it inline.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, section])
+  }, [page, section, tick])
 
   return content
 }
