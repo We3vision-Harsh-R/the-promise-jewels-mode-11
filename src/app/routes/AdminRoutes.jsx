@@ -16,7 +16,6 @@ const SettingsPage = lazy(adminPageLoaders.SettingsPage)
 const EditorPage = lazy(adminPageLoaders.EditorPage)
 const SectionDesignerPage = lazy(adminPageLoaders.SectionDesignerPage)
 const VaultPage = lazy(adminPageLoaders.VaultPage)
-const ExhibitionOpsPage = lazy(adminPageLoaders.ExhibitionOpsPage)
 const HeaderPage = lazy(adminPageLoaders.HeaderPage)
 const FooterPage = lazy(adminPageLoaders.FooterPage)
 const RingsPage = lazy(adminPageLoaders.RingsPage)
@@ -100,17 +99,6 @@ export default function AdminRoutes() {
         {/* The owner's own notes and passwords. The permission decides
             whether an account has a vault; it never decides whose vault it
             sees, which is fixed to the signed-in account on the server. */}
-        {/* Running a show, as opposed to advertising one. Its own resource:
-            writing a show's website copy and seeing its margin are different
-            levels of trust. */}
-        <Route
-          path="exhibitions/:id/ops/:tab?"
-          element={
-          <RequirePermission resource="exhibitionOps">
-            <Suspense fallback={null}><ExhibitionOpsPage /></Suspense>
-          </RequirePermission>
-          }
-        />
         <Route
           path="vault"
           element={

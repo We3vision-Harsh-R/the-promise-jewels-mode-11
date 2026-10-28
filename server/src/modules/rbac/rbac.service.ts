@@ -202,7 +202,12 @@ export async function listRoles() {
     permissions:
       role.isSystem && role.name === MASTER_ROLE_NAME
         ? ALL_PERMISSIONS
-        : role.permissions.map((p) => permissionKey(p.resource, p.action as Action)),
+        : role.permissions
+            .map((p) => permissionKey(p.resource, p.action as Action))
+            // A grant for a screen that no longer exists (the removed Exhibition
+            // operations, for one) is left in the table but not offered back, so
+            // saving the role cannot be refused over it.
+            .filter(isValidPermission),
     createdAt: role.createdAt,
   }));
 }

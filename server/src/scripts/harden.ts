@@ -56,30 +56,6 @@ async function encryptInquiries() {
   say("enquiries encrypted", done === 0 ? "nothing to do" : `${done} of ${rows.length} rows`);
 }
 
-async function encryptLeads() {
-  const rows = await prisma.exhibitionLead.findMany({
-    select: { id: true, name: true, company: true, phone: true, email: true, interest: true, notes: true },
-  });
-
-  let done = 0;
-
-  for (const row of rows) {
-    const fields = ["name", "company", "phone", "email", "interest", "notes"] as const;
-    const pending = fields.filter((f) => row[f] !== null && !isEncrypted(row[f]));
-    if (pending.length === 0) continue;
-
-    const aad = rowAad("exhibition_leads", row.id);
-    const data: Record<string, string | null> = {};
-    for (const field of pending) data[field] = encryptField(row[field], aad);
-
-    await prisma.exhibitionLead.update({ where: { id: row.id }, data });
-    done += 1;
-  }
-
-  changed += done;
-  say("exhibition leads encrypted", done === 0 ? "nothing to do" : `${done} of ${rows.length} rows`);
-}
-
 // ---------------------------------------------------------------------------
 // 2. Row Level Security
 // ---------------------------------------------------------------------------
@@ -205,7 +181,6 @@ async function main() {
   }
 
   await encryptInquiries();
-  await encryptLeads();
   await enableRls();
   await revokeBrowserRoleGrants();
   await clearLegacyRefreshHashes();

@@ -148,15 +148,6 @@ async function main() {
           "run: npm run security:harden",
         );
 
-  const leads = await prisma.exhibitionLead.findMany({ select: { id: true, name: true } });
-  const plainLeads = leads.filter((row) => row.name !== null && !isEncrypted(row.name));
-
-  leads.length === 0
-    ? pass("no exhibition leads yet", "(nothing to check)")
-    : plainLeads.length === 0
-      ? pass(`all ${leads.length} leads encrypted`)
-      : fail(`${plainLeads.length} of ${leads.length} leads are plaintext`, "run: npm run security:harden");
-
   const notesRows = await prisma.secureNote.findMany({ select: { payload: true } });
   const plainNotes = notesRows.filter((row) => !row.payload.startsWith("v1."));
   plainNotes.length === 0

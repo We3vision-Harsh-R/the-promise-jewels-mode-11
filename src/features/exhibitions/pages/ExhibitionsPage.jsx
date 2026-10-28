@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Pencil, Trash2, MapPin, X, ExternalLink, ClipboardList } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { Can } from '@/features/rbac/usePermissions.jsx'
+import { Plus, Pencil, Trash2, MapPin, X, ExternalLink } from 'lucide-react'
 import * as exhibitionService from '@/features/exhibitions/exhibition.api.js'
 import { useToast } from '@/components/feedback/Toast.jsx'
 import DataTable from '@/components/ui/DataTable.jsx'
@@ -454,18 +452,6 @@ export default function ExhibitionsPage() {
               <ExternalLink size={15} />
             </a>
           )}
-          {/* Running the show, as opposed to describing it. Its own
-              permission, so this only appears for someone who holds it. */}
-          <Can resource="exhibitionOps" action="view">
-            <Link
-              to={`/admin/exhibitions/${r.id}/ops`}
-              className="p-1.5 rounded-md text-ink-400 hover:text-brass-700 hover:bg-brass-500/10"
-              title="Operations — stall, costs, leads, stock"
-              aria-label={`Operations for ${r.title}`}
-            >
-              <ClipboardList size={15} />
-            </Link>
-          </Can>
           <button onClick={() => openEdit(r)} className="p-1.5 rounded-md text-ink-400 hover:text-ink-900 hover:bg-ink-50" aria-label={`Edit ${r.title}`}>
             <Pencil size={15} />
           </button>

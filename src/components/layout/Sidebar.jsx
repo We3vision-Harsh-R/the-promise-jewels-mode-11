@@ -1,50 +1,14 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Gem, Building2, CalendarDays, MessagesSquare, Search, Settings, X, LogOut, PenLine, PanelTop, PanelBottom, CircleDot, Newspaper, Moon, Sun,   Users, ShieldCheck, KeyRound, ChevronRight, UserPlus, IndianRupee, Package,
-  UsersRound, ListChecks, CalendarClock, FolderOpen, NotebookPen, SlidersHorizontal, Radio }
+  LayoutDashboard, Gem, Building2, CalendarDays, MessagesSquare, Search, Settings, X, LogOut, PenLine, PanelTop, PanelBottom, CircleDot, Newspaper, Moon, Sun,   Users, ShieldCheck, KeyRound, ChevronRight,
+  UsersRound, Radio }
   from 'lucide-react'
 import { classNames, initials } from '@/utils/helpers.js'
 import { APP_VERSION } from '@/app/config.js'
 import { preloadAdminPage } from '@/app/routes/adminPageLoaders.js'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
 import { usePermissions } from '@/features/rbac/permissionsContext.js'
-import { MODULES } from '@/features/exhibition-ops/opsSpec.js'
-import { readCurrentShow } from '@/features/exhibition-ops/currentShow.js'
-
-/** One icon per operations screen, keyed by the slug in opsSpec.js. */
-const OPS_ICONS = {
-  leads: UserPlus,
-  costs: IndianRupee,
-  stock: Package,
-  crew: UsersRound,
-  tasks: ListChecks,
-  meetings: CalendarClock,
-  files: FolderOpen,
-  log: NotebookPen,
-  fields: SlidersHorizontal,
-}
-
-/**
- * The ten operations screens as sidebar entries.
- *
- * Built from MODULES rather than typed out again, so adding an eleventh
- * module puts it in the rail with no second edit. `to` is a function because
- * the destination depends on which show was last open.
- */
-const MODULE_NAV = [
-  {
-    slug: 'overview',
-    label: 'Overview',
-    icon: LayoutDashboard,
-  },
-  ...MODULES.map((m) => ({ slug: m.slug, label: m.label, icon: OPS_ICONS[m.slug] })),
-].map((entry) => ({
-  ...entry,
-  resource: 'exhibitionOps',
-  to: (showId) =>
-    showId ? `/admin/exhibitions/${showId}/ops/${entry.slug}` : "/admin/exhibitions",
-}))
 
 // The rail, in reading order. An entry with `items` is a titled group; one
 // without is a standalone link.
@@ -65,26 +29,9 @@ const NAV = [
     items: [
       { to: '/admin/collections', label: 'Collections', icon: Gem, resource: 'collections' },
       { to: '/admin/brands', label: 'Brands', icon: Building2, resource: 'brands' },
+      { to: '/admin/exhibitions', label: 'Exhibitions', icon: CalendarDays, resource: 'exhibitions' },
       { to: '/admin/team', label: 'Our Team', icon: UsersRound, resource: 'team' },
       { to: '/admin/inquiries', label: 'Inquiries', icon: MessagesSquare, resource: 'inquiries' },
-    ],
-  },
-  {
-    // Its own group rather than one entry under Management.
-    //
-    // A show is not one screen, it is twelve: the record the website prints,
-    // and the ten things involved in actually attending. Buried as a single
-    // link under Management, eleven of those were reachable only by finding
-    // the right row in a table first.
-    //
-    // The operations entries are per-show, and a sidebar link cannot ask
-    // which show you meant — so they point at the last one opened. See
-    // currentShow.js. With none remembered they fall back to the list,
-    // which is where you would go to pick one anyway.
-    label: 'Exhibition',
-    items: [
-      { to: '/admin/exhibitions', label: 'Shows', icon: CalendarDays, resource: 'exhibitions', end: true },
-      ...MODULE_NAV,
     ],
   },
   {
@@ -212,8 +159,8 @@ function GroupHeader({ label, open, hasActive, onToggle, controls }) {
  * The operations entries need the second form: which show they open is not
  * known when NAV is declared, only when the rail renders.
  */
-function NavItem({ to, label, icon: Icon, onNavigate, nested, showId, end }) {
-  const href = typeof to === "function" ? to(showId) : to
+function NavItem({ to, label, icon: Icon, onNavigate, nested, end }) {
+  const href = to
 
   return (
     <NavLink
@@ -278,7 +225,7 @@ function NavItems({ onNavigate }) {
     if (collapsed.has(label)) {
       const group = NAV.find((entry) => entry.label === label)
       for (const item of group?.items ?? []) {
-        preloadAdminPage(typeof item.to === 'function' ? item.to(showId) : item.to)
+        preloadAdminPage(item.to)
       }
     }
     setCollapsed((current) => {
@@ -289,14 +236,10 @@ function NavItems({ onNavigate }) {
     })
   }
 
-  // Read once per render. Cheap, and it has to be current: the rail must
-  // point at the show you are on, not the one this tab was opened with.
-  const showId = readCurrentShow()
-
   // `/admin/roles` must not light up for `/admin/rolesomething`, so it is an
   // exact match or a real path segment beneath it.
   const isOn = (to) => {
-    const href = typeof to === 'function' ? to(showId) : to
+    const href = to
     return pathname === href || pathname.startsWith(`${href}/`)
   }
 
@@ -314,7 +257,7 @@ function NavItems({ onNavigate }) {
       {NAV.map((entry) => {
         if (!entry.items) {
           return allowed(entry) ? (
-            <NavItem key={entry.to} {...entry} showId={showId} onNavigate={onNavigate} />
+            <NavItem key={entry.to} {...entry} onNavigate={onNavigate} />
           ) : null
         }
 
@@ -344,7 +287,7 @@ function NavItems({ onNavigate }) {
             {open && (
               <div id={bodyId} className="space-y-1">
                 {visible.map((item) => (
-                  <NavItem key={item.label} {...item} nested showId={showId} onNavigate={onNavigate} />
+                  <NavItem key={item.label} {...item} nested onNavigate={onNavigate} />
                 ))}
               </div>
             )}

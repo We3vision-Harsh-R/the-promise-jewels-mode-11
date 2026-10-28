@@ -36,11 +36,9 @@ deal**. That is the data a leaked database dump actually harms somebody with.
 | Vault notes (title, body, fields, even the *kind*) | Money and gold weights — **`Decimal` columns the report sums**; ciphertext cannot be added up |
 | Passwords (bcrypt), sign-in codes (bcrypt), refresh tokens (SHA-256) | Ids, timestamps, foreign keys, status columns |
 
-Money and weight deserve a note. They **are** commercially sensitive, and they
-are deliberately not encrypted: they are `Decimal` columns precisely so the
-totals are exact, and turning them into ciphertext would throw that away. They
-are protected by access control instead — their own permission
-(`exhibitionOps`), which is separate from the one that edits website copy.
+The Exhibition operations section (stall costs, gold weights, exhibition leads)
+was removed from the application on 2026-10-28; nothing in the code reads or
+writes it any more.
 
 ---
 

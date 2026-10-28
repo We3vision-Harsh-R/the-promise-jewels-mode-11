@@ -957,12 +957,12 @@ indexing, and protects nothing that is not already public. The line is drawn
 at data that is NOT public and identifies a person or a deal.
 
 **Encrypted at rest (AES-256-GCM, per column):** enquiry name/email/phone/
-company/message, and exhibition lead name/company/phone/email/interest/notes.
+company/message. (Exhibition leads were encrypted too until that section was removed.)
 
 **Deliberately left readable:** published website content, and — importantly
 — money and gold weights. Those are `Decimal` columns precisely so the
 report totals are exact; ciphertext cannot be summed. They are protected by
-their own permission (`exhibitionOps`) instead.
+their own permission (the section has since been removed).
 
 `DATA_ENCRYPTION_KEY` is SEPARATE from `NOTES_ENCRYPTION_KEY` — one protects
 the owner's passwords, the other customers' contact details, and one leak
@@ -1017,8 +1017,8 @@ previously reachable only by finding the right row in a table first.
 
 ### 2026-09-13 — Exhibition operations (10 modules)
 
-Running a show, as opposed to advertising one. Full detail in
-[EXHIBITION-OPS.md](EXHIBITION-OPS.md). The three things worth knowing here:
+Running a show, as opposed to advertising one. REMOVED 2026-10-28 (see the last
+entry in this file); kept here as history. The three things worth knowing:
 
 **1. None of it is a column on `exhibitions`.** That repository reads the
 public show with `include`, not `select`, so it returns every column. A
@@ -2009,3 +2009,20 @@ Change-log entry format:
 
 If you find this file disagreeing with the code, **the code is right** — correct the file and
 note it in the change log.
+
+### 2026-10-28 — Exhibition operations removed
+
+The whole Exhibition operations section (stall, costs, leads, stock, crew,
+tasks, meetings, files, log, custom fields) was taken out: the admin screens
+(`src/features/exhibition-ops`), the API (`/exhibition-ops`,
+`server/src/modules/exhibition-ops`), the `exhibitionOps` permission, the
+`ops:check` script, the lead encryption step in `security:harden`, the lead
+check in `security:check`, and the models in `schema.prisma`.
+
+The admin "Exhibition" sidebar group is gone; **Exhibitions** (the shows the
+public website lists) moved under Management and is unchanged.
+
+The database tables were NOT dropped (nothing was run against the database, so
+whatever they hold is untouched). They are simply unused now. To drop them for
+good, run `npm run db:push` and confirm the table drops — Prisma will list them
+and refuse if they still hold rows unless told to accept the data loss.

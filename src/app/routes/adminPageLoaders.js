@@ -14,7 +14,6 @@ export const adminPageLoaders = {
   EditorPage: () => import('@/features/page-content/pages/EditorPage.jsx'),
   SectionDesignerPage: () => import('@/features/page-content/pages/SectionDesignerPage.jsx'),
   VaultPage: () => import('@/features/vault/pages/VaultPage.jsx'),
-  ExhibitionOpsPage: () => import('@/features/exhibition-ops/pages/ExhibitionOpsPage.jsx'),
   HeaderPage: () => import('@/features/page-content/pages/HeaderPage.jsx'),
   FooterPage: () => import('@/features/page-content/pages/FooterPage.jsx'),
   RingsPage: () => import('@/features/page-content/pages/RingsPage.jsx'),
@@ -48,6 +47,6 @@ const SEGMENT_TO_PAGE = {
 /** Starts fetching the code of the screen at `pathname`; a no-op for anything else. */
 export function preloadAdminPage(pathname) {
   const segment = pathname.replace(/^\/admin\/?/, '').split('/')[0]
-  const name = segment === '' ? 'DashboardPage' : segment === 'exhibitions' && /\/ops/.test(pathname) ? 'ExhibitionOpsPage' : SEGMENT_TO_PAGE[segment]
+  const name = segment === '' ? 'DashboardPage' : SEGMENT_TO_PAGE[segment]
   if (name) adminPageLoaders[name]().catch(() => {})
 }

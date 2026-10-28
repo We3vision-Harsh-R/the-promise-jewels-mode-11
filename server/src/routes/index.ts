@@ -14,7 +14,6 @@ import mediaRoutes from "../modules/media/media.routes.js";
 import pageContentRoutes from "../modules/page-content/page-content.routes.js";
 import customSectionRoutes from "../modules/page-content/custom-section.routes.js";
 import secureNotesRoutes from "../modules/secure-notes/secure-notes.routes.js";
-import exhibitionOpsRoutes from "../modules/exhibition-ops/exhibition-ops.routes.js";
 import blogRoutes from "../modules/blog/blog.routes.js";
 import rbacRoutes from "../modules/rbac/rbac.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
@@ -65,9 +64,6 @@ router.use("/sections", customSectionRoutes);
 // The owner's vault. Scoped to the signed-in account by construction —
 // see secure-notes.service.ts.
 router.use("/vault", secureNotesRoutes);
-// Running a show, as opposed to advertising one. Its own resource —
-// see exhibition-ops.routes.ts for why it is not part of "exhibitions".
-router.use("/exhibition-ops", exhibitionOpsRoutes);
 router.use("/blog", blogRoutes);
 // Roles, and the caller's own permission profile.
 router.use("/rbac", rbacRoutes);

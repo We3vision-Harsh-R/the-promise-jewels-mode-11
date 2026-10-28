@@ -81,16 +81,6 @@ export const RESOURCES: ResourceDefinition[] = [
     actions: ["view", "create", "edit", "delete"],
   },
   {
-    key: "exhibitionOps",
-    label: "Exhibition operations",
-    path: "/admin/exhibitions",
-    group: "Management",
-    description:
-      "Running a show: stall details, budget and costs, the buyers met at the stall, the crew roster, and the stock carried there and back. Held apart from Exhibitions because writing a show's website copy and seeing its margin are different levels of trust.",
-    actions: ["view", "create", "edit", "delete"],
-  },
-
-  {
     key: "inquiries",
     label: "Inquiries",
     path: "/admin/inquiries",
