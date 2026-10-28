@@ -775,7 +775,7 @@ const HOME_SECTIONS: ContentSection[] = [
     // this editor would let the two drift apart, with no way to tell which one
     // the live site was showing.
     description:
-      "The section heading. The brand rows below it are managed in Admin > Brands — add or edit a brand there and it appears here and on /our-brand automatically.",
+      "The section heading and its wording. The brand cards are managed in Admin > Brands — add or edit a brand there and it appears here and on /our-brand automatically.",
     // Sends the editor to the screen that actually owns the brand records,
     // rather than leaving them hunting for names and descriptions that are
     // deliberately not on this form.
@@ -799,6 +799,16 @@ const HOME_SECTIONS: ContentSection[] = [
         max: SHORT,
       },
       ...fade("titleBold", "Heading — bold word", "#01383B", "#3E9C86", "Heading"),
+      {
+        key: "intro",
+        label: "Line under the heading",
+        type: "textarea",
+        group: "Heading",
+        default: "The names we manufacture for and stand behind — each with its own collections and its own story.",
+        max: LONG,
+      },
+      { key: "exploreLabel", label: "Card link text", type: "text", group: "Cards", default: "Explore brand", max: SHORT },
+      { key: "allLabel", label: "Button under the cards (empty hides it)", type: "text", group: "Cards", default: "View all brands", max: SHORT },
       // The rows below the heading are brand records, not copy — but their
       // shades belong to this page, so they are set here rather than on each
       // record. One brand styled differently from the next would read as a

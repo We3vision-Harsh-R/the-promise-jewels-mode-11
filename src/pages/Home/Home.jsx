@@ -2,7 +2,7 @@ import HeroCircle from "@/pages/Home/components/Herocircle.jsx";
 import BrandsSection from "@/pages/Home/components/BrandsSection.jsx";
 import FeaturedCollections from "@/pages/Home/components/FeaturedCollections.jsx";
 import OurPillars from "@/pages/Home/components/OurPillars.jsx";
-import OurBrands from "@/pages/Home/components/OurBrands.jsx";
+import HomeBrands from "@/pages/Home/components/HomeBrands.jsx";
 import Exhibition from "@/pages/Home/components/Exhibition.jsx";
 import GrowthSection from "@/pages/Home/components/GrowthSection.jsx";
 import Footer from "@/components/common/Footer.jsx";
@@ -27,7 +27,7 @@ const SECTIONS = {
   welcome: () => <BrandsSection />,
   collections: () => <FeaturedCollections />,
   pillars: () => <OurPillars />,
-  brands: () => <OurBrands />,
+  brands: () => <HomeBrands />,
   exhibition: () => <Exhibition />,
   growth: () => <GrowthSection />,
 };
