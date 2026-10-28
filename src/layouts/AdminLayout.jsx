@@ -81,7 +81,7 @@ export default function AdminLayout() {
           time the pointer crossed the sidebar. Matches Sidebar.jsx's
           SIDEBAR_WIDTH plus its left-3 offset and a little breathing room;
           keep the two in sync if the rail width ever changes. */}
-      <div className="lg:pl-[280px]">
+      <div className="lg:pl-[260px]">
         {/* title/subtitle no longer passed to Topbar — they render below,
             at the top of the page content instead, so each page shows its
             own heading in-page rather than in the header bar. */}
