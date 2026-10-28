@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Menu, LogOut, User, Search, Bell } from 'lucide-react'
+import { Menu, LogOut, User, Search, Bell, Moon, Sun } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth.jsx'
 
 // Glass version of the pill/dropdowns — same shared tokens as the rest of
@@ -30,7 +30,7 @@ const dropdownClass = 'absolute right-0 mt-2 z-50 rounded-3xl border-0 dark-surf
 // harmlessly accepted — they are simply not destructured here, because
 // nothing in this header renders them. Say the word if that page text should
 // live somewhere else, and they can be picked back up.
-export default function Topbar({ onMenuClick }) {
+export default function Topbar({ onMenuClick, isDark, onToggleTheme }) {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -168,9 +168,15 @@ export default function Topbar({ onMenuClick }) {
         </div>
       </div>
 
-      {/* Balances the menu button's reserved width so the pill sits dead
-          center rather than drifting left. */}
-      <div className="w-8 h-8" aria-hidden="true" />
+      <button
+        type="button"
+        onClick={onToggleTheme}
+        style={PILL_GLASS}
+        className="flex h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-ink-900 transition-opacity hover:opacity-80"
+      >
+        {isDark ? <Sun size={16} strokeWidth={1.75} /> : <Moon size={16} strokeWidth={1.75} />}
+        {isDark ? 'Light theme' : 'Dark theme'}
+      </button>
     </header>
   )
 }

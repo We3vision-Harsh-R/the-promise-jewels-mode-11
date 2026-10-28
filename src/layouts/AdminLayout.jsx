@@ -67,13 +67,8 @@ export default function AdminLayout() {
     // is the styling the panel already had, so neither theme needs a second
     // stylesheet or a flash of the wrong one on load.
     <div className="admin-theme min-h-screen dashboard-bg" data-admin-theme={theme}>
-      <SidebarDesktop isDark={isDark} onToggleTheme={toggle} />
-      <SidebarMobile
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        isDark={isDark}
-        onToggleTheme={toggle}
-      />
+      <SidebarDesktop />
+      <SidebarMobile open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* The rail is a fixed 200px and never collapses now, so this padding
           is constant — it used to animate between two values in step with
@@ -85,7 +80,7 @@ export default function AdminLayout() {
         {/* title/subtitle no longer passed to Topbar — they render below,
             at the top of the page content instead, so each page shows its
             own heading in-page rather than in the header bar. */}
-        <Topbar onMenuClick={() => setMobileOpen(true)} />
+        <Topbar onMenuClick={() => setMobileOpen(true)} isDark={isDark} onToggleTheme={toggle} />
         {/* Was `max-w-[1400px]` with no `mx-auto` — on any screen wider
             than 1400px the content stayed pinned to the left and left a
             dead gap on the right (that's the bug from the screenshot).

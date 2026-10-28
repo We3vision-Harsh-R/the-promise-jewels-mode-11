@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Gem, Building2, CalendarDays, MessagesSquare, Search, Settings, X, LogOut, PenLine,
-  PanelTop, PanelBottom, CircleDot, Newspaper, Moon, Sun, Users, ShieldCheck, KeyRound, UsersRound, Radio,
+  PanelTop, PanelBottom, CircleDot, Newspaper, Users, ShieldCheck, KeyRound, UsersRound, Radio,
 } from 'lucide-react'
 import { classNames, initials } from '@/utils/helpers.js'
 import { APP_VERSION } from '@/app/config.js'
@@ -68,7 +68,7 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
       onMouseEnter={() => preloadAdminPage(to)}
       className={({ isActive }) =>
         classNames(
-          'flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[13px] transition-colors',
+          'flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] transition-colors',
           isActive ? 'bg-ink-900/[0.07] font-semibold text-ink-900' : 'font-medium text-ink-600 hover:bg-ink-900/[0.04] hover:text-ink-900'
         )
       }
@@ -89,7 +89,7 @@ function NavItems({ onNavigate }) {
   const allowed = (item) => ready && (!item.resource || canView(item.resource))
 
   return (
-    <nav className="flex-1 overflow-y-auto px-3 pb-2">
+    <nav className="flex-1 overflow-y-auto px-4 pb-4">
       {NAV.map((entry) => {
         if (!entry.items) return allowed(entry) ? <NavItem key={entry.to} {...entry} onNavigate={onNavigate} /> : null
 
@@ -97,8 +97,8 @@ function NavItems({ onNavigate }) {
         if (!items.length) return null
 
         return (
-          <div key={entry.label} className="mt-4">
-            <p className="mb-1 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-400">{entry.label}</p>
+          <div key={entry.label} className="mt-7">
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">{entry.label}</p>
             {items.map((item) => (
               <NavItem key={item.to} {...item} onNavigate={onNavigate} />
             ))}
@@ -111,7 +111,7 @@ function NavItems({ onNavigate }) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5 px-5 pb-4 pt-5">
+    <div className="flex items-center gap-3 px-6 pb-6 pt-7">
       <img src="/images/PROMISE_LOGO_skin_icon_only.webp" alt="" className="h-8 w-8 shrink-0 object-contain" />
       <div className="leading-tight">
         <p className="font-display text-[15px] text-ink-900">Promise Jewel</p>
@@ -121,31 +121,32 @@ function Brand() {
   )
 }
 
-const ICON_BUTTON = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900'
-
-function Footer({ isDark, onToggleTheme }) {
+function Footer() {
   const { user, logout } = useAuth()
   const name = user?.name || 'Admin'
 
   return (
-    <div className="flex items-center gap-2 border-t border-ink-900/[0.08] px-4 py-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brass-500/25 text-xs font-semibold text-brass-700">
+    <div className="mx-4 flex items-center gap-3 border-t border-ink-900/[0.08] py-4">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brass-500/25 text-xs font-semibold text-brass-700">
         {initials(name) || 'A'}
       </span>
-      <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-900">{name}</p>
-      {onToggleTheme && (
-        <button type="button" onClick={onToggleTheme} title={isDark ? 'Light theme' : 'Dark theme'} aria-label="Toggle theme" className={ICON_BUTTON}>
-          {isDark ? <Sun size={16} strokeWidth={1.75} /> : <Moon size={16} strokeWidth={1.75} />}
-        </button>
-      )}
-      <button onClick={logout} title="Sign out" aria-label="Sign out" className={ICON_BUTTON}>
+      <div className="min-w-0 flex-1 leading-tight">
+        <p className="truncate text-[13px] font-medium text-ink-900">{name}</p>
+        {user?.email && <p className="truncate text-[11px] text-ink-400">{user.email}</p>}
+      </div>
+      <button
+        onClick={logout}
+        title="Sign out"
+        aria-label="Sign out"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
+      >
         <LogOut size={16} strokeWidth={1.75} />
       </button>
     </div>
   )
 }
 
-export function SidebarDesktop({ isDark, onToggleTheme }) {
+export function SidebarDesktop() {
   return (
     <aside
       style={{ width: SIDEBAR_WIDTH, borderRadius: 28, ...GLASS }}
@@ -153,12 +154,12 @@ export function SidebarDesktop({ isDark, onToggleTheme }) {
     >
       <Brand />
       <NavItems />
-      <Footer isDark={isDark} onToggleTheme={onToggleTheme} />
+      <Footer />
     </aside>
   )
 }
 
-export function SidebarMobile({ open, onClose, isDark, onToggleTheme }) {
+export function SidebarMobile({ open, onClose }) {
   return (
     <>
       <div
@@ -180,7 +181,7 @@ export function SidebarMobile({ open, onClose, isDark, onToggleTheme }) {
         </button>
         <Brand />
         <NavItems onNavigate={onClose} />
-        <Footer isDark={isDark} onToggleTheme={onToggleTheme} />
+        <Footer />
       </aside>
     </>
   )
