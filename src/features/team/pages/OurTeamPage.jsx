@@ -8,8 +8,8 @@ import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { typeStyle } from '@/features/page-content/typeStyle.js'
 import { HERO_BASE } from '@/components/layout/heroContent.js'
 import { useSeoMeta } from '@/features/seo/hooks/useSeoMeta.js'
-import MemberCard from '@/features/team/components/MemberCard.jsx'
-import usePublicTeam from '@/features/team/hooks/usePublicTeam.js'
+import TeamGrid, { TEAM_CARD_WIDTH } from '@/features/team/components/TeamGrid.jsx'
+import useTeamSection from '@/features/team/hooks/useTeamSection.js'
 import CategoryTabs from '@/features/team/components/CategoryTabs.jsx'
 import { DEFAULT_CATEGORY } from '@/features/team/categories.js'
 import useReveal from '@/hooks/useReveal.js'
@@ -31,11 +31,13 @@ const MEMBERS_TEXT = {
   headingLight: 'Meet the',
   headingBold: 'Team',
   emptyText: 'Our team will be introduced here soon.',
+  // People whose eye is closed for this page in the Editor.
+  hiddenIds: '',
 }
 
 function Members() {
   const text = useSectionContent('team', 'members', MEMBERS_TEXT)
-  const { members: everyone, loading } = usePublicTeam()
+  const { members: everyone, loading } = useTeamSection('all', text.hiddenIds)
   const [category, setCategory] = useState(DEFAULT_CATEGORY)
   // Promise Jewels / Netram: each tab lists the people filed under it.
   const members = useMemo(() => everyone.filter((member) => member.category === category), [everyone, category])
@@ -64,23 +66,19 @@ function Members() {
         <CategoryTabs value={category} onChange={setCategory} label="Team by company" />
       </div>
 
-      <div key={category} className="mx-auto w-full max-w-[1200px] [animation:pj-tab-in_0.45s_ease_both]">
+      <div key={category} className="[animation:pj-tab-in_0.45s_ease_both]">
         {loading ? (
-          <div className="flex flex-wrap justify-center gap-[26px] max-[991px]:gap-[20px] max-[479px]:gap-[12px]" aria-hidden="true">
+          <div className="mx-auto flex w-full max-w-[1320px] flex-wrap justify-center gap-[28px]" aria-hidden="true">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="w-[calc((100%-78px)/4)] max-[1199px]:w-[calc((100%-52px)/3)] max-[991px]:w-[calc((100%-20px)/2)] max-[479px]:w-[calc((100%-12px)/2)] animate-pulse rounded-[26px] bg-[#EEF4F3] [aspect-ratio:3/4] max-[479px]:rounded-[18px]" />
+              <div key={index} className={TEAM_CARD_WIDTH}>
+                <div className="w-full animate-pulse rounded-[26px] bg-[#EEF4F3] [aspect-ratio:3/4]" />
+              </div>
             ))}
           </div>
         ) : members.length === 0 ? (
           <p className="m-0 py-[40px] text-center font-ticker text-[1.05rem] text-[#2F6B6B]">{text.emptyText}</p>
         ) : (
-          // Centred, so a team of three or five sits in the middle of the page
-          // rather than leaving an empty column on the right.
-          <div className="flex flex-wrap justify-center gap-[26px] max-[991px]:gap-[20px] max-[479px]:gap-[12px]">
-            {members.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </div>
+          <TeamGrid members={members} className="!px-0" />
         )}
       </div>
     </section>

@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
 import useReveal from "@/hooks/useReveal.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
-import usePublicTeam from "@/features/team/hooks/usePublicTeam.js";
-import MemberCard from "@/features/team/components/MemberCard.jsx";
+import useTeamSection from "@/features/team/hooks/useTeamSection.js";
+import TeamGrid from "@/features/team/components/TeamGrid.jsx";
 import CategoryTabs from "@/features/team/components/CategoryTabs.jsx";
 import { DEFAULT_CATEGORY } from "@/features/team/categories.js";
 
@@ -12,6 +12,8 @@ const TEAM_TEXT = {
   heading: "Meet Our Team",
   headingColor: "#01383B",
   emptyText: "Our team will be introduced here soon.",
+  // People whose eye is closed for this section in the Editor.
+  hiddenIds: "",
 };
 
 /**
@@ -21,14 +23,14 @@ const TEAM_TEXT = {
  */
 export default function MeetOurTeam() {
   const text = useSectionContent("about", "team", TEAM_TEXT);
-  const { members, loading } = usePublicTeam();
+  const { members, loading } = useTeamSection("team", text.hiddenIds);
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const sectionRef = useRef(null);
 
   useReveal(sectionRef);
 
   const people = useMemo(
-    () => members.filter((member) => member.kind === "team" && member.category === category),
+    () => members.filter((member) => member.category === category),
     [members, category]
   );
 
@@ -54,14 +56,11 @@ export default function MeetOurTeam() {
 
       <CategoryTabs value={category} onChange={setCategory} label="Team by company" />
 
-      <div
-        key={category}
-        className="mx-auto flex w-full max-w-[1200px] flex-wrap justify-center gap-[26px] px-[8%] [animation:pj-tab-in_0.45s_ease_both] max-[991px]:gap-[20px] max-[479px]:gap-[12px] max-[479px]:px-[6%]"
-      >
+      <div key={category} className="[animation:pj-tab-in_0.45s_ease_both]">
         {people.length === 0 && !loading ? (
           <p className="m-0 py-[30px] text-center font-ticker text-[1.05rem] text-[#2F6B6B]">{text.emptyText}</p>
         ) : (
-          people.map((member) => <MemberCard key={member.id} member={member} />)
+          <TeamGrid members={people} />
         )}
       </div>
     </section>

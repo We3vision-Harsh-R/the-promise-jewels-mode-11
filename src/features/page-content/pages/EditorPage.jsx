@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowDown,
@@ -33,7 +33,7 @@ import {
 import { uploadAsset } from '@/features/media/media.api.js'
 import { Can } from '@/features/rbac/usePermissions.jsx'
 import TeamManager from '@/features/team/pages/TeamPage.jsx'
-import TeamPicker from '@/features/team/components/TeamPicker.jsx'
+import TeamVisibility from '@/features/team/components/TeamVisibility.jsx'
 import BrandTeamsControl from '@/features/brands/components/BrandTeamsControl.jsx'
 import { ChoiceInput, FramesPicker, RingFrameControl } from '@/features/rings/components/RingControls.jsx'
 import { classNames } from '@/utils/helpers.js'
@@ -50,6 +50,10 @@ import { classNames } from '@/utils/helpers.js'
 //   2. work down its sections — each is a card of labelled inputs
 //   3. Save writes the whole page in one transaction and it is live at once
 //   4. clearing a field puts the copy the site shipped with back
+// The last answer for each page, so going back to a tab shows it at once while a
+// fresh copy is fetched behind it. Emptied for a page when it is saved.
+const pageCache = new Map()
+
 /**
  * @param area     When set, this screen edits ONE area (e.g. "header") and the
  *                 page tab bar is not rendered. Used by the Header and Footer
@@ -116,27 +120,49 @@ export default function EditorPage({
     }
   }, [area, notify])
 
+  // Which page the screen is on, and whether there are unsaved edits — read
+  // when an answer arrives late, so it can never land on the wrong page or
+  // overwrite what someone has started typing.
+  const latestPage = useRef(null)
+  const editedRef = useRef(false)
+
+  const applyPage = useCallback((data) => {
+    const flat = flatten(data.values)
+
+    setSchema(data)
+    setDraft(flat)
+    setSaved(flat)
+    setLayout(data.layout ?? [])
+    setSavedLayout(data.layout ?? [])
+  }, [])
+
   const loadPage = useCallback(
     async (page) => {
       if (!page) return
 
-      setLoading(true)
+      latestPage.current = page
+
+      // Seen before: show it now, then refresh quietly.
+      const cached = pageCache.get(page)
+      if (cached) {
+        applyPage(cached)
+        setLoading(false)
+      } else {
+        setLoading(true)
+      }
+
       try {
         const data = await editorService.getPage(page)
-        const flat = flatten(data.values)
+        pageCache.set(page, data)
 
-        setSchema(data)
-        setDraft(flat)
-        setSaved(flat)
-        setLayout(data.layout ?? [])
-        setSavedLayout(data.layout ?? [])
+        if (latestPage.current === page && !(cached && editedRef.current)) applyPage(data)
       } catch (err) {
-        notify(err.message || 'Failed to load that page.', { tone: 'error' })
+        if (latestPage.current === page) notify(err.message || 'Failed to load that page.', { tone: 'error' })
       } finally {
-        setLoading(false)
+        if (latestPage.current === page) setLoading(false)
       }
     },
-    [notify]
+    [notify, applyPage]
   )
 
   // A pinned area is a prop, not state — deriving it keeps the extra render
@@ -168,10 +194,12 @@ export default function EditorPage({
         )
         setLayout(next)
         setSavedLayout(next)
+        pageCache.delete(schema.key)
       }
 
       if (copyDirty) {
         const data = await editorService.updatePage(schema.key, unflatten(draft))
+        pageCache.set(schema.key, data)
         const flat = flatten(data.values)
 
         setSchema(data)
@@ -254,6 +282,10 @@ export default function EditorPage({
     )
 
   const dirty = copyDirty || layoutDirty
+
+  useEffect(() => {
+    editedRef.current = dirty
+  }, [dirty])
 
   /**
    * The section cards, in the order the live page shows them.
@@ -649,8 +681,8 @@ function FieldControl({ section, field, value, draft, palette, fonts, weights, l
     )
   }
 
-  if (field.type === 'team') {
-    return <TeamPicker value={value} disabled={disabled} onChange={set} />
+  if (field.type === 'teamvis') {
+    return <TeamVisibility value={value} kind={field.kind} disabled={disabled} onChange={set} />
   }
 
   if (field.type === 'color') {
@@ -960,7 +992,7 @@ function FieldRun({ run, section, draft, controlProps }) {
                 key={block.field.key}
                 label={block.field.label}
                 hint={block.field.hint}
-                className={['number', 'team', 'ringframe', 'frames', 'choice', 'brandteams'].includes(block.field.type) ? 'md:col-span-2' : undefined}
+                className={['number', 'teamvis', 'ringframe', 'frames', 'choice', 'brandteams'].includes(block.field.type) ? 'md:col-span-2' : undefined}
               >
                 <FieldControl
                   section={section}

@@ -9,7 +9,7 @@ import usePublicBrands from '@/features/brands/hooks/usePublicBrands.js'
 import usePublicCollections from '@/features/collections/hooks/usePublicCollections.js'
 import useSectionContent from '@/features/page-content/hooks/usePageContent.js'
 import { typeStyle } from '@/features/page-content/typeStyle.js'
-import MemberCard from '@/features/team/components/MemberCard.jsx'
+import TeamGrid from '@/features/team/components/TeamGrid.jsx'
 import usePublicTeam from '@/features/team/hooks/usePublicTeam.js'
 import usePublicSettings from '@/features/settings/hooks/usePublicSettings.js'
 import useReveal from '@/hooks/useReveal.js'
@@ -256,10 +256,8 @@ export default function BrandDetailPage() {
               </p>
             ) : null}
           </div>
-          <div className="mx-auto mt-[44px] flex w-full max-w-[1200px] flex-wrap justify-center gap-[26px] max-[991px]:gap-[20px] max-[479px]:gap-[12px]">
-            {team.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
+          <div className="mt-[44px]">
+            <TeamGrid members={team} className="!px-0" />
           </div>
         </Band>
       )}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import * as brandService from '@/features/brands/brand.api.js'
-import TeamPicker from '@/features/team/components/TeamPicker.jsx'
+import TeamVisibility from '@/features/team/components/TeamVisibility.jsx'
 
 // For each brand, which people from Our Team stand behind it. Stored as one
 // JSON object, { brandId: "personId,personId" }, so a brand added tomorrow needs
@@ -50,10 +50,11 @@ export default function BrandTeamsControl({ value, disabled, onChange }) {
       {brands.map((brand) => (
         <div key={brand.id} className="rounded-xl border border-ink-100 bg-white p-3">
           <p className="m-0 mb-2 text-sm font-semibold text-emerald-600">{brand.name}</p>
-          <TeamPicker
+          <TeamVisibility
             value={chosen[brand.id] || ''}
             disabled={disabled}
-            emptyMeans="nobody"
+            mode="show"
+            kind="all"
             onChange={(ids) => change(brand.id, ids)}
           />
         </div>

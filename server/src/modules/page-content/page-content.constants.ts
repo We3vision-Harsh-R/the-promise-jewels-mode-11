@@ -41,6 +41,12 @@ export type FieldType =
   | "frames"
   /** Which team members stand behind each brand: JSON of { brandId: "id,id" }. */
   | "brandteams"
+  /**
+   * The people one section shows, as an eye per person. Stored as the ids whose
+   * eye is CLOSED (hidden from this section), so a person added later shows up
+   * everywhere until someone closes their eye.
+   */
+  | "teamvis"
   /** A plain number — a speed, a count, a percentage. */
   | "number"
   /** One of the brand's typefaces, applied to a single piece of copy. */
@@ -64,6 +70,8 @@ export interface ContentField {
   max: number;
   /** Kept in the schema (so it is saved and validated) but not drawn as its own control. */
   hidden?: boolean;
+  /** teamvis only: which people the section can show — "leader", "team" or "all". */
+  kind?: "leader" | "team" | "all";
   /** choice only: the allowed values. */
   options?: { value: string; label: string }[];
   /** number only: the range the slider covers and what the value is measured in. */
@@ -1025,6 +1033,7 @@ const ABOUT_SECTIONS: ContentSection[] = [
     description:
       "The leaders shown on the About page, with a Promise Jewels / Netram switch. People, photographs, order and visibility are managed under Our Team (set a person's group to \"Leader\" and choose their company).",
     fields: [
+      { key: "hiddenIds", label: "Leaders shown in this section", type: "teamvis", kind: "leader", default: "", hint: "Open eye: shown here. Closed eye: hidden from this section only (still shown elsewhere).", max: 2000 },
       { key: "emptyText", label: "Message when a company has no leaders yet", type: "textarea", default: "Our leaders will be introduced here soon.", max: LONG },
       { key: "heading", label: "Section heading", type: "text", default: "Our Leaders", max: MEDIUM },
       colour("headingColor", "Section heading", "#01383B"),
@@ -1040,6 +1049,7 @@ const ABOUT_SECTIONS: ContentSection[] = [
       "The team members shown on the About page, with a Promise Jewels / Netram switch. People, photographs, order and visibility are managed under Our Team (set a person's group to \"Team member\" and choose their company).",
     manage: { label: "Manage people under Our Team", path: "/admin/team" },
     fields: [
+      { key: "hiddenIds", label: "Team members shown in this section", type: "teamvis", kind: "team", default: "", hint: "Open eye: shown here. Closed eye: hidden from this section only (still shown elsewhere).", max: 2000 },
       { key: "heading", label: "Section heading", type: "text", default: "Meet Our Team", max: MEDIUM },
       colour("headingColor", "Section heading", "#01383B"),
       { key: "emptyText", label: "Message when a company has no team members yet", type: "textarea", default: "Our team will be introduced here soon.", max: LONG },
@@ -1359,6 +1369,7 @@ const TEAM_SECTIONS: ContentSection[] = [
       "The heading above the photographs, and the people themselves — add, edit, hide, reorder or delete a person, with their photograph, name, role, company (Promise Jewels / Netram) and group (leader or team member), right here.",
     embed: "team",
     fields: [
+      { key: "hiddenIds", label: "People shown on this page", type: "teamvis", kind: "all", default: "", hint: "Open eye: shown on this page. Closed eye: hidden from this page only (still shown elsewhere).", max: 2000 },
       ...typed({ key: "headingLight", label: "Heading — first word", type: "text", default: "Meet the", max: MEDIUM }),
       ...typed({ key: "headingBold", label: "Heading — bold word", type: "text", default: "Team", max: MEDIUM }),
       {
@@ -1416,7 +1427,7 @@ const BRAND_DETAIL_SECTIONS: ContentSection[] = [
     key: "team",
     label: "Team on each brand's page",
     description:
-      "For each brand, tick the people from Our Team who appear on its page. A brand with nobody ticked shows no team section.",
+      "For each brand, open the eye of the people from Our Team who appear on its page. A brand with every eye closed shows no team section.",
     manage: { label: "Add or edit team members", path: "/admin/editor" },
     fields: [
       { key: "byBrand", label: "People shown on each brand's page", type: "brandteams", default: "{}", max: 4000 },

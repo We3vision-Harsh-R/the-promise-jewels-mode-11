@@ -107,8 +107,16 @@ export function getContentVersion(): number {
   return contentVersion;
 }
 
+/** Other in-memory caches that must be emptied whenever this one is (every save). */
+const clearListeners = new Set<() => void>();
+
+export function onPublicCacheCleared(listener: () => void): void {
+  clearListeners.add(listener);
+}
+
 export function clearPublicCache(): void {
   contentVersion = Date.now();
+  clearListeners.forEach((listener) => listener());
 
   for (const [key, entry] of store) {
     if (entry.hits > 0) toRewarm.add(key);

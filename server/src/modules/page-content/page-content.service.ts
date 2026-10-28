@@ -1,4 +1,6 @@
+import { logger } from "../../utils/logger.js";
 import pageContentRepository from "./page-content.repository.js";
+import { onPublicCacheCleared } from "../../middleware/publicCache.middleware.js";
 import { getLayout } from "./page-layout.service.js";
 import { ApiError } from "../../utils/ApiError.js";
 import {
@@ -81,6 +83,10 @@ function styleValueProblem(
     return /^\d{1,2}(,\d{1,2}){0,29}$/.test(value) ? null : "must be photo numbers separated by commas";
   }
 
+  if (type === "teamvis") {
+    return /^[A-Za-z0-9-]{1,64}(,[A-Za-z0-9-]{1,64}){0,199}$/.test(value) ? null : "is not a valid list of people";
+  }
+
   if (type === "brandteams") {
     try {
       const parsed = JSON.parse(value);
@@ -122,6 +128,27 @@ function assertPage(key: string): ContentPage {
 
   return page;
 }
+
+/** An Editor page, as last read, until something is saved. */
+const adminPageCache = new Map<string, { data: unknown; expiresAt: number }>();
+const ADMIN_PAGE_TTL_MS = 10 * 60_000;
+
+/** Pages the Editor has asked for, so they can be read again in the background after a save. */
+const requestedPages = new Set<string>();
+let rewarmTimer: NodeJS.Timeout | null = null;
+
+onPublicCacheCleared(() => {
+  adminPageCache.clear();
+
+  // Someone is editing: a few seconds after the last save, read the pages they
+  // had open again, one after another, so the next tab they click is ready too.
+  if (rewarmTimer) clearTimeout(rewarmTimer);
+  rewarmTimer = setTimeout(() => {
+    rewarmTimer = null;
+    void warmAdminPages([...requestedPages]);
+  }, 4_000);
+  rewarmTimer.unref();
+});
 
 class PageContentService {
   /**
@@ -174,8 +201,19 @@ class PageContentService {
    */
   async getAdmin(pageKey: string) {
     const page = assertPage(pageKey);
+    requestedPages.add(page.key);
 
-    return {
+    // The same answer for everyone until something is saved, so it is kept in
+    // memory and emptied the moment any save goes through (see publicCache).
+    // Opening a tab again — or someone else opening it — costs no database trip.
+    const cached = adminPageCache.get(page.key);
+    if (cached && cached.expiresAt > Date.now()) return cached.data;
+
+    // The values and the arrangement are independent, so they are fetched
+    // together: one trip to the database instead of two in a row.
+    const [values, layout] = await Promise.all([this.valuesFor(page), getLayout(page.key)]);
+
+    const data = {
       key: page.key,
       label: page.label,
       path: page.path,
@@ -196,13 +234,16 @@ class PageContentService {
         fontSize: { min: FONT_SIZE_MIN, max: FONT_SIZE_MAX },
         spacing: { min: LETTER_SPACING_MIN, max: LETTER_SPACING_MAX },
       },
-      values: await this.valuesFor(page),
+      values,
       // The saved arrangement travels with the schema rather than being
       // fetched separately: the Editor lists its section cards in this order,
       // so arriving a request later would show the cards in one order and
       // then shuffle them.
-      layout: await getLayout(page.key),
+      layout,
     };
+
+    adminPageCache.set(page.key, { data, expiresAt: Date.now() + ADMIN_PAGE_TTL_MS });
+    return data;
   }
 
   /**
@@ -270,4 +311,21 @@ class PageContentService {
   }
 }
 
-export default new PageContentService();
+const service = new PageContentService();
+
+/**
+ * Reads Editor pages into memory one at a time, so the first click on a tab is
+ * answered from memory too. Runs in the background after the server starts and
+ * after saves; the database connection pool is small, so never in parallel.
+ */
+export async function warmAdminPages(keys: string[] = CONTENT_PAGES.map((page) => page.key)): Promise<void> {
+  for (const key of keys) {
+    try {
+      await service.getAdmin(key);
+    } catch (error) {
+      logger.warn(`[page-content] warming "${key}" failed: ${(error as Error).message}`);
+    }
+  }
+}
+
+export default service;

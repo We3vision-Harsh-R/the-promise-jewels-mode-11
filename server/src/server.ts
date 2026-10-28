@@ -9,6 +9,7 @@ import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { startKeepAlive } from "./jobs/keepAlive.js";
 import { warmPublicCache } from "./middleware/publicCache.middleware.js";
+import { warmAdminPages } from "./modules/page-content/page-content.service.js";
 import { describeAdminNetwork } from "./middleware/adminNetwork.middleware.js";
 import { startAdminNetworkRefresh } from "./modules/admin-network/admin-network.service.js";
 import { startVisitorTracking } from "./modules/visitors/visitor.service.js";
@@ -79,6 +80,8 @@ const httpServer = app.listen(env.PORT, () => {
   // Fills the public cache now, so the first visitor after a restart is not
   // the one who waits on the database.
   warmPublicCache(env.PORT);
+  // The Editor's pages too, so opening a tab in the admin panel is answered from memory.
+  void warmAdminPages();
 
   // Say, every time, whether the admin panel is closed to the internet.
   // The saved list is still being read at this moment; say what is known now.
