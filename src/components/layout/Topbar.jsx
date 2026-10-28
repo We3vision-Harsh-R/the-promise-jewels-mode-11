@@ -55,18 +55,26 @@ export default function Topbar({ onMenuClick, isDark, onToggleTheme }) {
     // the header itself above that stacking context fixes it; the two
     // dropdown panels also get z-50 below as a second safety net.
     <header
-      className="relative z-30 grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 py-3"
+      className="relative z-30 grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 py-3"
     >
-      {/* lg:invisible (not lg:hidden) so this still reserves its box on
-          desktop — keeps the pill perfectly centered at every breakpoint,
-          balanced by the matching spacer on the right. */}
-      <button
-        onClick={onMenuClick}
-        className="lg:invisible justify-self-start rounded-md p-1.5 text-ink-600 hover:text-ink-900 hover:bg-white/10"
-        aria-label="Open menu"
-      >
-        <Menu size={20} />
-      </button>
+      <div className="flex items-center gap-2 justify-self-start">
+        <button
+          onClick={onMenuClick}
+          className="rounded-md p-1.5 text-ink-600 hover:bg-white/10 hover:text-ink-900 lg:hidden"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          style={PILL_GLASS}
+          className="flex h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-ink-900 transition-opacity hover:opacity-80"
+        >
+          {isDark ? <Sun size={16} strokeWidth={1.75} /> : <Moon size={16} strokeWidth={1.75} />}
+          {isDark ? 'Light theme' : 'Dark theme'}
+        </button>
+      </div>
 
       <div className="flex justify-center">
         {/* Single pill housing all three controls — same gradient + capsule
@@ -168,15 +176,7 @@ export default function Topbar({ onMenuClick, isDark, onToggleTheme }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onToggleTheme}
-        style={PILL_GLASS}
-        className="flex h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-ink-900 transition-opacity hover:opacity-80"
-      >
-        {isDark ? <Sun size={16} strokeWidth={1.75} /> : <Moon size={16} strokeWidth={1.75} />}
-        {isDark ? 'Light theme' : 'Dark theme'}
-      </button>
+      <div aria-hidden="true" />
     </header>
   )
 }
