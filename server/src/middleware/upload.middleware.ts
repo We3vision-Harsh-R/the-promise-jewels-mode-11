@@ -33,8 +33,14 @@ const ALLOWED_TYPES = [
   "image/svg+xml",
 ];
 
+// Browsers and phones label pictures inconsistently ("image/jpg", "image/pjpeg",
+// "image/x-png", or nothing at all for .jfif). Anything that is not clearly some
+// other kind of file is let through to the byte check, which decides the real type.
+const looksLikeImage = (type: string) =>
+  ALLOWED_TYPES.includes(type) || /^image\//.test(type) || type === "" || type === "application/octet-stream";
+
 const fileFilter: multer.Options["fileFilter"] = (_req, file, callback) => {
-  if (!ALLOWED_TYPES.includes(file.mimetype)) {
+  if (!looksLikeImage(file.mimetype)) {
     return callback(
       new ApiError(400, "Only JPG, PNG, WEBP and SVG images are allowed"),
     );
@@ -47,7 +53,7 @@ const LIMITS = {
   fileSize: 5 * 1024 * 1024,
   // A ceiling on the WHOLE request, not just one part. Without it, "10 files
   // at 5MB" is a 50MB allocation in process memory from a single request.
-  files: 12,
+  files: 14,
   // Non-file fields are small by nature; a multipart body claiming thousands
   // of them is not a form submission.
   fields: 40,
@@ -133,12 +139,15 @@ export const uploadBrandImages: RequestHandler[] = [
   optimiseUploads,
 ];
 
-// Collection: banner (1), gallery (up to 10)
+// Collection: its gallery (up to 10), plus the logo and picture of its brand
+// (stored on the brand), and the older single banner.
 export const uploadCollectionImages: RequestHandler[] = [
   uploadLimiter,
   handleUploadErrors(
     upload.fields([
       { name: "banner", maxCount: 1 },
+      { name: "brandLogo", maxCount: 1 },
+      { name: "brandImage", maxCount: 1 },
       { name: "images", maxCount: 10 },
     ]),
   ),

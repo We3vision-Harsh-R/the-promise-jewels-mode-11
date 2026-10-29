@@ -124,6 +124,48 @@ async listAdmin(query: CollectionListQuery) {
     );
   }
 
+  /**
+   * The brand's logo and picture are uploaded from the collection form, but they
+   * belong to the brand: they are stored in the brands bucket and written to the
+   * brand's own row, so the Home and Our Brand pages pick them up unchanged.
+   */
+  private async saveBrandImages(brandId: string, files: MulterFiles) {
+    const logo = files?.brandLogo?.[0];
+    const image = files?.brandImage?.[0];
+
+    if (!logo && !image) return;
+
+    const brand = await brandRepository.findById(brandId);
+    const data: Record<string, unknown> = { updatedAt: new Date() };
+    const stale: Array<string | null | undefined> = [];
+
+    const put = (file: Express.Multer.File, folder: "logos" | "banners") =>
+      storageService.uploadFile(
+        STORAGE_BUCKETS.BRANDS,
+        `${folder}/${brandId}/${Date.now()}-${file.originalname}`,
+        file.buffer,
+        file.mimetype,
+      );
+
+    if (logo) {
+      data.logoUrl = await put(logo, "logos");
+      stale.push(brand?.logoUrl);
+    }
+
+    if (image) {
+      data.bannerUrl = await put(image, "banners");
+      stale.push(brand?.bannerUrl);
+    }
+
+    await brandRepository.update(brandId, data);
+
+    for (const url of stale) {
+      if (!url) continue;
+      const path = storageService.extractPathFromUrl(url, STORAGE_BUCKETS.BRANDS);
+      if (path) await storageService.deleteFileSafe(STORAGE_BUCKETS.BRANDS, path);
+    }
+  }
+
   private async deleteCollectionFile(url?: string | null) {
     if (!url) return;
 
@@ -144,6 +186,8 @@ async listAdmin(query: CollectionListQuery) {
 
     const uploadedBannerUrl = banner ? await this.uploadCollectionFile(banner, "banners") : null;
 
+    let createdId: string | undefined;
+
     try {
       const collection = await collectionRepository.create({
         id: generateId(),
@@ -163,6 +207,8 @@ async listAdmin(query: CollectionListQuery) {
         updatedAt: new Date(),
       });
 
+      createdId = collection.id;
+
       if (gallery.length) {
         const galleryData = await Promise.all(
           gallery.map(async (file, index) => ({
@@ -177,6 +223,8 @@ async listAdmin(query: CollectionListQuery) {
         await collectionRepository.addImages(galleryData);
       }
 
+      await this.saveBrandImages(input.brandId, files);
+
       await seoService.createDefaultSeo({
         displayName: collection.name,
         slug: collection.slug,
@@ -186,7 +234,10 @@ async listAdmin(query: CollectionListQuery) {
 
       return collectionRepository.findById(collection.id);
     } catch (error) {
+      // Nothing is left half-made: a failed upload must not leave a collection
+      // row (or its banner) behind that the admin never saw succeed.
       await this.deleteCollectionFile(uploadedBannerUrl);
+      if (createdId) await collectionRepository.delete(createdId).catch(() => undefined);
       throw error;
     }
   }
@@ -240,6 +291,8 @@ async listAdmin(query: CollectionListQuery) {
 
       await collectionRepository.addImages(galleryData);
     }
+
+    await this.saveBrandImages(updatedCollection.brandId, files);
 
     await seoService.updateByEntity(
       SeoEntityType.COLLECTION,

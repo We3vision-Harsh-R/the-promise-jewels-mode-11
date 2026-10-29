@@ -121,26 +121,12 @@ export function verifyUploads(
       );
     }
 
-    // The claim has to match the content. A PNG renamed and relabelled as a
-    // WEBP is harmless; an SVG full of script relabelled as a PNG is not,
-    // because it would skip the scrubbing below and then be served with a
-    // Content-Type the browser is willing to sniff past.
-    if (file.mimetype !== actual) {
-      logSecurityEvent("upload.rejected", {
-        reason: "declared type does not match content",
-        claimed: file.mimetype,
-        actual,
-        field: file.fieldname,
-        ip: req.ip,
-      });
-
-      return next(
-        new ApiError(
-          400,
-          "That file's contents do not match the type it was sent as.",
-        ),
-      );
-    }
+    // The file's own bytes decide its type; the label the browser attached is
+    // only a claim. A JPEG saved with a .png name used to be refused here, which
+    // is a common reason a normal photo "would not upload". The stored type is
+    // now the real one, so an SVG full of script can never pass as a PNG: it is
+    // detected as SVG and scrubbed below.
+    file.mimetype = actual;
 
     if (isSvg(actual)) {
       // Replaced, not merely checked. Every caller downstream — media,
