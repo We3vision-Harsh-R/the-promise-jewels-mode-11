@@ -1,13 +1,14 @@
 import MemberCard from '@/features/team/components/MemberCard.jsx'
 
-/** The width of one card: large enough to read a face and a name, never wider than the screen. */
-export const TEAM_CARD_WIDTH = 'w-[300px] max-w-full max-[639px]:w-[340px]'
+/** Equal-width cards: four across on a desktop, two on a tablet, one on a phone (gap is 28px). */
+export const TEAM_CARD_WIDTH =
+  'w-[calc((100%-84px)/4)] max-[1099px]:w-[calc((100%-28px)/2)] max-[639px]:w-full max-[639px]:max-w-[340px]'
 
 /**
  * Every team section on the site — Our Leaders, Meet Our Team, the Our Team
  * page, a brand's team — draws its people through this, so a profile looks the
- * same wherever it appears. Cards are large, sit in as many columns as fit, and
- * stay centred when there are only one or two.
+ * same wherever it appears. Cards are equal width, four to a row on a desktop, and
+ * stay centred when there are fewer.
  */
 export default function TeamGrid({ members, className = '' }) {
   return (
