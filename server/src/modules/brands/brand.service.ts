@@ -135,6 +135,8 @@ async listAdmin(query: BrandListQuery) {
     const banner = files?.banner?.[0];
     const gallery = files?.images ?? [];
 
+    if (!logo) throw new ApiError(400, "Please upload the brand logo.");
+
     const uploadedLogoUrl = logo
       ? await this.uploadBrandFile(logo, "logos")
       : null;

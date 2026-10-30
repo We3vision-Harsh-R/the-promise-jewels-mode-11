@@ -10,11 +10,12 @@ import Badge from '@/components/ui/Badge.jsx'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmDialog from '@/components/feedback/ConfirmDialog.jsx'
 import { Field, Input, Textarea } from '@/components/forms/Field.jsx'
+import ImageDrop from '@/components/forms/ImageDrop.jsx'
 import { debounce } from '@/utils/debounce.js'
 
-// A brand is added with just a name and a description. Its logo and picture are
-// uploaded from Admin > Collections, where the brand is chosen.
-const EMPTY = { name: '', description: '' }
+// A brand is a name, a description and a logo (required). Its larger picture can
+// still be set from Admin > Collections, where the brand is chosen.
+const EMPTY = { name: '', description: '', logoFile: null, logoUrl: '' }
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
@@ -62,19 +63,24 @@ export default function BrandsPage() {
 
   function openEdit(row) {
     setEditing(row)
-    setForm({ name: row.name, description: row.description || '' })
+    setForm({ ...EMPTY, name: row.name, description: row.description || '', logoUrl: row.logoUrl || '' })
     setModalOpen(true)
   }
 
   async function handleSave(e) {
     e.preventDefault()
+    if (!form.logoUrl) {
+      notify('Please upload the brand logo.', { tone: 'error' })
+      return
+    }
     setSaving(true)
     try {
+      const payload = { name: form.name, description: form.description, logo: form.logoFile || undefined }
       if (editing) {
-        await brandService.updateBrand(editing.id, { name: form.name, description: form.description })
+        await brandService.updateBrand(editing.id, payload)
       } else {
         // A new brand goes to the end of the website list.
-        await brandService.createBrand({ name: form.name, description: form.description, displayOrder: rows.length })
+        await brandService.createBrand({ ...payload, displayOrder: rows.length })
       }
 
       notify(editing ? 'Brand updated.' : 'Brand created.')
@@ -87,7 +93,13 @@ export default function BrandsPage() {
     }
   }
 
+  function pickLogo([file]) {
+    if (form.logoFile) URL.revokeObjectURL(form.logoUrl)
+    setForm((f) => ({ ...f, logoFile: file, logoUrl: URL.createObjectURL(file) }))
+  }
+
   function closeModal() {
+    if (form.logoFile) URL.revokeObjectURL(form.logoUrl)
     setModalOpen(false)
     setEditing(null)
     setForm(EMPTY)
@@ -218,6 +230,15 @@ export default function BrandsPage() {
               minLength={10}
               required
             />
+          </Field>
+
+          <Field label="Brand logo" required hint={form.logoUrl ? 'Pick another image to change the logo.' : 'Required.'}>
+            {form.logoUrl && (
+              <div className="mb-2 flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl border border-ink-100 bg-white">
+                <img src={form.logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain p-2" />
+              </div>
+            )}
+            <ImageDrop label={form.logoUrl ? 'Click or drop to change the logo' : 'Click or drop the logo'} onFiles={pickLogo} />
           </Field>
         </form>
       </Modal>
