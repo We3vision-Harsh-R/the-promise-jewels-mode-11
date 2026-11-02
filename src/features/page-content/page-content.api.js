@@ -45,3 +45,20 @@ export function saveLayout(page, sections) {
 export function getPublicLayout(page) {
   return request(`/page-content/public/${page}/layout`)
 }
+
+// ---- Publish & lock: freeze everything the Editor controls ----
+
+/** Admin: { locked, lockedAt, lockedBy, version }. */
+export function getLockStatus() {
+  return request('/admin/site-lock')
+}
+
+/** Admin: publishes the content as a new version and locks the Editor. */
+export function lockEditor() {
+  return request('/admin/site-lock/lock', { method: 'POST' })
+}
+
+/** Admin: lifts the lock so the content can be edited again. */
+export function unlockEditor() {
+  return request('/admin/site-lock/unlock', { method: 'POST' })
+}

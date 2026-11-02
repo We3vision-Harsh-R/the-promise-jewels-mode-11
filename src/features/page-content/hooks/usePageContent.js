@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPublicPage } from '@/features/page-content/page-content.api.js'
-import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
+import { getSiteSnapshot, registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Editable copy for the public website.
 //
@@ -26,7 +26,9 @@ function loadPage(page) {
   if (cache.has(page)) return Promise.resolve(cache.get(page))
 
   if (!inFlight.has(page)) {
-    const promise = getPublicPage(page)
+    // Locked Editor: the page is already in the snapshot — no request of its own.
+    const promise = getSiteSnapshot()
+      .then((snapshot) => (snapshot.locked ? snapshot.pages?.[page] : getPublicPage(page)))
       .then((data) => {
         cache.set(page, data || {})
         return cache.get(page)

@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 
 import * as editorService from '@/features/page-content/page-content.api.js'
+import EditorLockBar from '@/features/page-content/EditorLockBar.jsx'
+import useEditorLock from '@/features/page-content/hooks/useEditorLock.js'
 import { useToast } from '@/components/feedback/Toast.jsx'
 import Card from '@/components/ui/Card.jsx'
 import Button from '@/components/ui/Button.jsx'
@@ -69,6 +71,7 @@ export default function EditorPage({
   subtitle = 'The text on the public website, section by section. Saving puts it live immediately.',
 }) {
   const { notify } = useToast()
+  const lock = useEditorLock()
 
   const [pages, setPages] = useState([])
   const [activePage, setActivePage] = useState(null)
@@ -333,12 +336,14 @@ export default function EditorPage({
             <Button variant="ghost" onClick={handleRevert} disabled={!dirty || saving} icon={RotateCcw}>
               Undo changes
             </Button>
-            <Button onClick={handleSave} disabled={!dirty} loading={saving} icon={Save}>
+            <Button onClick={handleSave} disabled={!dirty || lock.locked} loading={saving} icon={Save}>
               {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
         )}
       </div>
+
+      <EditorLockBar lock={lock} />
 
       {/* ---- Page tabs. Not rendered when this screen edits one area. ---- */}
       {!area && (

@@ -10,6 +10,7 @@ import { logger } from "./utils/logger.js";
 import { startKeepAlive } from "./jobs/keepAlive.js";
 import { warmPublicCache } from "./middleware/publicCache.middleware.js";
 import { warmAdminPages } from "./modules/page-content/page-content.service.js";
+import { loadSiteLock } from "./modules/site-lock/site-lock.service.js";
 import { describeAdminNetwork } from "./middleware/adminNetwork.middleware.js";
 import { startAdminNetworkRefresh } from "./modules/admin-network/admin-network.service.js";
 import { startVisitorTracking } from "./modules/visitors/visitor.service.js";
@@ -82,6 +83,8 @@ const httpServer = app.listen(env.PORT, () => {
   warmPublicCache(env.PORT);
   // The Editor's pages too, so opening a tab in the admin panel is answered from memory.
   void warmAdminPages();
+  // Whether the Editor is locked, so the first visitor and the first save both know.
+  void loadSiteLock();
 
   // Say, every time, whether the admin panel is closed to the internet.
   // The saved list is still being read at this moment; say what is known now.

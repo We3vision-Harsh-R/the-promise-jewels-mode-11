@@ -22,6 +22,7 @@ import teamRoutes, { teamAdminRoutes } from "../modules/team/team.routes.js";
 import adminNetworkRoutes from "../modules/admin-network/admin-network.routes.js";
 import cacheRoutes from "../modules/cache/cache.routes.js";
 import { getContentVersion } from "../middleware/publicCache.middleware.js";
+import siteLockRoutes, { blockWhenLocked, snapshotHandler } from "../modules/site-lock/site-lock.routes.js";
 
 const router = Router();
 //public routes
@@ -38,6 +39,10 @@ router.get("/content-version", (_req, res) => {
   res.set("Cache-Control", "no-store");
   res.json({ version: getContentVersion() });
 });
+// Everything the Editor controls in one answer, while the Editor is locked.
+router.get("/site-snapshot", snapshotHandler);
+// Refuses writes to the Editor and the site settings while it is locked.
+router.use(["/page-content", "/sections", "/settings"], blockWhenLocked);
 //protected routes
 router.use("/auth", authRoutes);
 router.use("/dashboard", dashboardRoutes);
@@ -51,6 +56,8 @@ router.use("/admin/team", teamAdminRoutes);
 router.use("/admin/network", adminNetworkRoutes);
 // Empty every server cache on demand.
 router.use("/admin/cache", cacheRoutes);
+// Lock / unlock the Editor.
+router.use("/admin/site-lock", siteLockRoutes);
 router.use("/admin/brands", brandAdminRoutes);
 router.use("/collections", collectionRoutes);
 router.use("/admin/collections", collectionAdminRoutes);

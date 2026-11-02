@@ -3,25 +3,19 @@ import { useSyncExternalStore } from 'react'
 // Keeps open pages in step with the admin panel.
 //
 // The website remembers what it fetched (page copy, brands, collections, the
-// footer's contact details…) so moving between pages is instant. That memory is
-// what made a saved change look "not there" until the page was reloaded.
-//
-// Now a save is announced, and every page reacts:
+// footer's contact details…) so moving between pages is instant.
 //
 //   - the admin panel, after any successful save, tells other tabs of the site
-//     at once (BroadcastChannel, with localStorage as a fallback);
-//   - every open page of the website also asks the server, every few seconds
-//     and whenever the tab comes back into view, for the content version — a
-//     number that changes on each save — which covers another browser or
-//     another computer;
-//   - on a change, the remembered data is dropped and every component that shows
-//     data is told (useContentTick), so it fetches again and updates in place.
+//     at once (BroadcastChannel, with localStorage as a fallback); they drop what
+//     they remember and fetch again, updating in place;
+//   - on every page load or reload the site checks the published version once
+//     (see "The locked Editor" below). There is NO timer: nothing asks the server
+//     on an interval, and nothing runs when a tab regains focus.
 //
 // Nothing here reloads the page or touches what the visitor is doing.
 
 const CHANNEL = 'pj-content'
 const STORAGE_KEY = 'pj-content-changed'
-const POLL_MS = 15_000
 const BASE_URL = import.meta.env?.VITE_API_BASE_URL || '/api/v1'
 
 let tick = 0
@@ -87,23 +81,65 @@ export function announceContentChange() {
   changed()
 }
 
-let knownVersion = null
-let started = false
+// ---- The locked Editor / published version -------------------------------
+//
+// "Publish & lock" in the admin panel freezes everything the Editor controls
+// (all page copy, header, footer, rings, arrangements, site settings) as one
+// snapshot with a unique version. The website reads that instead of asking per
+// page.
+//
+// Version check: every page load and every reload asks `/site-snapshot` once,
+// with `cache: 'no-cache'`. The browser keeps its copy but asks the server first
+// ("still version X?"): unchanged -> an empty 304, so nothing is downloaded;
+// republished -> the new snapshot arrives and is used at once. A reload therefore
+// always lands on the newest published version, and no interval is needed.
+//
+// The request starts when this module loads, before any component asks. If it
+// fails the site behaves exactly as it did before locking existed.
+let snapshotPromise = null
 
-async function checkVersion() {
-  if (document.visibilityState === 'hidden') return
+const VERSION_COOKIE = 'pj_cv'
 
+/**
+ * Remembers, in one small first-party cookie, which published version this
+ * browser last loaded. It holds a short id only (never content or anything
+ * personal), lasts 30 days and is only sent along with this site's own requests.
+ */
+function rememberVersion(version) {
   try {
-    const res = await fetch(`${BASE_URL}/content-version`, { cache: 'no-store', credentials: 'omit' })
-    if (!res.ok) return
-    const { version } = await res.json()
-
-    if (knownVersion !== null && version !== knownVersion) changed()
-    knownVersion = version
+    const secure = location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${VERSION_COOKIE}=${encodeURIComponent(version || '')}; Max-Age=${version ? 2_592_000 : 0}; Path=/; SameSite=Lax${secure}`
   } catch {
-    /* offline or a blip: try again next time */
+    /* cookies blocked — the version check does not depend on it */
   }
 }
+
+function fetchSnapshot() {
+  return fetch(`${BASE_URL}/site-snapshot`, { credentials: 'omit', cache: 'no-cache' })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((body) => {
+      const data = body?.data?.locked ? body.data : { locked: false }
+      rememberVersion(data.locked ? data.version : '')
+      return data
+    })
+    .catch(() => ({ locked: false }))
+}
+
+/** Resolves to the frozen content (`{ locked: true, version, pages, layouts, settings }`) or `{ locked: false }`. */
+export function getSiteSnapshot() {
+  if (typeof window === 'undefined') return Promise.resolve({ locked: false })
+  snapshotPromise ??= fetchSnapshot()
+  return snapshotPromise
+}
+
+// A save or publish in this browser: ask again, and trust the server's answer.
+registerCacheClearer(() => {
+  snapshotPromise = null
+})
+
+getSiteSnapshot()
+
+let started = false
 
 /** Starts listening on the public website. Safe to call more than once. */
 export function startContentSync() {
@@ -116,12 +152,4 @@ export function startContentSync() {
   window.addEventListener('storage', (event) => {
     if (event.key === STORAGE_KEY) changed()
   })
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') checkVersion()
-  })
-  window.addEventListener('focus', checkVersion)
-
-  checkVersion()
-  setInterval(checkVersion, POLL_MS)
 }

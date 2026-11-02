@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPublicLayout } from '@/features/page-content/page-content.api.js'
-import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
+import { getSiteSnapshot, registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Which sections a page shows, and in what order.
 //
@@ -25,7 +25,8 @@ function loadLayout(page) {
   if (cache.has(page)) return Promise.resolve(cache.get(page))
 
   if (!inFlight.has(page)) {
-    const promise = getPublicLayout(page)
+    const promise = getSiteSnapshot()
+      .then((snapshot) => (snapshot.locked ? snapshot.layouts?.[page] : getPublicLayout(page)))
       .then((data) => {
         cache.set(page, Array.isArray(data?.order) ? data : null)
         return cache.get(page)

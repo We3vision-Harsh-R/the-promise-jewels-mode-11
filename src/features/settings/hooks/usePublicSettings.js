@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import request from '@/services/api/client.js'
-import { registerCacheClearer, useContentTick } from '@/services/contentSync.js'
+import { getSiteSnapshot, registerCacheClearer, useContentTick } from '@/services/contentSync.js'
 
 // Fallbacks are exported so a component can reference a single value (e.g.
 // just the logo) without pulling in the hook and its request.
@@ -39,7 +39,11 @@ registerCacheClearer(() => {
 function fetchPublicSettings() {
   // The .catch lives inside the cached promise so a failed fetch resolves to
   // null for every consumer rather than becoming an unhandled rejection.
-  settingsPromise = settingsPromise || request('/settings/public').catch(() => null)
+  settingsPromise =
+    settingsPromise ||
+    getSiteSnapshot()
+      .then((snapshot) => (snapshot.locked && snapshot.settings ? snapshot.settings : request('/settings/public')))
+      .catch(() => null)
   return settingsPromise
 }
 
