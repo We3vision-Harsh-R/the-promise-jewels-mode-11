@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap.js";
 import useReveal from "@/hooks/useReveal.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
@@ -41,6 +41,30 @@ const COLLECTIONS_TEXT = {
 // Seconds a slide holds before advancing. Drives both the autoplay and the
 // progress bar — they are the same tween, so they can never drift apart.
 const SLIDE_SECONDS = 5;
+
+// Fades the stage to nothing at both sides, so slides that run past the edge dissolve
+// instead of being cut by a hard line.
+const STAGE_FADE =
+  "linear-gradient(to right, transparent 0%, #000 13%, #000 87%, transparent 100%)";
+
+// Where a slide sits, by how far it is from the current one. The current slide
+// is a 3:4 portrait in the middle; the previous and next show beside it, smaller
+// and blurred, and the ones past those fade out. `x` is a share of a slide's own
+// width, so the layout scales with the card at every screen size.
+const POSITIONS = [
+  { x: 0, scale: 1, alpha: 1, blur: 0, z: 3 },
+  { x: 92, scale: 0.84, alpha: 0.9, blur: 3, z: 2 },
+  { x: 158, scale: 0.68, alpha: 0.55, blur: 7, z: 1 },
+  { x: 215, scale: 0.55, alpha: 0, blur: 10, z: 0 },
+];
+
+/** Signed distance of slide `i` from the current one, going the short way round. */
+function offsetOf(i, current, count) {
+  let d = (i - current) % count;
+  if (d > count / 2) d -= count;
+  if (d < -count / 2) d += count;
+  return d;
+}
 
 function ChevronIcon({ direction = "right" }) {
   return (
@@ -90,71 +114,58 @@ export default function FeaturedCollections() {
 
   const sectionRef = useRef(null);
   const slideRefs = useRef([]);
-  const captionRef = useRef(null);
   const progressRef = useRef(null);
   const autoplayRef = useRef(null);
-  const previousIndex = useRef(0);
+  const previousOffsets = useRef([]);
 
   const goTo = useCallback((next) => {
-    setIndex((current) => {
-      previousIndex.current = current;
-      return (next + COLLECTIONS.length) % COLLECTIONS.length;
-    });
+    setIndex((next + COLLECTIONS.length) % COLLECTIONS.length);
   }, []);
 
-  // Slide transition. The incoming frame is revealed with a clip-path wipe
-  // while its photo settles from a slight over-scale — the outgoing frame
-  // stays put underneath so the wipe has something to wipe over, which is
-  // what makes it read as a reveal rather than a crossfade.
-  useEffect(() => {
+  // Slide transition. Every slide glides to the place its distance from the
+  // current one gives it (see POSITIONS). A slide that wraps from one end to the
+  // other is not dragged across the whole row: it is placed on the far side and
+  // faded in, so it appears to arrive from out of sight.
+  useLayoutEffect(() => {
+    const count = COLLECTIONS.length;
+
     slideRefs.current.forEach((slide, slideIndex) => {
       if (!slide) return;
-      const image = slide.querySelector("img");
 
-      if (slideIndex === index) {
-        gsap.set(slide, { zIndex: 2, autoAlpha: 1 });
+      const d = offsetOf(slideIndex, index, count);
+      const spot = POSITIONS[Math.min(Math.abs(d), POSITIONS.length - 1)];
+      const target = {
+        xPercent: -50 + Math.sign(d) * spot.x,
+        scale: spot.scale,
+        autoAlpha: spot.alpha,
+        zIndex: spot.z,
+        filter: `blur(${spot.blur}px)`,
+      };
 
-        gsap.fromTo(
-          slide,
-          { clipPath: "inset(0% 0% 0% 100%)" },
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            duration: 1.15,
-            ease: "power3.inOut",
-            overwrite: "auto",
-          }
-        );
+      const before = previousOffsets.current[slideIndex];
+      const wrapped = before !== undefined && Math.abs(d - before) > count / 2;
 
-        // Settle, then a slow drift that runs for the rest of the hold.
-        gsap.fromTo(
-          image,
-          { scale: 1.16 },
-          { scale: 1, duration: 1.4, ease: "power3.out", overwrite: "auto" }
-        );
-        gsap.to(image, {
-          scale: 1.07,
-          duration: SLIDE_SECONDS,
-          ease: "none",
-          delay: 1.4,
-        });
-      } else if (slideIndex === previousIndex.current) {
-        // Held visible underneath the wipe, then dropped once it has passed.
-        gsap.set(slide, { zIndex: 1 });
-        gsap.to(slide, { autoAlpha: 0, duration: 0.35, delay: 1.05 });
+      if (before === undefined) {
+        gsap.set(slide, target);
+      } else if (wrapped) {
+        gsap.set(slide, { ...target, autoAlpha: 0 });
+        gsap.to(slide, { autoAlpha: spot.alpha, duration: 0.7, delay: 0.25, overwrite: "auto" });
       } else {
-        gsap.set(slide, { zIndex: 0, autoAlpha: 0 });
+        gsap.to(slide, { ...target, duration: 1.1, ease: "power3.inOut", overwrite: "auto" });
       }
+
+      previousOffsets.current[slideIndex] = d;
     });
 
-    // Caption re-reveals from behind its own mask on every slide.
+    // The current card's name re-reveals from behind its own mask.
     gsap.fromTo(
-      captionRef.current?.querySelectorAll(".js-caption-line") ?? [],
+      slideRefs.current[index]?.querySelectorAll(".js-caption-line") ?? [],
       { yPercent: 115 },
       {
         yPercent: 0,
         duration: 0.9,
         stagger: 0.08,
-        delay: 0.35,
+        delay: 0.4,
         ease: "power4.out",
         overwrite: "auto",
       }
@@ -189,8 +200,6 @@ export default function FeaturedCollections() {
   // transition effect owns every slide's clip-path and opacity and would
   // fight a per-slide entrance.
   useReveal(sectionRef);
-
-  const active = collections[index];
 
   return (
     <section
@@ -229,63 +238,77 @@ export default function FeaturedCollections() {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div data-reveal
-          className="js-stage relative aspect-[16/9] w-full overflow-hidden rounded-[30px] bg-[var(--pj-heading)] shadow-[0_34px_70px_rgba(1,56,59,0.24)] max-[767px]:aspect-[4/5] max-[479px]:rounded-[20px]">
-          {collections.map((item, slideIndex) => (
-            <div
-              key={item.name}
-              ref={(node) => {
-                slideRefs.current[slideIndex] = node;
-              }}
-              className="absolute inset-0 overflow-hidden will-change-[clip-path]"
-              style={{ opacity: slideIndex === 0 ? 1 : 0 }}
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                loading={slideIndex === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-cover will-change-transform"
-              />
-            </div>
-          ))}
-
-          {/* Scrim keeps the caption legible. Confined to the lower band and
-              kept light — a full-frame wash muted the photography. */}
-          <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[52%] bg-gradient-to-t from-[var(--pj-heading)]/80 via-[var(--pj-heading)]/28 to-transparent" />
-
-          {/* Gold hairline inset, drawn inside the frame */}
-          <span className="pointer-events-none absolute inset-[16px] z-[4] rounded-[20px] border-[1px] border-white/15 max-[479px]:inset-[10px] max-[479px]:rounded-[14px]" />
-
-          {/* Name lives inside the stage, re-revealing on every slide */}
-          <div
-            ref={captionRef}
-            className="pointer-events-none absolute bottom-0 left-0 z-[5] p-[46px] text-left max-[991px]:p-[30px] max-[479px]:p-[20px]"
-          >
-            <span className="block overflow-hidden pb-[2px]">
-              <span className="js-caption-line flex items-center gap-[12px]">
-                <span className="h-px w-[34px] bg-[var(--pj-accent)] max-[479px]:w-[20px]" />
-                <span
-                  style={typeStyle(text, "eyebrow")}
-                  className="text-[0.68rem] font-medium tracking-[0.3em] uppercase text-[var(--c-eyebrow)] max-[479px]:text-[0.69rem] max-[479px]:tracking-[0.18em]"
+        {/* The stage: the current 3:4 portrait in the middle, its neighbours
+            beside it, blurred. The sides fade to nothing instead of being cut off,
+            so no hard edge shows; the extra bottom room is for the card shadow. */}
+        <div
+          data-reveal
+          style={{
+            WebkitMaskImage: STAGE_FADE,
+            maskImage: STAGE_FADE,
+          }}
+          className="js-stage w-full overflow-x-clip pb-[44px] max-[479px]:pb-[30px]"
+        >
+          <div className="relative h-[560px] w-full max-[991px]:h-[470px] max-[479px]:h-[350px]">
+            {collections.map((item, slideIndex) => {
+              const isCurrent = slideIndex === index;
+              return (
+                <div
+                  key={item.name}
+                  ref={(node) => {
+                    slideRefs.current[slideIndex] = node;
+                  }}
+                  onClick={isCurrent ? undefined : () => goTo(slideIndex)}
+                  role={isCurrent ? undefined : "button"}
+                  aria-label={isCurrent ? undefined : `Show ${item.name}`}
+                  className={`absolute left-1/2 top-0 aspect-[3/4] h-full overflow-hidden rounded-[26px] bg-[var(--pj-heading)] shadow-[0_30px_60px_rgba(1,56,59,0.22)] will-change-transform max-[479px]:rounded-[18px] ${
+                    isCurrent ? "" : "cursor-pointer"
+                  }`}
+                  style={{ opacity: 0 }}
                 >
-                  {text.eyebrow}
-                </span>
-              </span>
-            </span>
+                  <img
+                    src={item.image}
+                    alt={isCurrent ? item.name : ""}
+                    loading={Math.abs(offsetOf(slideIndex, index, collections.length)) <= 1 ? "eager" : "lazy"}
+                    draggable={false}
+                    className="h-full w-full object-cover"
+                  />
 
-            <span className="mt-[12px] block overflow-hidden pb-[0.14em] max-[479px]:mt-[7px]">
-              <span
-                style={{ color: active.nameColor, ...active.nameType }}
-                className="js-caption-line block font-ticker text-[2.6rem] font-medium leading-[1.15] max-[991px]:text-[2rem] max-[479px]:text-[1.4rem]"
-              >
-                {active.name}
-              </span>
-            </span>
+                  {/* The frame travels with its photo: scrim, hairline and name
+                      are part of the card, so they glide in and out together. */}
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 h-[46%] bg-gradient-to-t from-[var(--pj-heading)]/80 via-[var(--pj-heading)]/28 to-transparent" />
+                  <span className="pointer-events-none absolute inset-[14px] rounded-[18px] border-[1px] border-white/15 max-[479px]:inset-[9px] max-[479px]:rounded-[12px]" />
+
+                  <div className="pointer-events-none absolute bottom-0 left-0 p-[30px] text-left max-[479px]:p-[20px]">
+                    <span className="block overflow-hidden pb-[2px]">
+                      <span className="js-caption-line flex items-center gap-[12px]">
+                        <span className="h-px w-[34px] bg-[var(--pj-accent)] max-[479px]:w-[20px]" />
+                        <span
+                          style={typeStyle(text, "eyebrow")}
+                          className="text-[0.68rem] font-medium tracking-[0.3em] uppercase text-[var(--c-eyebrow)] max-[479px]:text-[0.69rem] max-[479px]:tracking-[0.18em]"
+                        >
+                          {text.eyebrow}
+                        </span>
+                      </span>
+                    </span>
+
+                    <span className="mt-[12px] block overflow-hidden pb-[0.14em] max-[479px]:mt-[7px]">
+                      <span
+                        style={{ color: item.nameColor, ...item.nameType }}
+                        className="js-caption-line block font-ticker text-[2.1rem] font-medium leading-[1.15] max-[991px]:text-[1.8rem] max-[479px]:text-[1.4rem]"
+                      >
+                        {item.name}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Control bar — counter, progress, arrows */}
-        <div data-reveal className="js-controls mt-[34px] flex items-center gap-[30px] max-[767px]:flex-col max-[767px]:gap-[20px] max-[479px]:mt-[22px]">
+        <div data-reveal className="js-controls flex items-center gap-[30px] max-[767px]:flex-col max-[767px]:gap-[20px]">
           <span className="shrink-0 font-ticker text-[0.95rem] tabular-nums text-[var(--pj-body)]/70 max-[479px]:text-[0.8rem]">
             <strong className="font-semibold text-[var(--pj-heading)]">
               {String(index + 1).padStart(2, "0")}
