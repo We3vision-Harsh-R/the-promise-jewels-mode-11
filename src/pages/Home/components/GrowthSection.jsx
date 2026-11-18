@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import useRingPhotos from "@/features/rings/useRings.js";
-import { gsap } from "@/lib/gsap.js";
+import { gsap, SCRUB } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 import { useNavigate } from "react-router-dom";
@@ -182,7 +182,7 @@ export default function GrowthSection({ page = "home" } = {}) {
               trigger: sectionRef.current,
               start: "top top",
               end: "+=3500",
-              scrub: 1.5,
+              scrub: SCRUB,
             },
           }
         );

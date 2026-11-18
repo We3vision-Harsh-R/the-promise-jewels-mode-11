@@ -209,6 +209,9 @@ model inquiries {
   email     String
   phone     String
   company   String?
+  /// Where the enquirer is — required on the website form. Nullable only
+  /// because enquiries received before the field existed have none.
+  address   String?
   message   String
   status    InquiryStatus @default(NEW)
   createdAt DateTime      @default(now())

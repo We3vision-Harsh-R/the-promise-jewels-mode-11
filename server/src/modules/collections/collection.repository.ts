@@ -1,6 +1,18 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../database/prisma.js";
 
+/**
+ * A collection's photos, newest first.
+ *
+ * `createdAt` is the order they were uploaded in, so the photo added last is at
+ * the top in the admin panel and on the website, in every collection. Photos
+ * that share a moment (an old batch, or the same upload) keep their saved order.
+ */
+const NEWEST_IMAGE_FIRST: Prisma.collection_imagesOrderByWithRelationInput[] = [
+  { createdAt: "desc" },
+  { displayOrder: "asc" },
+];
+
 class CollectionRepository {
   // ---- Public (website) ----
 
@@ -16,7 +28,7 @@ class CollectionRepository {
       where,
       orderBy: { displayOrder: "asc" },
       include: {
-        collection_images: { orderBy: { displayOrder: "asc" } },
+        collection_images: { orderBy: NEWEST_IMAGE_FIRST },
         brands: { select: { id: true, name: true, slug: true } },
       },
     });
@@ -26,7 +38,7 @@ class CollectionRepository {
     return prisma.collections.findFirst({
       where: { slug, isActive: true },
       include: {
-        collection_images: { orderBy: { displayOrder: "asc" } },
+        collection_images: { orderBy: NEWEST_IMAGE_FIRST },
         brands: { select: { id: true, name: true, slug: true, logoUrl: true } },
       },
     });
@@ -54,7 +66,7 @@ findAllAdmin(params: {
         skip: params.skip,
         take: params.take,
         include: {
-          collection_images: { orderBy: { displayOrder: "asc" } },
+          collection_images: { orderBy: NEWEST_IMAGE_FIRST },
           brands: { select: { id: true, name: true } },
         },
       }),
@@ -66,7 +78,7 @@ findAllAdmin(params: {
     return prisma.collections.findUnique({
       where: { id },
       include: {
-        collection_images: { orderBy: { displayOrder: "asc" } },
+        collection_images: { orderBy: NEWEST_IMAGE_FIRST },
         brands: { select: { id: true, name: true } },
       },
     });

@@ -6,7 +6,7 @@ import CustomCursor from "@/components/common/CustomCursor.jsx";
 import SiteContextMenu from "@/components/common/SiteContextMenu.jsx";
 import SelectionHighlight from "@/components/common/SelectionHighlight.jsx";
 import PageTransition from "@/components/common/PageTransition.jsx";
-import { scrollToTop, settleToSection } from "@/utils/scroll.js";
+import { scrollToTarget, settleToSection } from "@/utils/scroll.js";
 import { prefetchPages } from "@/app/routes/lazyPages.js";
 import { pingVisit } from "@/features/visitors/tracker.js";
 import { ScrollTrigger } from "@/lib/gsap.js";
@@ -56,7 +56,9 @@ export default function ClientLayout() {
   // does not exist until the new page has rendered.
   useEffect(() => {
     if (!hash) {
-      scrollToTop();
+      // A new page starts at its top at once. An eased scroll here would glide
+      // up through the new page from wherever the last one was left.
+      scrollToTarget(0, { immediate: true });
       return undefined;
     }
 

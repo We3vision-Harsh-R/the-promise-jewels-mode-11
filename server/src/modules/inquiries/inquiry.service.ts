@@ -37,6 +37,8 @@ class InquiryService {
 
       company: data.company || null,
 
+      address: data.address,
+
       message: data.message,
     });
   }
@@ -154,6 +156,7 @@ class InquiryService {
       Email: inquiry.email,
       Phone: inquiry.phone,
       Company: inquiry.company ?? "",
+      Address: inquiry.address ?? "",
       Message: inquiry.message,
       Status: inquiry.status,
       "Created At": inquiry.createdAt.toLocaleString(),

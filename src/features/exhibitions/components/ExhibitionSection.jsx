@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { gsap } from "@/lib/gsap.js";
+import { gsap, SCRUB } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import { formatRange, getStatus } from "@/features/exhibitions/data/exhibitions.js";
 
@@ -119,7 +119,7 @@ export default function ExhibitionSection({ exhibition, index }) {
             trigger: sectionRef.current,
             start: "top bottom",
             end: "bottom top",
-            scrub: 1,
+            scrub: SCRUB,
           },
         }
       );

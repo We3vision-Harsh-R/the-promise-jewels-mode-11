@@ -195,7 +195,9 @@ export default function OurPillars() {
       state.opacity += (targetOpacity - state.opacity) * ease;
       tickState.current[index] = state;
 
-      gsap.set(tick, { width: state.width, opacity: state.opacity });
+      // scaleX, not width: a transform is handled by the compositor, a width
+      // change re-lays-out the ruler 46 times a frame.
+      gsap.set(tick, { scaleX: state.width / TICK_MAX_W, opacity: state.opacity });
     });
   }, []);
 
@@ -253,8 +255,24 @@ export default function OurPillars() {
       let current = -1;
 
       // The beam renders every frame, independently of scroll events, so it
-      // keeps easing toward its target after the wheel stops.
-      gsap.ticker.add(renderBeam);
+      // keeps easing toward its target after the wheel stops — but only while
+      // the section is actually on screen. Left running it measured layout 60
+      // times a second for the rest of the visit, on every page it was mounted.
+      let beamOn = false;
+      const setBeam = (on) => {
+        if (on === beamOn) return;
+        beamOn = on;
+        if (on) gsap.ticker.add(renderBeam);
+        else gsap.ticker.remove(renderBeam);
+      };
+
+      const visibility = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top bottom",
+        end: () => "+=" + window.innerHeight * (COUNT + 1),
+        invalidateOnRefresh: true,
+        onToggle: (self) => setBeam(self.isActive),
+      });
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
@@ -282,7 +300,10 @@ export default function OurPillars() {
         },
       });
 
-      return () => gsap.ticker.remove(renderBeam);
+      return () => {
+        visibility.kill();
+        setBeam(false);
+      };
     },
     sectionRef,
     [renderBeam]
@@ -311,10 +332,11 @@ export default function OurPillars() {
                 ref={(node) => {
                   tickRefs.current[index] = node;
                 }}
-                className="js-tick absolute left-0 block h-px rounded-full bg-[var(--pj-body)]"
+                className="js-tick absolute left-0 block h-px origin-left rounded-full bg-[var(--pj-body)]"
                 style={{
                   top: `${(index / (TICK_COUNT - 1)) * 100}%`,
-                  width: TICK_MIN_W,
+                  width: TICK_MAX_W,
+                  transform: `scaleX(${TICK_MIN_W / TICK_MAX_W})`,
                 }}
               />
             ))}

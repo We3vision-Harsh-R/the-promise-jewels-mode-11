@@ -100,11 +100,18 @@ export default function OurPillars() {
   // stutter. Only the rounded `active` index goes through state.
   const progress = useRef(0);
 
-  const layoutDial = useCallback(() => {
-    const dial = dialRef.current;
-    if (!dial) return;
+  // The dial's height, measured when its box changes (resize / refresh) rather
+  // than on every scroll frame: reading layout right after writing transforms,
+  // 60 times a second, is what made the rotation stutter.
+  const dialHeight = useRef(0);
 
-    const { height } = dial.getBoundingClientRect();
+  const measureDial = useCallback(() => {
+    const dial = dialRef.current;
+    if (dial) dialHeight.current = dial.getBoundingClientRect().height;
+  }, []);
+
+  const layoutDial = useCallback(() => {
+    const height = dialHeight.current;
     if (!height) return;
 
     const radius = Math.max(height * RADIUS_FACTOR, RADIUS_MIN);
@@ -158,7 +165,10 @@ export default function OurPillars() {
         pin: pinRef.current,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onRefresh: layoutDial,
+        onRefresh: () => {
+          measureDial();
+          layoutDial();
+        },
         onUpdate: (self) => {
           progress.current = self.progress;
           // Written straight to the DOM on each frame — the dial tracks the
@@ -171,6 +181,7 @@ export default function OurPillars() {
         },
       });
 
+      measureDial();
       layoutDial();
       return () => trigger.kill();
     },
@@ -181,15 +192,20 @@ export default function OurPillars() {
   // Re-solve the geometry whenever the box can have changed.
   useEffect(() => {
     const dial = dialRef.current;
+    const remeasure = () => {
+      measureDial();
+      layoutDial();
+    };
+
     if (!dial || typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", layoutDial);
-      return () => window.removeEventListener("resize", layoutDial);
+      window.addEventListener("resize", remeasure);
+      return () => window.removeEventListener("resize", remeasure);
     }
 
-    const observer = new ResizeObserver(layoutDial);
+    const observer = new ResizeObserver(remeasure);
     observer.observe(dial);
     return () => observer.disconnect();
-  }, [layoutDial]);
+  }, [layoutDial, measureDial]);
 
   // Content swap.
   useEffect(() => {

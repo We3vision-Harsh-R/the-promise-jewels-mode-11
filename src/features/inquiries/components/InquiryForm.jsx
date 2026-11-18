@@ -38,12 +38,14 @@ const FORM_TEXT = {
   emailFieldLabel: "Email Address",
   companyLabel: "Company Name",
   phoneFieldLabel: "Phone Number",
+  addressFieldLabel: "Address",
   collectionLabel: "Selected Collection",
   messageLabel: "Your Message",
   namePlaceholder: "Name",
   emailPlaceholder: "Email Address",
   companyPlaceholder: "Your Company",
   phonePlaceholder: "Your Phone Number",
+  addressPlaceholder: "Your Address / City",
   noCollectionLabel: "No specific collection",
   messagePlaceholder: "Tell us about your jewellery requirements, quantity, customization needs, and timeline.",
   submitLabel: "Send Business Inquiry",
@@ -68,6 +70,7 @@ const emptyForm = (defaultCollection) => ({
   email: "",
   company: "",
   phone: "",
+  address: "",
   collection: defaultCollection,
   message: "",
 });
@@ -140,6 +143,14 @@ function CompanyFieldIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="8" width="18" height="12" rx="1.5" />
       <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+function AddressFieldIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" />
+      <circle cx="12" cy="10" r="2.5" />
     </svg>
   );
 }
@@ -304,6 +315,8 @@ export default function InquiryForm({
     else if (!EMAIL_RE.test(form.email.trim())) next.email = "Please enter a valid email address.";
     if (!form.phone.trim()) next.phone = "Please enter your phone number.";
     else if (normalisePhone(form.phone).length !== 10) next.phone = "Please enter a valid 10-digit phone number.";
+    if (!form.address.trim()) next.address = "Please enter your address.";
+    else if (form.address.trim().length < 5) next.address = "Address must be at least 5 characters.";
     if (!form.message.trim()) next.message = "Please tell us about your requirements.";
     else if (form.message.trim().length < 10) next.message = "Message must be at least 10 characters.";
     return next;
@@ -325,6 +338,7 @@ export default function InquiryForm({
         email: form.email.trim(),
         phone: normalisePhone(form.phone),
         company: form.company.trim(),
+        address: form.address.trim(),
         // The current database has no collection column, so preserve it in
         // the saved message rather than losing this customer context. The
         // field is optional — when nothing was picked the message goes as
@@ -511,6 +525,23 @@ export default function InquiryForm({
                     />
                   </IconInput>
                 </Field>
+
+                <div className="col-span-2 max-[639px]:col-span-1">
+                  <Field label={t.addressFieldLabel} required error={errors.address}>
+                    <IconInput icon={<AddressFieldIcon />}>
+                      <input
+                        type="text"
+                        autoComplete="street-address"
+                        value={form.address}
+                        onChange={update("address")}
+                        placeholder={t.addressPlaceholder}
+                        maxLength={300}
+                        {...fieldProps("address", Boolean(errors.address))}
+                        className={classNames(inputBase, "pl-[40px]")}
+                      />
+                    </IconInput>
+                  </Field>
+                </div>
 
                 <div className="col-span-2 max-[639px]:col-span-1">
                   <Field label={t.collectionLabel}>

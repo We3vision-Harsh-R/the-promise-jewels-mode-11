@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { gsap } from "@/lib/gsap.js";
+import { gsap, SCRUB } from "@/lib/gsap.js";
 import useGSAP from "@/hooks/useGSAP.js";
 import useSectionContent from "@/features/page-content/hooks/usePageContent.js";
 import { typeStyle } from "@/features/page-content/typeStyle.js";
@@ -161,7 +161,7 @@ export default function HeroCircle() {
             trigger: sectionRef.current,
             start: "top top",
             end: "+=3500",
-            scrub: 1.5,
+            scrub: SCRUB,
           },
         });
 
@@ -173,7 +173,7 @@ export default function HeroCircle() {
             trigger: sectionRef.current,
             start: "top top",
             end: "+=3500",
-            scrub: 1.5,
+            scrub: SCRUB,
           },
         });
       });
@@ -191,7 +191,7 @@ export default function HeroCircle() {
             trigger: sectionRef.current,
             start: "top top",
             end: "+=2500",
-            scrub: 1.5,
+            scrub: SCRUB,
           },
         });
 
@@ -203,7 +203,7 @@ export default function HeroCircle() {
             trigger: sectionRef.current,
             start: "top top",
             end: "+=2500",
-            scrub: 1.5,
+            scrub: SCRUB,
           },
         });
       });

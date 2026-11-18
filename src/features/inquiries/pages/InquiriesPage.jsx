@@ -107,6 +107,7 @@ export default function InquiriesPage() {
     },
     { key: 'company', header: 'Company', sortable: true, sortAccessor: (r) => r.company?.toLowerCase() ?? '', render: (r) => <span className="text-ink-600">{r.company || '—'}</span> },
     { key: 'phone', header: 'Phone', render: (r) => <span className="text-ink-600">{formatIndianPhone(r.phone)}</span> },
+    { key: 'address', header: 'Address', render: (r) => <span className="line-clamp-2 max-w-[220px] text-ink-600">{r.address || '—'}</span> },
     {
       key: 'status', header: 'Status',
       render: (r) => (
@@ -206,6 +207,10 @@ export default function InquiriesPage() {
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-ink-400 mb-1">Company</p>
               <p className="text-sm text-ink-800">{viewing.company || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-400 mb-1">Address</p>
+              <p className="text-sm text-ink-800 whitespace-pre-wrap">{viewing.address || '—'}</p>
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-ink-400 mb-1">Message</p>

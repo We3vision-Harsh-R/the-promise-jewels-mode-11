@@ -202,6 +202,20 @@
 html, #root {
   height: 100%;
 }
+
+/* Lenis (smooth scroll) adds .lenis to <html>. These are its own recommended
+   rules: the browser's smooth-scroll must stay off while Lenis eases the page
+   (two animations on one scroll is the classic judder), and an embedded frame
+   must not swallow the wheel. */
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+html.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+html.lenis.lenis-stopped {
+  overflow: clip;
+}
 /* Bootstrap ships utility classes with the same names as Tailwind's
    (px-5, py-4, etc.) and marks them !important, so they silently win
    over Tailwind's versions everywhere in the app. This block re-declares

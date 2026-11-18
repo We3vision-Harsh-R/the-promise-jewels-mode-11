@@ -41,6 +41,12 @@ phone: z
     .optional()
     .or(z.literal("")),
 
+  address: z
+    .string()
+    .trim()
+    .min(5, "Please enter your address.")
+    .max(300, "Address is too long."),
+
   message: z
     .string()
     .trim()

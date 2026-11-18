@@ -28,7 +28,7 @@ import { decryptFieldSafe, encryptField, rowAad } from "../../utils/fieldCrypto.
  */
 
 /** The columns that carry personal data. Everything else stays queryable. */
-const SECRET_FIELDS = ["name", "email", "phone", "company", "message"] as const;
+const SECRET_FIELDS = ["name", "email", "phone", "company", "address", "message"] as const;
 
 type SecretField = (typeof SECRET_FIELDS)[number];
 type Row = Record<string, unknown> & { id: string };
@@ -84,7 +84,7 @@ export function rowMatches(row: Row, search: string): boolean {
   const needle = search.trim().toLowerCase();
   if (!needle) return true;
 
-  return (["name", "email", "phone", "company"] as SecretField[]).some((field) => {
+  return (["name", "email", "phone", "company", "address"] as SecretField[]).some((field) => {
     const value = row[field];
     return typeof value === "string" && value.toLowerCase().includes(needle);
   });

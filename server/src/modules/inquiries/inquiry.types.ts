@@ -5,6 +5,7 @@ export interface CreateInquiryDto {
   email: string;
   phone: string;
   company?: string;
+  address: string;
   message: string;
 }
 
@@ -35,6 +36,7 @@ export interface InquiryExportRow {
   Email: string;
   Phone: string;
   Company: string;
+  Address: string;
   Message: string;
   Status: string;
   "Created At": string;

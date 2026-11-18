@@ -210,6 +210,7 @@ async listAdmin(query: CollectionListQuery) {
       createdId = collection.id;
 
       if (gallery.length) {
+        const uploadedAt = Date.now();
         const galleryData = await Promise.all(
           gallery.map(async (file, index) => ({
             id: generateId(),
@@ -217,6 +218,9 @@ async listAdmin(query: CollectionListQuery) {
             imageUrl: await this.uploadCollectionFile(file, "gallery", collection.id),
             displayOrder: index,
             isThumbnail: index === 0,
+            // A distinct moment per file, so the order they were added in is
+            // kept and the last one added shows first.
+            createdAt: new Date(uploadedAt + index),
           })),
         );
 
@@ -278,6 +282,7 @@ async listAdmin(query: CollectionListQuery) {
 
     if (gallery.length) {
       const startOrder = existing.collection_images.length;
+      const uploadedAt = Date.now();
 
       const galleryData = await Promise.all(
         gallery.map(async (file, index) => ({
@@ -286,6 +291,7 @@ async listAdmin(query: CollectionListQuery) {
           imageUrl: await this.uploadCollectionFile(file, "gallery", id),
           displayOrder: startOrder + index,
           isThumbnail: startOrder === 0 && index === 0,
+          createdAt: new Date(uploadedAt + index),
         })),
       );
 

@@ -13,7 +13,7 @@ export async function createInquiry(payload) {
 }
 
 // The current Inquiry Prisma model only has: id, name, email, phone,
-// company, message, status, createdAt/updatedAt/deletedAt — no type or
+// company, address, message, status, createdAt/updatedAt/deletedAt — no type or
 // reference columns (see dashboard.types.ts's RecentInquiry note and
 // server/prisma/schema.prisma's `model inquiries`). So those two fields
 // are gone from this layer entirely; InquiriesPage/DashboardPage no
@@ -33,6 +33,7 @@ function fromInquiryRow(r) {
     email: r.email,
     phone: r.phone,
     company: r.company,
+    address: r.address,
     message: r.message,
     status: r.status?.toLowerCase() ?? r.status,
     created_at: r.createdAt,

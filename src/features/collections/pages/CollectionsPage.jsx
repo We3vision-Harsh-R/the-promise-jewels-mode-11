@@ -450,6 +450,20 @@ export default function CollectionsPage() {
               <ImageDrop label="Click or drop images" multiple onFiles={handleGallerySelect} />
               {(form.gallery.length > 0 || form.pendingImages.length > 0) && (
                 <div className="mt-3 flex flex-wrap gap-2">
+                  {/* Newest first: photos chosen now (not yet saved) lead, then the saved ones, latest upload first. */}
+                  {[...form.pendingImages].reverse().map((pending) => (
+                    <div key={pending.url} className="relative h-16 w-16 overflow-hidden rounded-md border border-dashed border-brass-500/60">
+                      <img src={pending.url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePendingImage(pending.url)}
+                        aria-label="Remove image"
+                        className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white hover:bg-rose"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))}
                   {form.gallery.map((image) => (
                     <div key={image.id} className="relative h-16 w-16 overflow-hidden rounded-md border border-white/15">
                       <img src={image.image_url} alt={image.alt_text || ''} className="h-full w-full object-cover" />
@@ -464,19 +478,6 @@ export default function CollectionsPage() {
                       <button
                         type="button"
                         onClick={() => removeSavedImage(image.id)}
-                        aria-label="Remove image"
-                        className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white hover:bg-rose"
-                      >
-                        <X size={11} />
-                      </button>
-                    </div>
-                  ))}
-                  {form.pendingImages.map((pending) => (
-                    <div key={pending.url} className="relative h-16 w-16 overflow-hidden rounded-md border border-dashed border-brass-500/60">
-                      <img src={pending.url} alt="" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removePendingImage(pending.url)}
                         aria-label="Remove image"
                         className="absolute right-0.5 top-0.5 rounded-full bg-black/60 p-0.5 text-white hover:bg-rose"
                       >

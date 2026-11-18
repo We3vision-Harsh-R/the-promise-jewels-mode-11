@@ -42,6 +42,7 @@ export const INQUIRY_EXPORT_COLUMNS = [
   "Email",
   "Phone",
   "Company",
+  "Address",
   "Message",
   "Status",
   "Created At",
