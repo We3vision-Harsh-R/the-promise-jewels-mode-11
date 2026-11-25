@@ -7,6 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import { privateSite } from "./middleware/privateSite.middleware.js";
 
 import { corsOptions } from "./config/cors.js";
 import { apiLimiter } from "./config/rateLimit.js";
@@ -196,6 +197,10 @@ app.use(
 
 // Cookies
 app.use(cookieParser());
+
+// Closes the website to anyone who is not signed in (SITE_PRIVATE) and tells
+// search engines not to list it. See privateSite.middleware.ts.
+app.use(privateSite);
 
 // Health check. Deliberately says nothing about versions, uptime or the
 // database — a health endpoint is reconnaissance if it reports internals.

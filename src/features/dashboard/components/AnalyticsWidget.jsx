@@ -56,7 +56,7 @@ export default function AnalyticsWidget() {
   return (
     <article
       style={CARD_GLASS}
-      className="rounded-2xl p-4 text-ink-900"
+      className="rounded-2xl p-5 sm:p-6 text-ink-900 h-full"
     >
       <div className="flex items-start justify-between gap-4 mb-1">
         <div>
@@ -114,9 +114,13 @@ export default function AnalyticsWidget() {
         </div>
       </div>
 
-      <div className="h-56 mt-2">
+      <div className="h-64 mt-4">
         {loading ? (
           <div className="h-full flex items-center justify-center text-xs text-ink-900/40">Loading…</div>
+        ) : data.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-ink-400">
+            No inquiries in this period.
+          </div>
         ) : (
           <Suspense fallback={<div className="h-full flex items-center justify-center text-xs text-ink-900/40">Loading…</div>}>
             <TrendChart data={data} />

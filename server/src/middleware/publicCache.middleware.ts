@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { INTERNAL_HEADER, INTERNAL_TOKEN } from "./privateSite.middleware.js";
 
 import { logger } from "../utils/logger.js";
 
@@ -183,7 +184,7 @@ async function refreshNow(key: string): Promise<void> {
 
   try {
     const response = await fetch(`http://127.0.0.1:${selfPort}/api/v1${key}`, {
-      headers: { [REFRESH_HEADER]: "1", accept: "application/json" },
+      headers: { [REFRESH_HEADER]: "1", [INTERNAL_HEADER]: INTERNAL_TOKEN, accept: "application/json" },
     });
 
     // An edit landed while this was in flight — what came back may predate it.

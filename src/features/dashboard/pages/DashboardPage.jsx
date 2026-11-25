@@ -90,12 +90,16 @@ export default function DashboardPage() {
               <Card
                 key={i}
                 glass
-                className="p-5 h-[104px] animate-pulse"
+                className="p-5 h-[128px] animate-pulse"
                 style={CARD_GLASS}
               />
             ))
           : cards.map((c) => (
-              <Link key={c.key} to={c.to}>
+              <Link
+                key={c.key}
+                to={c.to}
+                className="group/link block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-300"
+              >
                 <StatCard label={c.label} value={c.value} delta={c.delta} icon={c.icon} />
               </Link>
             ))}
@@ -113,8 +117,9 @@ export default function DashboardPage() {
           className="p-5 sm:p-6 text-ink-900 flex flex-col h-full"
           style={CARD_GLASS}
         >
-          <h2 className="font-display text-base font-bold text-brass-100 mb-4">Quick actions</h2>
-          <div className="flex flex-1 flex-col justify-between gap-2.5 h-[calc(100%-2.5rem)]">
+          <h2 className="font-display text-base font-bold text-brass-100">Quick actions</h2>
+          <p className="text-xs text-ink-400 mt-0.5 mb-4">Jump straight to the thing you came to do</p>
+          <div className="flex flex-1 flex-col justify-between gap-2.5">
             <QuickAction to="/admin/collections" label="Add a collection" icon={Plus} />
             <QuickAction to="/admin/brands" label="Add a brand" icon={Plus} />
             <QuickAction to="/admin/exhibitions" label="Add an exhibition" icon={Plus} />
@@ -149,6 +154,13 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
+              {recent.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="text-center text-ink-400 py-10">
+                    No inquiries yet. New ones from the website contact form show up here.
+                  </td>
+                </tr>
+              )}
               {recent.map((r) => (
                 <tr key={r.id}>
                   <td>

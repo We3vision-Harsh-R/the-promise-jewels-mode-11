@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react'
 import Card from '@/components/ui/Card.jsx'
 
 // Frosted glass treatment — same shared tokens as the sidebar rail, Topbar
@@ -12,33 +13,35 @@ const CARD_GLASS = {
   boxShadow: 'var(--glass-shadow)',
 }
 
+// The number is the point of this card, so it gets the size and the label
+// gets out of its way: sentence case, regular weight, no tracking. The icon
+// badge is quiet (hairline ring) and the arrow only shows on hover/focus to
+// say "this opens the list" — the whole card is the link.
 export default function StatCard({ label, value, delta, icon: Icon }) {
   return (
     <Card
       glass
-      className="glass-hover p-4 relative overflow-hidden text-ink-900"
+      className="glass-hover group p-5 relative overflow-hidden text-ink-900"
       style={CARD_GLASS}
     >
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-bold uppercase tracking-wide text-brass-700/90">{label}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-brass-700">{label}</p>
         {Icon && (
-          // Rounded-square glass badge with a soft gold glow — same
-          // "lit from within" gradient + shadow language as the dark
-          // search pill / filter selects (see darkPillClass in
-          // TableToolbar.jsx), applied here at icon-badge scale.
-          // Bumped from h-9/w-9 to h-12/w-12 (and icon 16 -> 20) so the
-          // badge reads clearly at a glance instead of getting lost next
-          // to the label; border thickened to border-2 and brightened
-          // from /40 to /70 opacity so the gold ring is actually visible
-          // rather than blending into the teal card.
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-brass-300/60 bg-gradient-to-br from-white/10 to-brass-300/10 text-brass-700 shadow-[0_0_8px_-3px_rgba(196,168,93,0.28)]">
-            <Icon size={20} strokeWidth={1.75} />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brass-300/40 bg-gradient-to-br from-white/10 to-brass-300/10 text-brass-700">
+            <Icon size={18} strokeWidth={1.75} />
           </div>
         )}
       </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <p className="font-display text-3xl leading-none text-brass-100">{value}</p>
-        {delta && <p className="text-xs text-brass-700">{delta}</p>}
+      <div className="mt-4 flex items-end justify-between gap-2">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <p className="font-display text-4xl leading-none tabular-nums text-brass-100">{value}</p>
+          {delta && <p className="text-xs text-brass-700 truncate">{delta}</p>}
+        </div>
+        <ArrowUpRight
+          size={16}
+          aria-hidden="true"
+          className="shrink-0 text-brass-700 opacity-0 -translate-x-1 translate-y-1 transition duration-200 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-focus-visible/link:opacity-100 group-focus-visible/link:translate-x-0 group-focus-visible/link:translate-y-0"
+        />
       </div>
     </Card>
   )

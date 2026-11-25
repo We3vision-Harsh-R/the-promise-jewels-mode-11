@@ -16,12 +16,13 @@ export default function TrendChart({ data }) {
           </linearGradient>
         </defs>
 
-        <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.15)" />
+        <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.08)" strokeDasharray="3 6" />
 
         <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#b9d4d1', fontSize: 12 }} />
-        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#b9d4d1', fontSize: 12 }} />
+        <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#b9d4d1', fontSize: 12 }} />
 
         <Tooltip
+          cursor={{ stroke: 'rgba(216, 194, 135, 0.35)', strokeDasharray: '3 4' }}
           contentStyle={{
             background: '#0E2B26',
             border: '1px solid rgba(216, 194, 135, 0.4)',
@@ -37,9 +38,10 @@ export default function TrendChart({ data }) {
           type="monotone"
           dataKey="inquiries"
           stroke="#D8C287"
-          strokeWidth={3}
+          strokeWidth={2.5}
           fill="url(#inquiryGradient)"
-          dot={{ r: 4, fill: '#D8C287' }}
+          dot={false}
+          activeDot={{ r: 5, fill: '#D8C287', stroke: '#0E2B26', strokeWidth: 2 }}
         />
       </AreaChart>
     </ResponsiveContainer>
