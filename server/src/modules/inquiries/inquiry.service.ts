@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import inquiryRepository from "./inquiry.repository.js";
 
 import { ApiError } from "../../utils/ApiError.js";
+import { sendInquiryEmail } from "../../utils/emailjs.js";
 
 import {
   INQUIRY_DEFAULTS,
@@ -26,7 +27,7 @@ class InquiryService {
    */
 
   async createInquiry(data: CreateInquiryDto) {
-    return inquiryRepository.create({
+    const saved = await inquiryRepository.create({
       id: randomUUID(),
 
       name: data.name,
@@ -41,6 +42,11 @@ class InquiryService {
 
       message: data.message,
     });
+
+    // Emailed to the owner in the background; a failure is logged, never shown to the visitor.
+    void sendInquiryEmail(data);
+
+    return saved;
   }
 
   /**
