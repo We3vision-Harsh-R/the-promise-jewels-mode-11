@@ -57,28 +57,59 @@ function isSignedIn(req: Request): boolean {
   return false;
 }
 
-const NOTICE = `<!doctype html>
+function page(o: { title: string; description: string; robots: string; heading: string; text: string }): string {
+  return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="${NOINDEX}">
-<title>Private</title>
+<meta name="robots" content="${o.robots}">
+<meta name="description" content="${o.description}">
+<link rel="icon" type="image/webp" href="/images/PROMISE_LOGO_skin_icon_only.webp">
+<title>${o.title}</title>
 <style>
 html,body{height:100%;margin:0}
 body{display:grid;place-items:center;background:#01383B;color:#f4ecd8;font:16px/1.6 system-ui,sans-serif;text-align:center;padding:24px}
+img{width:72px;height:72px;margin-bottom:16px}
 h1{font-weight:500;letter-spacing:.04em;margin:0 0 8px}
 p{margin:0 0 24px;opacity:.75}
 a{display:inline-block;padding:10px 22px;border:1px solid #f4ecd8;color:#f4ecd8;text-decoration:none;border-radius:2px}
 </style></head>
-<body><main><h1>This website is private</h1>
-<p>Access is limited to authorized users.</p>
+<body><main><img src="/images/PROMISE_LOGO_skin_icon_only.webp" alt="Promise Jewels"><h1>${o.heading}</h1>
+<p>${o.text}</p>
 <a href="/admin/login">Authorized sign-in</a></main></body></html>`;
+}
+
+/** The one page strangers may find on Google: the brand's name and a line about it, nothing else. */
+const LANDING = page({
+  title: "Promise Jewels Pvt. Ltd. | Fine Jewellery",
+  description: "Promise Jewels Pvt. Ltd. - fine jewellery. The full website is available to authorized users only.",
+  robots: "index, follow",
+  heading: "Promise Jewels Pvt. Ltd.",
+  text: "Fine jewellery. The full website is available to authorized users only.",
+});
+
+const NOTICE = page({
+  title: "Private",
+  description: "This website is private.",
+  robots: NOINDEX,
+  heading: "This website is private",
+  text: "Access is limited to authorized users.",
+});
 
 export function privateSite(req: Request, res: Response, next: NextFunction): void {
-  // Always: no search engine may list or cache anything from here.
-  res.setHeader("X-Robots-Tag", NOINDEX);
+  const isLanding =
+    SITE_PRIVATE && req.path === "/" && (req.method === "GET" || req.method === "HEAD") && !isSignedIn(req);
+
+  // No search engine may list or cache anything from here, except the brand
+  // landing page, which is what Google is meant to show.
+  if (!isLanding) res.setHeader("X-Robots-Tag", NOINDEX);
 
   if (!SITE_PRIVATE) return next();
   if (req.headers[INTERNAL_HEADER] === INTERNAL_TOKEN) return next();
+
+  if (isLanding) {
+    res.status(200).set({ "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" }).send(LANDING);
+    return;
+  }
 
   const path = req.path;
 
