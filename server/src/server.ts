@@ -15,7 +15,6 @@ import { describeAdminNetwork } from "./middleware/adminNetwork.middleware.js";
 import { startAdminNetworkRefresh } from "./modules/admin-network/admin-network.service.js";
 import { startVisitorTracking } from "./modules/visitors/visitor.service.js";
 import { installResilience } from "./utils/resilience.js";
-import { checkEmailJsConfig } from "./utils/emailjs.js";
 import { ensureMasterRole } from "./modules/rbac/rbac.service.js";
 
 // Everything is resolved from the project root — where package.json, /dist and
@@ -86,8 +85,6 @@ const httpServer = app.listen(env.PORT, () => {
   void warmAdminPages();
   // Whether the Editor is locked, so the first visitor and the first save both know.
   void loadSiteLock();
-  // Say once at start-up if inquiry emails are not set up.
-  checkEmailJsConfig();
 
   // Say, every time, whether the admin panel is closed to the internet.
   // The saved list is still being read at this moment; say what is known now.
