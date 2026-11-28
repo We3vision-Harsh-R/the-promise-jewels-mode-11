@@ -9,8 +9,8 @@ import { PUBLIC_RULES } from "./adminNetwork.middleware.js";
 /**
  * Keeps the website closed to everyone who is not signed in to the admin panel.
  *
- *   SITE_PRIVATE=on   closed   (the default in production)
- *   SITE_PRIVATE=off  open to the public (the default while developing)
+ *   SITE_PRIVATE=on   closed to everyone who is not signed in
+ *   SITE_PRIVATE=off  open to the public (the default)
  *
  * A stranger who opens any page gets a short "this site is private" notice with
  * a link to the sign-in page, and the public API answers 401 — so the content
@@ -24,7 +24,7 @@ import { PUBLIC_RULES } from "./adminNetwork.middleware.js";
  */
 
 const flag = (process.env.SITE_PRIVATE ?? "").trim().toLowerCase();
-export const SITE_PRIVATE = flag ? flag !== "off" && flag !== "false" && flag !== "0" : env.NODE_ENV === "production";
+export const SITE_PRIVATE = flag === "on" || flag === "true" || flag === "1";
 
 /** The site's own cache warm-up calls itself with this, since it has no cookies. */
 export const INTERNAL_TOKEN = randomBytes(16).toString("hex");
@@ -101,7 +101,7 @@ export function privateSite(req: Request, res: Response, next: NextFunction): vo
 
   // No search engine may list or cache anything from here, except the brand
   // landing page, which is what Google is meant to show.
-  if (!isLanding) res.setHeader("X-Robots-Tag", NOINDEX);
+  if (SITE_PRIVATE && !isLanding) res.setHeader("X-Robots-Tag", NOINDEX);
 
   if (!SITE_PRIVATE) return next();
   if (req.headers[INTERNAL_HEADER] === INTERNAL_TOKEN) return next();
